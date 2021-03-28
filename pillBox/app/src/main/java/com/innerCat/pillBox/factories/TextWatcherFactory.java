@@ -28,4 +28,26 @@ public class TextWatcherFactory {
            public void afterTextChanged( Editable s ) {}
        };
     }
+
+    public static TextWatcher getNonEmptyRefillWatcher( EditText refillInput, Button okButton ) {
+        return new TextWatcher() {
+            @Override
+            public void beforeTextChanged( CharSequence s, int start, int count, int after ) {}
+
+            @Override
+            public void onTextChanged( CharSequence s, int start, int before, int count ) {
+                try {
+                    String trimmedRefillInput = refillInput.getText().toString().trim();
+                    int refillInputInt = Integer.parseInt(trimmedRefillInput);
+                    boolean refillInputPass = trimmedRefillInput.length() > 0;
+                    okButton.setEnabled(refillInputPass);
+                } catch (NumberFormatException e) {
+                    okButton.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void afterTextChanged( Editable s ) {}
+        };
+    }
 }

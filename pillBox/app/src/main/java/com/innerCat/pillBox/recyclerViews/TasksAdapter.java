@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -36,6 +37,7 @@ public class TasksAdapter extends
         // for any view that will be set as you render a row
         public TextView nameTextView;
         public TextView stockTextView;
+        public ImageButton refillButton;
         public Item item;
         public Context context;
 
@@ -50,6 +52,12 @@ public class TasksAdapter extends
 
             nameTextView = itemView.findViewById(R.id.nameView);
             stockTextView = itemView.findViewById(R.id.stockTextView);
+
+            refillButton = itemView.findViewById(R.id.refillButton);
+            refillButton.setOnClickListener(v -> {
+                ((MainActivity) context).refillItem(item, getAdapterPosition());
+            });
+
             itemView.setOnClickListener(this);
         }
 
@@ -120,7 +128,7 @@ public class TasksAdapter extends
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
                 .getInt("stockThreshold", 10);
         if (stock <= stockThreshold) {
-            stockTextView.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryDarkColor));
+            stockTextView.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
         } else {
             //get the default color
             int[] attribute = new int[] { android.R.attr.textColor };
@@ -131,6 +139,18 @@ public class TasksAdapter extends
         mBoundViewHolders.add(holder);
     }
 
+    /**
+     * Enables deletion of all the tasks
+     */
+    public void setRefillMode( boolean refillMode ) {
+        for (ViewHolder viewHolder : mBoundViewHolders) {
+            if (refillMode == true) {
+                viewHolder.refillButton.setVisibility(View.VISIBLE);
+            } else {
+                viewHolder.refillButton.setVisibility(View.GONE);
+            }
+        }
+    }
 
     // Returns the total count of items in the list
     @Override

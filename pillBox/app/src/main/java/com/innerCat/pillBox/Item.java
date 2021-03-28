@@ -127,6 +127,15 @@ public class Item  {
         }
     }
 
+    /**
+     * Refill.
+     *
+     * @param refillAmount the refill amount
+     */
+    public void refill(int refillAmount) {
+        this.stock = this.stock+refillAmount;
+    }
+
 
     /**
      * Gets view holder location.

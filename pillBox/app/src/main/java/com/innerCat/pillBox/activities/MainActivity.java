@@ -44,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
     TasksAdapter adapter;
     SharedPreferences sharedPreferences;
 
+    boolean refillMode = false;
+
     @ColumnInfo(defaultValue = "0")
 
     private final int LIST_TASK_REQUEST = 1;
@@ -171,6 +173,57 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
+    /**
+     * Refill item.
+     *
+     * @param item     the item
+     * @param position the position
+     */
+    public void refillItem( Item item, int position) {
+        // Use the Builder class for convenient dialog construction
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+
+        //get the UI elements
+        ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        fab.setVisibility(View.INVISIBLE);
+        View editTextView = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
+        EditText refillInput = editTextView.findViewById(R.id.editRefill);
+
+        refillInput.requestFocus();
+
+        builder.setMessage("Refill Amount")
+                .setView(editTextView)
+                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        //get the name of the Task to add
+                        int refillAmount = Integer.parseInt(refillInput.getText().toString().trim());
+                        //add the task
+                        item.refill(refillAmount);
+                        updateItem(item, position);
+                        fab.setVisibility(View.VISIBLE);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                        fab.setVisibility(View.VISIBLE);
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.setOnCancelListener(dialog1 -> {
+            // dialog dismisses
+            fab.setVisibility(View.VISIBLE);
+        });
+        dialog.getWindow().setDimAmount(0.0f);
+        dialog.show();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        okButton.setEnabled(false);
+        refillInput.addTextChangedListener(TextWatcherFactory.getNonEmptyRefillWatcher(refillInput, okButton));
+
+    }
+
     /**
      * Add a item to the database
      *
@@ -199,6 +252,17 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Refill button.
+     *
+     * @param view the view
+     */
+    public void refillButton(View view) {
+        //toggle refillMode
+        refillMode = !refillMode;
+        adapter.setRefillMode(refillMode);
+    }
+
 
     /** Called when the user taps the FAB button */
     public void fabButton(View view) {
@@ -209,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTextView = LayoutInflater.from(this).inflate(R.layout.text_input, null);
+        View editTextView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
         EditText nameInput = editTextView.findViewById(R.id.editName);
         EditText stockInput = editTextView.findViewById(R.id.editStock);
 
