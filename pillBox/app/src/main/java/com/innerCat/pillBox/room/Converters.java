@@ -5,8 +5,14 @@ import android.util.TypedValue;
 
 import androidx.room.TypeConverter;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.innerCat.pillBox.Box;
+
+import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class Converters {
     /**
@@ -56,5 +62,37 @@ public class Converters {
                 r.getDisplayMetrics()
         );
         return (int) px;
+    }
+
+    /**
+     * From box list string.
+     *
+     * @param boxes the boxes
+     * @return the string
+     */
+    @TypeConverter
+    public String fromBoxList(List<Box> boxes) {
+        if (boxes == null) {
+            return (null);
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Box>>() {}.getType();
+        return gson.toJson(boxes, type);
+    }
+
+    /**
+     * To box list list.
+     *
+     * @param boxesString the boxes string
+     * @return the list
+     */
+    @TypeConverter
+    public List<Box> toBoxList(String boxesString) {
+        if (boxesString == null) {
+            return (null);
+        }
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Box>>() {}.getType();
+        return gson.fromJson(boxesString, type);
     }
 }

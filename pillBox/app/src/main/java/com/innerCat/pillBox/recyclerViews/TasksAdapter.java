@@ -139,19 +139,6 @@ public class TasksAdapter extends
         mBoundViewHolders.add(holder);
     }
 
-    /**
-     * Enables deletion of all the tasks
-     */
-    public void setRefillMode( boolean refillMode ) {
-        for (ViewHolder viewHolder : mBoundViewHolders) {
-            if (refillMode == true) {
-                viewHolder.refillButton.setVisibility(View.VISIBLE);
-            } else {
-                viewHolder.refillButton.setVisibility(View.GONE);
-            }
-        }
-    }
-
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {

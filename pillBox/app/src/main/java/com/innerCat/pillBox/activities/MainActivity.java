@@ -15,7 +15,7 @@ import android.widget.EditText;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.ColumnInfo;
 
@@ -43,8 +43,6 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rvItems;
     TasksAdapter adapter;
     SharedPreferences sharedPreferences;
-
-    boolean refillMode = false;
 
     @ColumnInfo(defaultValue = "0")
 
@@ -90,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 // Attach the adapter to the recyclerview to populate items
                 rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
-                rvItems.setLayoutManager(new LinearLayoutManager(this));
+                rvItems.setLayoutManager(new GridLayoutManager(this, 2));
             });
         });
 
@@ -251,18 +249,6 @@ public class MainActivity extends AppCompatActivity {
             });
         });
     }
-
-    /**
-     * Refill button.
-     *
-     * @param view the view
-     */
-    public void refillButton(View view) {
-        //toggle refillMode
-        refillMode = !refillMode;
-        adapter.setRefillMode(refillMode);
-    }
-
 
     /** Called when the user taps the FAB button */
     public void fabButton(View view) {
