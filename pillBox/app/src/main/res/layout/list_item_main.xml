@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        app:cardCornerRadius="5dp"
+        app:cardUseCompatPadding="true"
+        app:contentPaddingLeft="10dp"
+        app:contentPaddingRight="10dp"
+        style="@style/CardView.DayNight"
+        app:contentPaddingTop="15dp"
+        app:contentPaddingBottom="15dp"
+        android:layout_marginHorizontal="16dp">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:id="@+id/archiveLinearLayout"
+            android:animateLayoutChanges="true"
+            android:layout_marginRight="4dp">
+
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/nameView"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                    android:textSize="18sp"
+                    android:layout_marginVertical="0dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:text="Name"
+                    android:visibility="visible" />
+
+            <TextView
+                    android:text="Expiry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/expiryTextView"
+                    android:visibility="gone"
+                    android:fontFamily="sans-serif" />
+        </LinearLayout>
+
+        <TextView
+                android:text="0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/stockTextView"
+                android:layout_weight="0"
+                android:textSize="20sp" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
