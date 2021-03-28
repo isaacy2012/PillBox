@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item the item to change
      * @param position its position in the RecyclerView
      */
-    public void updateItem( Item item, int position) {
+    public void updateItem( Item item, int position ) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -167,6 +167,26 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyItemChanged(position);
+            });
+        });
+    }
+
+    /**
+     * Remove an existing item in the database
+     * @param item the item to remove
+     * @param position its position in the RecyclerView
+     */
+    public void deleteItem( Item item, int position ) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            //Background work here
+            itemDatabase.itemDao().removeById(item.getId());
+            handler.post(() -> {
+                //UI Thread work here
+                // Notify the adapter that an item was changed at position
+                adapter.notifyItemRemoved(position);
             });
         });
     }

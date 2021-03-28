@@ -3,20 +3,28 @@ package com.innerCat.pillBox.recyclerViews;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
+import com.innerCat.pillBox.factories.TextWatcherFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +40,7 @@ public class TasksAdapter extends
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         public TextView nameTextView;
@@ -59,6 +67,7 @@ public class TasksAdapter extends
             });
 
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         /**
@@ -75,6 +84,55 @@ public class TasksAdapter extends
             }
         }
 
+        @Override
+        public boolean onLongClick( View view ) {
+            int position = getAdapterPosition(); // gets item position
+            Item item = items.get(position);
+            // Use the Builder class for convenient dialog construction
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded);
+
+            //get the UI elements
+            ExtendedFloatingActionButton fab = ((MainActivity)context).findViewById(R.id.floatingActionButton);
+            fab.setVisibility(View.INVISIBLE);
+            View editTextView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
+            EditText input = editTextView.findViewById(R.id.editName);
+
+            //Set the capitalisation
+            input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+            input.requestFocus();
+
+            builder.setMessage("Name")
+                    .setView(editTextView)
+                    .setPositiveButton("Ok", ( dialog, id ) -> {
+                        //get the name of the Task to edit
+                        String newName = input.getText().toString();
+                        //edit the item
+                        item.setName(newName);
+                        ((MainActivity) context).updateItem(item, position);
+                    })
+                    .setNegativeButton("Cancel", ( dialog, id ) -> {
+                        // User cancelled the dialog
+                        fab.setVisibility(View.VISIBLE);
+                    })
+                    .setNeutralButton("Delete", ( dialog, id ) -> {
+                        items.remove(item);
+                        ((MainActivity) context).deleteItem(item, position);
+                        fab.setVisibility(View.VISIBLE);
+                    });
+            AlertDialog dialog = builder.create();
+            dialog.setOnCancelListener(dialog1 -> {
+                // dialog dismisses
+                fab.setVisibility(View.VISIBLE);
+            });
+            dialog.getWindow().setDimAmount(0.0f);
+            dialog.show();
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            okButton.setEnabled(false);
+            input.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(input, okButton));
+            return true;
+        }
     }
 
     /**
