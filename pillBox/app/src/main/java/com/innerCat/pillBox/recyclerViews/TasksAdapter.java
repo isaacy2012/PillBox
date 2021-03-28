@@ -136,6 +136,7 @@ public class TasksAdapter extends
             int color = array.getColor(0, Color.TRANSPARENT);
             stockTextView.setTextColor(color);
         }
+
         mBoundViewHolders.add(holder);
     }
 
