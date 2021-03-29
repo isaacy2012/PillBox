@@ -20,7 +20,7 @@ public class Item  {
     //placeholder id
     private int id = 0;
     private String name;
-    private LocalDate lastUpdated;
+    private LocalDate lastUsed;
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
     private int viewHolderLocation;
@@ -87,17 +87,17 @@ public class Item  {
      *
      * @return the last updated
      */
-    public LocalDate getLastUpdated() {
-        return lastUpdated;
+    public LocalDate getLastUsed() {
+        return lastUsed;
     }
 
     /**
      * Sets last updated.
      *
-     * @param lastUpdated the last updated
+     * @param lastUsed the last updated
      */
-    public void setLastUpdated( LocalDate lastUpdated ) {
-        this.lastUpdated = lastUpdated;
+    public void setLastUsed( LocalDate lastUsed ) {
+        this.lastUsed = lastUsed;
     }
 
     /**
@@ -119,9 +119,10 @@ public class Item  {
     }
 
     /**
-     * Decrements the stock.
+     * Decrements the stock and sets the last used to now
      */
     public void decrementStock() {
+        setLastUsed(LocalDate.now());
         if (this.stock > 0) {
             this.stock = this.stock - 1;
         }
@@ -163,12 +164,12 @@ public class Item  {
         return id == item.id &&
                 stock == item.stock &&
                 Objects.equals(name, item.name) &&
-                Objects.equals(lastUpdated, item.lastUpdated);
+                Objects.equals(lastUsed, item.lastUsed);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, lastUpdated, stock, viewHolderLocation);
+        return Objects.hash(id, name, lastUsed, stock, viewHolderLocation);
     }
 
     @Override
@@ -176,7 +177,7 @@ public class Item  {
         return "Item{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", lastUpdated=" + lastUpdated +
+                ", lastUpdated=" + lastUsed +
                 ", stock=" + stock +
                 ", viewHolderLocation=" + viewHolderLocation +
                 '}';

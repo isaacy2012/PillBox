@@ -3,6 +3,7 @@ package com.innerCat.pillBox.activities;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -12,10 +13,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.ColumnInfo;
 
@@ -23,12 +28,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.factories.TaskDatabaseFactory;
+import com.innerCat.pillBox.factories.ItemDatabaseFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
-import com.innerCat.pillBox.recyclerViews.TasksAdapter;
+import com.innerCat.pillBox.recyclerViews.ItemAdapter;
+import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.ItemDatabase;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,8 +48,10 @@ public class MainActivity extends AppCompatActivity {
     //private fields for the Dao and the Database
     public static ItemDatabase itemDatabase;
     RecyclerView rvItems;
-    TasksAdapter adapter;
+    ItemAdapter adapter;
     SharedPreferences sharedPreferences;
+
+    boolean editMode = false;
 
     @ColumnInfo(defaultValue = "0")
 
@@ -67,10 +76,56 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         //initialise the database
-        itemDatabase = TaskDatabaseFactory.getTaskDatabase(this);
+        itemDatabase = ItemDatabaseFactory.getTaskDatabase(this);
 
         //get the recyclerview in activity layout
         rvItems = findViewById(R.id.rvTasks);
+
+        // Extend the Callback class
+        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
+            //and in your imlpementaion of
+            public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                // get the viewHolder's and target's positions in your adapter data, swap them
+                Collections.swap(adapter.getTasks(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                // and notify the adapter that its dataset has changed
+                adapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                return true;
+            }
+
+            @Override
+            public void onSwiped( @NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            }
+
+            //defines the enabled move directions in each state (idle, swiping, dragging).
+            @Override
+            public int getMovementFlags( @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
+            }
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return getEditMode();
+            }
+
+            @Override
+            public void onChildDraw( @NonNull Canvas c, @NonNull RecyclerView recyclerView,
+                                     @NonNull RecyclerView.ViewHolder viewHolder,
+                                     float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
+                float end = Converters.fromDpToPixels(8, getResources());
+                if (isCurrentlyActive) {
+                    end = Converters.fromDpToPixels(16, getResources());
+                }
+                cardView.animate().z(end);
+                //cardView.setCardElevation(end);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+
+        // Create an `ItemTouchHelper` and attach it to the `RecyclerView`
+        ItemTouchHelper ith = new ItemTouchHelper(callback);
+        ith.attachToRecyclerView(rvItems);
 
 
         //ROOM Threads
@@ -84,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 // Create adapter passing in the sample user data
-                adapter = new TasksAdapter(items);
+                adapter = new ItemAdapter(items);
                 // Attach the adapter to the recyclerview to populate items
                 rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
@@ -106,14 +161,13 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onResume() {
         super.onResume();
-        if (adapter != null && rvItems != null) {
-        }
     }
 
     /**
      * Called at 00:00, moves all Tasks in "Tomorrow" to "Today" and checks the visibility of the RecyclerViews
      */
     public void newDay() {
+        //adapter.updateDays();
     }
 
     /**
@@ -268,6 +322,30 @@ public class MainActivity extends AppCompatActivity {
                 //rvTasks.scheduleLayoutAnimation();
             });
         });
+    }
+
+    /**
+     * Gets edit mode.
+     *
+     * @return the edit mode
+     */
+    public boolean getEditMode() {
+        return this.editMode;
+    }
+
+    /**
+     * Edit button.
+     *
+     * @param view the view
+     */
+    public void editButton( View view ) {
+        editMode = !editMode;
+        ImageButton editButton = findViewById(R.id.editButton);
+        if (editMode == true) {
+            editButton.setImageResource(R.drawable.ic_baseline_close_24);
+        } else {
+            editButton.setImageResource(R.drawable.ic_baseline_edit_24);
+        }
     }
 
     /** Called when the user taps the FAB button */

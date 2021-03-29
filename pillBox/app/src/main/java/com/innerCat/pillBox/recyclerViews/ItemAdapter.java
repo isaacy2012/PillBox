@@ -26,14 +26,17 @@ import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
-public class TasksAdapter extends
-        RecyclerView.Adapter<TasksAdapter.ViewHolder> {
+public class ItemAdapter extends
+        RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
     private List<Item> items;
     private Set<ViewHolder> mBoundViewHolders = new HashSet<>();
@@ -45,6 +48,7 @@ public class TasksAdapter extends
         // for any view that will be set as you render a row
         public TextView nameTextView;
         public TextView stockTextView;
+        public TextView lastTakenTextView;
         public ImageButton refillButton;
         public Item item;
         public Context context;
@@ -59,6 +63,7 @@ public class TasksAdapter extends
 
 
             nameTextView = itemView.findViewById(R.id.nameView);
+            lastTakenTextView = itemView.findViewById(R.id.lastTakenTextView);
             stockTextView = itemView.findViewById(R.id.stockTextView);
 
             refillButton = itemView.findViewById(R.id.refillButton);
@@ -76,63 +81,72 @@ public class TasksAdapter extends
          */
         @Override
         public void onClick( View view ) {
-            int position = getAdapterPosition(); // gets item position
-            if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
+            if (((MainActivity) context).getEditMode() == false) {
+                int position = getAdapterPosition(); // gets item position
+                if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
+                    Item item = items.get(position);
+                    item.decrementStock();
+                    ((MainActivity) context).updateItem(item, position);
+                }
+            } else {
+                int position = getAdapterPosition(); // gets item position
                 Item item = items.get(position);
-                item.decrementStock();
-                ((MainActivity) context).updateItem(item, position);
+                // Use the Builder class for convenient dialog construction
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded);
+
+                //get the UI elements
+                ExtendedFloatingActionButton fab = ((MainActivity) context).findViewById(R.id.floatingActionButton);
+                fab.setVisibility(View.INVISIBLE);
+                View editTextView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
+                EditText input = editTextView.findViewById(R.id.editName);
+
+                //Set the capitalisation
+                input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+
+                input.requestFocus();
+
+                builder.setMessage("Name")
+                        .setView(editTextView)
+                        .setPositiveButton("Ok", ( dialog, id ) -> {
+                            //get the name of the Task to edit
+                            String newName = input.getText().toString();
+                            //edit the item
+                            item.setName(newName);
+                            ((MainActivity) context).updateItem(item, position);
+                        })
+                        .setNegativeButton("Cancel", ( dialog, id ) -> {
+                            // User cancelled the dialog
+                            fab.setVisibility(View.VISIBLE);
+                        })
+                        .setNeutralButton("Delete", ( dialog, id ) -> {
+                            items.remove(item);
+                            ((MainActivity) context).deleteItem(item, position);
+                            fab.setVisibility(View.VISIBLE);
+                        });
+                AlertDialog dialog = builder.create();
+                dialog.setOnCancelListener(dialog1 -> {
+                    // dialog dismisses
+                    fab.setVisibility(View.VISIBLE);
+                });
+                dialog.getWindow().setDimAmount(0.0f);
+                dialog.show();
+                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                okButton.setEnabled(false);
+                input.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(input, okButton));
             }
         }
 
+        /**
+         * To ensure that onClick is not activated at the same time
+         * @param view
+         * @return
+         */
         @Override
-        public boolean onLongClick( View view ) {
-            int position = getAdapterPosition(); // gets item position
-            Item item = items.get(position);
-            // Use the Builder class for convenient dialog construction
-            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded);
-
-            //get the UI elements
-            ExtendedFloatingActionButton fab = ((MainActivity)context).findViewById(R.id.floatingActionButton);
-            fab.setVisibility(View.INVISIBLE);
-            View editTextView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
-            EditText input = editTextView.findViewById(R.id.editName);
-
-            //Set the capitalisation
-            input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-
-            input.requestFocus();
-
-            builder.setMessage("Name")
-                    .setView(editTextView)
-                    .setPositiveButton("Ok", ( dialog, id ) -> {
-                        //get the name of the Task to edit
-                        String newName = input.getText().toString();
-                        //edit the item
-                        item.setName(newName);
-                        ((MainActivity) context).updateItem(item, position);
-                    })
-                    .setNegativeButton("Cancel", ( dialog, id ) -> {
-                        // User cancelled the dialog
-                        fab.setVisibility(View.VISIBLE);
-                    })
-                    .setNeutralButton("Delete", ( dialog, id ) -> {
-                        items.remove(item);
-                        ((MainActivity) context).deleteItem(item, position);
-                        fab.setVisibility(View.VISIBLE);
-                    });
-            AlertDialog dialog = builder.create();
-            dialog.setOnCancelListener(dialog1 -> {
-                // dialog dismisses
-                fab.setVisibility(View.VISIBLE);
-            });
-            dialog.getWindow().setDimAmount(0.0f);
-            dialog.show();
-            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-            Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-            okButton.setEnabled(false);
-            input.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(input, okButton));
-            return true;
+        public boolean onLongClick(View view) {
+            return true; // or false
         }
+
     }
 
     /**
@@ -140,7 +154,7 @@ public class TasksAdapter extends
      *
      * @param items the list of Tasks
      */
-    public TasksAdapter( List<Item> items ) {
+    public ItemAdapter( List<Item> items ) {
         this.items = items;
     }
 
@@ -157,12 +171,12 @@ public class TasksAdapter extends
     // Usually involves inflating a layout from XML and returning the holder
     @NonNull
     @Override
-    public TasksAdapter.ViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
+    public ItemAdapter.ViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View taskView = inflater.inflate(R.layout.list_item_main, parent, false);
+        View taskView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
 
         // Return a new holder instance
         ViewHolder viewHolder = new ViewHolder(taskView, context);
@@ -171,13 +185,14 @@ public class TasksAdapter extends
 
     // Involves populating data into the item through holder
     @Override
-    public void onBindViewHolder( TasksAdapter.ViewHolder holder, int position ) {
+    public void onBindViewHolder( ItemAdapter.ViewHolder holder, int position ) {
         // Get the data model based on position
         holder.item = items.get(position);
 
         // Set item views based on your views and data model
         TextView nameTextView = holder.nameTextView;
         TextView stockTextView = holder.stockTextView;
+        TextView lastTakenTextView = holder.lastTakenTextView;
         nameTextView.setText(holder.item.getName());
         int stock = holder.item.getStock();
         stockTextView.setText(String.valueOf(stock));
@@ -193,6 +208,24 @@ public class TasksAdapter extends
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
             stockTextView.setTextColor(color);
+        }
+
+        //set the text of the last taken text view
+        LocalDate lastUsed = holder.item.getLastUsed();
+        if (lastUsed != null) {
+            int daysBetween = (int) DAYS.between(lastUsed, LocalDate.now());
+            StringBuilder sb = new StringBuilder();
+            sb.append("Last taken ");
+            if (daysBetween == 0) {
+                sb.append("today");
+            } else if (daysBetween == 1) {
+                sb.append("yesterday");
+            } else {
+                sb.append(daysBetween).append(" days ago");
+            }
+            lastTakenTextView.setText(sb.toString());
+        } else {
+            lastTakenTextView.setText("");
         }
 
         mBoundViewHolders.add(holder);

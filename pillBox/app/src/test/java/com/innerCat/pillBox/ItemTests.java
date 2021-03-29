@@ -16,7 +16,7 @@ public class ItemTests {
     @AfterTest
     public void check_date_base_constructor() {
         Item item = new Item("TestTask");
-        assertEquals(LocalDate.now(), item.getLastUpdated());
+        assertEquals(LocalDate.now(), item.getLastUsed());
         assertEquals(0, item.getStock());
         assertFalse(item.wasLate());
         assertFalse(item.runningLate());
@@ -27,7 +27,7 @@ public class ItemTests {
     @Test
     public void check_date_extended_constructor() {
         Item item = new Item("Extended", LocalDate.now().plusDays(3));
-        assertEquals(LocalDate.now().plusDays(3), item.getLastUpdated());
+        assertEquals(LocalDate.now().plusDays(3), item.getLastUsed());
     }
 
     @Test

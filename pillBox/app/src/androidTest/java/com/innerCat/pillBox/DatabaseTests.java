@@ -49,21 +49,21 @@ public class DatabaseTests {
         if (dayOffset > 0) {
             Item addItem = new Item(name, LocalDate.now().plusDays(dayOffset));
             if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUpdated());
+                addItem.setCompleteDate(addItem.getLastUsed());
             }
             addTask(addItem);
             return addItem;
         } else if (dayOffset < 0) {
             Item addItem = new Item(name, LocalDate.now().minusDays(-dayOffset));
             if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUpdated());
+                addItem.setCompleteDate(addItem.getLastUsed());
             }
             addTask(addItem);
             return addItem;
         } else {
             Item addItem = new Item(name);
             if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUpdated());
+                addItem.setCompleteDate(addItem.getLastUsed());
             }
             addTask(addItem);
             return addItem;
