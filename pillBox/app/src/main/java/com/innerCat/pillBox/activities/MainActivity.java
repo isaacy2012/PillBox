@@ -32,6 +32,7 @@ import com.innerCat.pillBox.factories.ItemDatabaseFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
+import com.innerCat.pillBox.room.ItemDao;
 import com.innerCat.pillBox.room.ItemDatabase;
 
 import java.util.Calendar;
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             //and in your imlpementaion of
             public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 // get the viewHolder's and target's positions in your adapter data, swap them
-                Collections.swap(adapter.getTasks(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                Collections.swap(adapter.getItems(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 // and notify the adapter that its dataset has changed
                 adapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 return true;
@@ -241,6 +242,31 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyItemRemoved(position);
+            });
+        });
+    }
+
+    /**
+     * Update multiple items.
+     *
+     * @param items the items
+     */
+    public void updateMultipleItems(List<Item> items, List<Integer> positions) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            //Background work here
+            ItemDao dao = itemDatabase.itemDao();
+            for (Item item : items) {
+                dao.update(item);
+            }
+            handler.post(() -> {
+                //UI Thread work here
+                // Notify the adapter that an item was changed at position
+                for (Integer position : positions) {
+                    adapter.notifyItemRemoved(position);
+                }
             });
         });
     }

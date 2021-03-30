@@ -27,6 +27,7 @@ import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -158,6 +159,43 @@ public class ItemAdapter extends
         this.items = items;
     }
 
+
+    /**
+     * Notify moved.
+     *
+     * @param fromPosition the from position
+     * @param toPosition   the to position
+     */
+    public void notifyMoved(Context context, int fromPosition, int toPosition) {
+        super.notifyItemMoved(fromPosition, toPosition);
+        List<Item> itemsChanged = new ArrayList<>();
+        List<Integer> positions = new ArrayList<>();
+        Item thisItem = items.get(toPosition);
+        if (items.isEmpty() == false) {
+            if (toPosition == 0) {
+                items.get(toPosition+1).setFirst(false);
+                thisItem.setFirst(true);
+                itemsChanged.add(thisItem);
+                positions.add(toPosition);
+            } else if (toPosition == items.size()-1) { // moved to last
+                Item prevItem = items.get(toPosition-1);
+                prevItem.setNextId(thisItem.getId());
+                itemsChanged.add(prevItem);
+                positions.add(toPosition-1);
+            } else {
+                Item nextItem = items.get(toPosition+1);
+                Item prevItem = items.get(toPosition-1);
+                prevItem.setNextId(thisItem.getId());
+                thisItem.setNextId(nextItem.getId());
+                itemsChanged.add(thisItem);
+                itemsChanged.add(prevItem);
+                positions.add(toPosition+1);
+                positions.add(toPosition-1);
+            }
+        }
+        ((MainActivity)context).updateMultipleItems( itemsChanged, positions );
+    }
+
     /**
      * Add a item
      *
@@ -237,7 +275,7 @@ public class ItemAdapter extends
         return items.size();
     }
 
-    public List<Item> getTasks() {
+    public List<Item> getItems() {
         return this.items;
     }
 

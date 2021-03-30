@@ -23,7 +23,8 @@ public class Item  {
     private LocalDate lastUsed;
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
-    private int viewHolderLocation;
+    private int nextId = -1;
+    private boolean first = false;
 
     /**
      * Instantiates a new Item.
@@ -129,6 +130,42 @@ public class Item  {
     }
 
     /**
+     * Gets next id.
+     *
+     * @return the next id
+     */
+    public int getNextId() {
+        return nextId;
+    }
+
+    /**
+     * Sets next id.
+     *
+     * @param nextId the next id
+     */
+    public void setNextId( int nextId ) {
+        this.nextId = nextId;
+    }
+
+    /**
+     * Is first boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isFirst() {
+        return first;
+    }
+
+    /**
+     * Sets first.
+     *
+     * @param first the first
+     */
+    public void setFirst( boolean first ) {
+        this.first = first;
+    }
+
+    /**
      * Refill.
      *
      * @param refillAmount the refill amount
@@ -137,24 +174,6 @@ public class Item  {
         this.stock = this.stock+refillAmount;
     }
 
-
-    /**
-     * Gets view holder location.
-     *
-     * @return the view holder location
-     */
-    public int getViewHolderLocation() {
-        return viewHolderLocation;
-    }
-
-    /**
-     * Sets view holder location.
-     *
-     * @param viewHolderLocation the view holder location
-     */
-    public void setViewHolderLocation( int viewHolderLocation ) {
-        this.viewHolderLocation = viewHolderLocation;
-    }
 
     @Override
     public boolean equals( Object o ) {
@@ -169,7 +188,7 @@ public class Item  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, lastUsed, stock, viewHolderLocation);
+        return Objects.hash(id, name, lastUsed, stock);
     }
 
     @Override
@@ -179,7 +198,6 @@ public class Item  {
                 ", name='" + name + '\'' +
                 ", lastUpdated=" + lastUsed +
                 ", stock=" + stock +
-                ", viewHolderLocation=" + viewHolderLocation +
                 '}';
     }
 }
