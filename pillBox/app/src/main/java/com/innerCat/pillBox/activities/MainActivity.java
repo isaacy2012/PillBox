@@ -32,10 +32,10 @@ import com.innerCat.pillBox.factories.ItemDatabaseFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
+import com.innerCat.pillBox.room.ItemDao;
 import com.innerCat.pillBox.room.ItemDatabase;
 
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         rvItems = findViewById(R.id.rvTasks);
 
         // Extend the Callback class
+        Context context = this;
         ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
             /**
              * when an item is in the process of being moved
@@ -92,9 +93,18 @@ public class MainActivity extends AppCompatActivity {
              */
             public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 // get the viewHolder's and target's positions in your adapter data, swap them
-                Collections.swap(adapter.getTasks(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                List<Item> items = adapter.getItems();
+                if (fromPosition == toPosition) {
+                    return true;
+                } else {
+                    Item thisItem = items.get(fromPosition);
+                    items.remove(fromPosition);
+                    items.add(toPosition, thisItem);
+                }
                 // and notify the adapter that its dataset has changed
-                adapter.notifyItemMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
                 return true;
             }
 
@@ -142,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
             //NB: This is the new thread in which the database stuff happens
             //today rvTask
             List<Item> items = itemDatabase.itemDao().getAllItems();
+
 
             handler.post(() -> {
                 // Create adapter passing in the sample user data
@@ -226,8 +237,25 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
-                adapter.notifyItemChanged(position);
+                adapter.notifyChanged(this, position);
             });
+        });
+    }
+
+    /**
+     * Update multiple items in the background, without notifying UI
+     *
+     * @param updated the updated
+     */
+    public void updateMultipleInBackground( List<Item> updated ) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            //Background work here
+            ItemDao dao = itemDatabase.itemDao();
+            for (Item item : updated) {
+                dao.update(item);
+            }
         });
     }
 
@@ -246,7 +274,32 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
-                adapter.notifyItemRemoved(position);
+                adapter.notifyRemoved( this, position);
+            });
+        });
+    }
+
+    /**
+     * Update multiple items.
+     *
+     * @param items the items
+     */
+    public void updateMultipleItems(List<Item> items, List<Integer> positions) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
+        executor.execute(() -> {
+            //Background work here
+            ItemDao dao = itemDatabase.itemDao();
+            for (Item item : items) {
+                dao.update(item);
+            }
+            handler.post(() -> {
+                //UI Thread work here
+                // Notify the adapter that an item was changed at position
+                for (Integer position : positions) {
+                    adapter.notifyItemRemoved(position);
+                }
             });
         });
     }
@@ -322,7 +375,7 @@ public class MainActivity extends AppCompatActivity {
                 // Add a new task
                 adapter.addItem(0, item);
                 // Notify the adapter that an item was inserted at position 0
-                adapter.notifyItemInserted(0);
+                adapter.notifyInserted(this, 0);
                 //rvTasks.scheduleLayoutAnimation();
                 rvItems.scrollToPosition(0);
                 //rvTasks.scheduleLayoutAnimation();

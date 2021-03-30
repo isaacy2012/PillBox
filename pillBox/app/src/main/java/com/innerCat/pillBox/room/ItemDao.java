@@ -55,7 +55,7 @@ public interface ItemDao {
      *
      * @return all the Tasks in the database as a List
      */
-    @Query("SELECT * FROM items ORDER BY viewHolderLocation")
+    @Query("SELECT * FROM items ORDER BY viewHolderPosition")
     public List<Item> getAllItems();
 
 }
