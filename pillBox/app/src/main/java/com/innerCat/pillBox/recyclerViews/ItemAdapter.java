@@ -161,42 +161,6 @@ public class ItemAdapter extends
 
 
     /**
-     * Notify moved.
-     *
-     * @param fromPosition the from position
-     * @param toPosition   the to position
-     */
-    public void notifyMoved(Context context, int fromPosition, int toPosition) {
-        super.notifyItemMoved(fromPosition, toPosition);
-        List<Item> itemsChanged = new ArrayList<>();
-        List<Integer> positions = new ArrayList<>();
-        Item thisItem = items.get(toPosition);
-        if (items.isEmpty() == false) {
-            if (toPosition == 0) {
-                items.get(toPosition+1).setFirst(false);
-                thisItem.setFirst(true);
-                itemsChanged.add(thisItem);
-                positions.add(toPosition);
-            } else if (toPosition == items.size()-1) { // moved to last
-                Item prevItem = items.get(toPosition-1);
-                prevItem.setNextId(thisItem.getId());
-                itemsChanged.add(prevItem);
-                positions.add(toPosition-1);
-            } else {
-                Item nextItem = items.get(toPosition+1);
-                Item prevItem = items.get(toPosition-1);
-                prevItem.setNextId(thisItem.getId());
-                thisItem.setNextId(nextItem.getId());
-                itemsChanged.add(thisItem);
-                itemsChanged.add(prevItem);
-                positions.add(toPosition+1);
-                positions.add(toPosition-1);
-            }
-        }
-        ((MainActivity)context).updateMultipleItems( itemsChanged, positions );
-    }
-
-    /**
      * Add a item
      *
      * @param position the position of the new Item in the List
@@ -204,6 +168,62 @@ public class ItemAdapter extends
      */
     public void addItem( int position, Item item ) {
         items.add(position, item);
+    }
+
+    public void updateIndexesInRange( Context context, int fromIndex ) {
+        List<Item> updated = new ArrayList<>();
+        for (int i = fromIndex; i < items.size(); i++) {
+            Item thisItem = items.get(i);
+            thisItem.setViewHolderPosition(items.indexOf(thisItem));
+            updated.add(thisItem);
+        }
+        ((MainActivity)context).updateMultipleInBackground(updated);
+    }
+
+    /**
+     * Notify that an item has been moved. Calls the super method notifyItemMoved
+     *
+     * @param context      the context
+     * @param fromPosition the from position
+     * @param toPosition   the to position
+     */
+    public void notifyMoved( Context context, int fromPosition, int toPosition) {
+        super.notifyItemMoved(fromPosition, toPosition);
+        if (fromPosition != toPosition) {
+            updateIndexesInRange(context, Math.min(fromPosition, toPosition));
+        }
+    }
+
+    /**
+     * Notify that an item has been changed. Calls the super method notifyItemChanged
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyChanged( Context context, int position ) {
+        super.notifyItemChanged( position );
+    }
+
+    /**
+     * Notify that an item has been inserted. Calls the super method notifyItemInserted
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyInserted( Context context, int position ) {
+        super.notifyItemInserted(position);
+        updateIndexesInRange(context, position);
+    }
+
+    /**
+     * Notify that an item has been removed. Calls the super method notifyItemRemoved
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyRemoved( Context context, int position ) {
+        super.notifyItemRemoved(position);
+        updateIndexesInRange(context, position);
     }
 
     // Usually involves inflating a layout from XML and returning the holder
