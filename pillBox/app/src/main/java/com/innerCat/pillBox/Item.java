@@ -122,8 +122,8 @@ public class Item  {
      * Decrements the stock and sets the last used to now
      */
     public void decrementStock() {
-        setLastUsed(LocalDate.now());
         if (this.stock > 0) {
+            setLastUsed(LocalDate.now());
             this.stock = this.stock - 1;
         }
     }
