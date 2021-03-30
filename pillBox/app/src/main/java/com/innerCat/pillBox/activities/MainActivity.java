@@ -431,7 +431,11 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         //get the name of the Task to add
                         String name = nameInput.getText().toString();
-                        int stock = Integer.parseInt(stockInput.getText().toString().trim());
+                        int stock = 0;
+                        try {
+                            stock = Integer.parseInt(stockInput.getText().toString().trim());
+                        } catch (NumberFormatException ignored) {}
+
                         //add the task
                         addItem(name, stock);
                         fab.setVisibility(View.VISIBLE);
@@ -453,8 +457,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         okButton.setEnabled(false);
-        nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextAndStockWatcher(nameInput, stockInput, okButton));
-        stockInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextAndStockWatcher(nameInput, stockInput, okButton));
+        nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
     }
 
 }
