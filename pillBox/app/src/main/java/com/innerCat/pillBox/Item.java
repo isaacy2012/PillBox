@@ -23,8 +23,7 @@ public class Item  {
     private LocalDate lastUsed;
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
-    private int nextId = -1;
-    private boolean first = false;
+    private int viewHolderPosition;
 
     /**
      * Instantiates a new Item.
@@ -130,39 +129,21 @@ public class Item  {
     }
 
     /**
-     * Gets next id.
+     * Gets view holder position.
      *
-     * @return the next id
+     * @return the view holder position
      */
-    public int getNextId() {
-        return nextId;
+    public int getViewHolderPosition() {
+        return viewHolderPosition;
     }
 
     /**
-     * Sets next id.
+     * Sets view holder position.
      *
-     * @param nextId the next id
+     * @param viewHolderPosition the view holder position
      */
-    public void setNextId( int nextId ) {
-        this.nextId = nextId;
-    }
-
-    /**
-     * Is first boolean.
-     *
-     * @return the boolean
-     */
-    public boolean isFirst() {
-        return first;
-    }
-
-    /**
-     * Sets first.
-     *
-     * @param first the first
-     */
-    public void setFirst( boolean first ) {
-        this.first = first;
+    public void setViewHolderPosition( int viewHolderPosition ) {
+        this.viewHolderPosition = viewHolderPosition;
     }
 
     /**
