@@ -27,6 +27,7 @@ import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -158,6 +159,7 @@ public class ItemAdapter extends
         this.items = items;
     }
 
+
     /**
      * Add a item
      *
@@ -166,6 +168,62 @@ public class ItemAdapter extends
      */
     public void addItem( int position, Item item ) {
         items.add(position, item);
+    }
+
+    public void updateIndexesInRange( Context context, int fromIndex ) {
+        List<Item> updated = new ArrayList<>();
+        for (int i = fromIndex; i < items.size(); i++) {
+            Item thisItem = items.get(i);
+            thisItem.setViewHolderPosition(items.indexOf(thisItem));
+            updated.add(thisItem);
+        }
+        ((MainActivity)context).updateMultipleInBackground(updated);
+    }
+
+    /**
+     * Notify that an item has been moved. Calls the super method notifyItemMoved
+     *
+     * @param context      the context
+     * @param fromPosition the from position
+     * @param toPosition   the to position
+     */
+    public void notifyMoved( Context context, int fromPosition, int toPosition) {
+        super.notifyItemMoved(fromPosition, toPosition);
+        if (fromPosition != toPosition) {
+            updateIndexesInRange(context, Math.min(fromPosition, toPosition));
+        }
+    }
+
+    /**
+     * Notify that an item has been changed. Calls the super method notifyItemChanged
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyChanged( Context context, int position ) {
+        super.notifyItemChanged( position );
+    }
+
+    /**
+     * Notify that an item has been inserted. Calls the super method notifyItemInserted
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyInserted( Context context, int position ) {
+        super.notifyItemInserted(position);
+        updateIndexesInRange(context, position);
+    }
+
+    /**
+     * Notify that an item has been removed. Calls the super method notifyItemRemoved
+     *
+     * @param context  the context
+     * @param position the position
+     */
+    public void notifyRemoved( Context context, int position ) {
+        super.notifyItemRemoved(position);
+        updateIndexesInRange(context, position);
     }
 
     // Usually involves inflating a layout from XML and returning the holder
@@ -237,7 +295,7 @@ public class ItemAdapter extends
         return items.size();
     }
 
-    public List<Item> getTasks() {
+    public List<Item> getItems() {
         return this.items;
     }
 

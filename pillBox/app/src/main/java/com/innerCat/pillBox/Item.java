@@ -23,7 +23,7 @@ public class Item  {
     private LocalDate lastUsed;
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
-    private int viewHolderLocation;
+    private int viewHolderPosition;
 
     /**
      * Instantiates a new Item.
@@ -129,6 +129,24 @@ public class Item  {
     }
 
     /**
+     * Gets view holder position.
+     *
+     * @return the view holder position
+     */
+    public int getViewHolderPosition() {
+        return viewHolderPosition;
+    }
+
+    /**
+     * Sets view holder position.
+     *
+     * @param viewHolderPosition the view holder position
+     */
+    public void setViewHolderPosition( int viewHolderPosition ) {
+        this.viewHolderPosition = viewHolderPosition;
+    }
+
+    /**
      * Refill.
      *
      * @param refillAmount the refill amount
@@ -137,24 +155,6 @@ public class Item  {
         this.stock = this.stock+refillAmount;
     }
 
-
-    /**
-     * Gets view holder location.
-     *
-     * @return the view holder location
-     */
-    public int getViewHolderLocation() {
-        return viewHolderLocation;
-    }
-
-    /**
-     * Sets view holder location.
-     *
-     * @param viewHolderLocation the view holder location
-     */
-    public void setViewHolderLocation( int viewHolderLocation ) {
-        this.viewHolderLocation = viewHolderLocation;
-    }
 
     @Override
     public boolean equals( Object o ) {
@@ -169,7 +169,7 @@ public class Item  {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, lastUsed, stock, viewHolderLocation);
+        return Objects.hash(id, name, lastUsed, stock);
     }
 
     @Override
@@ -179,7 +179,6 @@ public class Item  {
                 ", name='" + name + '\'' +
                 ", lastUpdated=" + lastUsed +
                 ", stock=" + stock +
-                ", viewHolderLocation=" + viewHolderLocation +
                 '}';
     }
 }
