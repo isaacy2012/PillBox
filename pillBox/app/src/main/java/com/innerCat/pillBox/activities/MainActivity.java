@@ -121,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean isLongPressDragEnabled() {
-                return getEditMode();
+                //return getEditMode();
+                return true;
             }
 
             @Override
