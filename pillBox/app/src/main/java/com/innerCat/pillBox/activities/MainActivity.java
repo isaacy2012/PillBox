@@ -83,7 +83,13 @@ public class MainActivity extends AppCompatActivity {
 
         // Extend the Callback class
         ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            //and in your imlpementaion of
+            /**
+             * when an item is in the process of being moved
+             * @param recyclerView  the recyclerView
+             * @param viewHolder    the viewholder
+             * @param target        the target viewHolder
+             * @return              whether the move was handled
+             */
             public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 // get the viewHolder's and target's positions in your adapter data, swap them
                 Collections.swap(adapter.getTasks(), viewHolder.getAdapterPosition(), target.getAdapterPosition());
@@ -167,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
      * Called at 00:00, moves all Tasks in "Tomorrow" to "Today" and checks the visibility of the RecyclerViews
      */
     public void newDay() {
-        //adapter.updateDays();
+        adapter.checkLastTaken();
     }
 
     /**

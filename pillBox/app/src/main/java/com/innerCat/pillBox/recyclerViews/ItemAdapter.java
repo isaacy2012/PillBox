@@ -211,7 +211,19 @@ public class ItemAdapter extends
         }
 
         //set the text of the last taken text view
-        LocalDate lastUsed = holder.item.getLastUsed();
+        setLastTakenText( lastTakenTextView, holder.item );
+
+        mBoundViewHolders.add(holder);
+    }
+
+    /**
+     * Sets last taken text.
+     *
+     * @param lastTakenTextView the last taken text view
+     * @param item              the item
+     */
+    public void setLastTakenText( TextView lastTakenTextView, Item item ) {
+        LocalDate lastUsed = item.getLastUsed();
         if (lastUsed != null) {
             int daysBetween = (int) DAYS.between(lastUsed, LocalDate.now());
             StringBuilder sb = new StringBuilder();
@@ -227,8 +239,15 @@ public class ItemAdapter extends
         } else {
             lastTakenTextView.setText("");
         }
+    }
 
-        mBoundViewHolders.add(holder);
+    /**
+     * Check last taken.
+     */
+    public void checkLastTaken() {
+        for (ViewHolder viewHolder : mBoundViewHolders) {
+            setLastTakenText(viewHolder.lastTakenTextView, viewHolder.item);
+        }
     }
 
     // Returns the total count of items in the list
