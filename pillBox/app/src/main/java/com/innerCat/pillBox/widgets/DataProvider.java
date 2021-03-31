@@ -68,10 +68,9 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         }
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
 
-        // Create an Intent to launch MainActivity
+        // Create an Intent to launch update the item by sending the id
         Intent intent = new Intent();
         intent.putExtra("id", thisItem.getId());
-        intent.putExtra("pos", position);
         widgetGridViewHolder.setOnClickFillInIntent(R.id.widgetRelativeLayout, intent);
 //        widgetGridViewHolder.setOnClickFillInIntent(R.id.listItemWidgetTextView, intent);
 

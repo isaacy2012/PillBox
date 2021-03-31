@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
@@ -28,11 +27,12 @@ import java.util.concurrent.Executors;
 public class HomeWidgetProvider extends AppWidgetProvider {
 
     private static ItemDatabase itemDatabase;
-    private final String DECREMENT = "decrement";
+    public final String DECREMENT = "decrement";
 
     /**
      * Broadcast an update to all the widgets
      * @param context the context from which the update should be broadcast
+     *
      */
     public static void broadcastUpdate( Context context ) {
         Intent intent = new Intent(context, HomeWidgetProvider.class);
@@ -92,7 +92,6 @@ public class HomeWidgetProvider extends AppWidgetProvider {
 
             //Passed info from WidgetService.java
             int id = intent.getIntExtra("id", -1);
-            int position = intent.getIntExtra("pos", -1);
 
             //ROOM Threads
             ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -105,17 +104,17 @@ public class HomeWidgetProvider extends AppWidgetProvider {
 
                 handler.post(() -> {
                     //UI Thread work here
-                    // Notify the adapter that an item was changed at position
+                    //notify the widget that there is an update
                     HomeWidgetProvider.broadcastUpdate(context);
                 });
             });
 
 
-            //Show information
-            System.out.println("ID: " + id + ", POS: " + position);
-            Toast.makeText(context,
-                    "ID: " + id + ", POS: " + position,
-                    Toast.LENGTH_LONG).show();
+//            //Show information
+//            System.out.println("ID: " + id + ", POS: " + position);
+//            Toast.makeText(context,
+//                    "ID: " + id + ", POS: " + position,
+//                    Toast.LENGTH_LONG).show();
         }
         super.onReceive(context, intent);
     }
