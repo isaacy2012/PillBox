@@ -1,0 +1,88 @@
+package com.innerCat.pillBox.widgets;
+
+import android.content.Context;
+import android.content.Intent;
+import android.widget.RemoteViews;
+import android.widget.RemoteViewsService;
+
+import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.factories.ItemDatabaseFactory;
+import com.innerCat.pillBox.room.ItemDatabase;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
+
+    List<Item> items = new ArrayList<>();
+    ItemDatabase itemDatabase;
+    Context context;
+
+    public DataProvider(Context context, Intent intent) {
+        this.context = context;
+    }
+
+    @Override
+    public void onCreate() {
+        itemDatabase = ItemDatabaseFactory.getItemDatabase(context);
+    }
+
+    /**
+     * When the dataset is changed
+     */
+    @Override
+    public void onDataSetChanged() {
+        items = itemDatabase.itemDao().getAllItems();
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
+    public int getCount() {
+        return items.size();
+    }
+
+    @Override
+    public RemoteViews getViewAt(int position) {
+        RemoteViews widgetGridViewHolder = new RemoteViews(context.getPackageName(),
+                R.layout.grid_view_item_widget);
+        Item thisItem = items.get(position);
+        widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
+        widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getStock()));
+        widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
+
+//        // Create an Intent to launch MainActivity
+//        Intent intent = new Intent();
+//        intent.putExtra("com.example.android.stackwidget.EXTRA_ITEM", position);
+//        widgetGridViewHolder.setOnClickFillInIntent(R.id.listItemWidgetTextView, intent);
+
+        return widgetGridViewHolder;
+    }
+
+    @Override
+    public RemoteViews getLoadingView() {
+        return null;
+    }
+
+    @Override
+    public int getViewTypeCount() {
+        return 1;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return true;
+    }
+
+}

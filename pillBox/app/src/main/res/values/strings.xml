@@ -2,4 +2,5 @@
     <string name="app_name">PillBox</string>
     <string name="last_updated">lastUpdated</string>
     <string name="add_widget">Add widget</string>
+    <string name="appwidget_text">EXAMPLE</string>
 </resources>

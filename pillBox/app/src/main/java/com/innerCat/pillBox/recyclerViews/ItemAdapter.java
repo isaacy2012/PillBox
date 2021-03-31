@@ -22,17 +22,15 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
@@ -269,42 +267,18 @@ public class ItemAdapter extends
         }
 
         //set the text of the last taken text view
-        setLastTakenText( lastTakenTextView, holder.item );
+        lastTakenTextView.setText(StringFormatter.getLastTakenText(holder.item));
 
         mBoundViewHolders.add(holder);
     }
 
-    /**
-     * Sets last taken text.
-     *
-     * @param lastTakenTextView the last taken text view
-     * @param item              the item
-     */
-    public void setLastTakenText( TextView lastTakenTextView, Item item ) {
-        LocalDate lastUsed = item.getLastUsed();
-        if (lastUsed != null) {
-            int daysBetween = (int) DAYS.between(lastUsed, LocalDate.now());
-            StringBuilder sb = new StringBuilder();
-            sb.append("Last taken ");
-            if (daysBetween == 0) {
-                sb.append("today");
-            } else if (daysBetween == 1) {
-                sb.append("yesterday");
-            } else {
-                sb.append(daysBetween).append(" days ago");
-            }
-            lastTakenTextView.setText(sb.toString());
-        } else {
-            lastTakenTextView.setText("");
-        }
-    }
 
     /**
      * Check last taken.
      */
     public void checkLastTaken() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            setLastTakenText(viewHolder.lastTakenTextView, viewHolder.item);
+            viewHolder.lastTakenTextView.setText(StringFormatter.getLastTakenText(viewHolder.item));
         }
     }
 

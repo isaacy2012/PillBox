@@ -34,6 +34,7 @@ import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.ItemDao;
 import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.widgets.HomeWidgetProvider;
 
 import java.util.Calendar;
 import java.util.List;
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         //initialise the database
-        itemDatabase = ItemDatabaseFactory.getTaskDatabase(this);
+        itemDatabase = ItemDatabaseFactory.getItemDatabase(this);
 
         //get the recyclerview in activity layout
         rvItems = findViewById(R.id.rvTasks);
@@ -179,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onResume() {
         super.onResume();
+        HomeWidgetProvider.broadcastUpdate(this);
     }
 
     /**
