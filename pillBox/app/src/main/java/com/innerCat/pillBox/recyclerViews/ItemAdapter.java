@@ -119,7 +119,7 @@ public class ItemAdapter extends
                         })
                         .setNeutralButton("Delete", ( dialog, id ) -> {
                             items.remove(item);
-                            ((MainActivity) context).deleteItem(item, position);
+                            ((MainActivity) context).removeItem(item, position);
                             fab.setVisibility(View.VISIBLE);
                         });
                 AlertDialog dialog = builder.create();
@@ -288,9 +288,21 @@ public class ItemAdapter extends
         return items.size();
     }
 
+    /**
+     * Gets items.
+     *
+     * @return the items
+     */
     public List<Item> getItems() {
         return this.items;
     }
 
-
+    /**
+     * Sets items.
+     *
+     * @param items the items
+     */
+    public void setItems( List<Item> items ) {
+        this.items = items;
+    }
 }

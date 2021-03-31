@@ -42,6 +42,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+/**
+ * The type Main activity.
+ */
 public class MainActivity extends AppCompatActivity {
 
     int ANIMATION_DURATION = 0;
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // and notify the adapter that its dataset has changed
                 adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                updateHomeWidget();
                 return true;
             }
 
@@ -180,6 +184,29 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onResume() {
         super.onResume();
+        if (adapter != null) {
+            //ROOM Threads
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+            executor.execute(() -> {
+                //Background work here
+                //NB: This is the new thread in which the database stuff happens
+                //today rvTask
+                List<Item> items = itemDatabase.itemDao().getAllItems();
+                adapter.setItems(items);
+
+
+                handler.post(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+            });
+        }
+    }
+
+    /**
+     * Update home widget.
+     */
+    private void updateHomeWidget() {
         HomeWidgetProvider.broadcastUpdate(this);
     }
 
@@ -241,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyChanged(this, position);
+                updateHomeWidget();
             });
         });
     }
@@ -267,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item the item to remove
      * @param position its position in the RecyclerView
      */
-    public void deleteItem( Item item, int position ) {
+    public void removeItem( Item item, int position ) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -278,31 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyRemoved( this, position);
-            });
-        });
-    }
-
-    /**
-     * Update multiple items.
-     *
-     * @param items the items
-     */
-    public void updateMultipleItems(List<Item> items, List<Integer> positions) {
-        //ROOM Threads
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-        executor.execute(() -> {
-            //Background work here
-            ItemDao dao = itemDatabase.itemDao();
-            for (Item item : items) {
-                dao.update(item);
-            }
-            handler.post(() -> {
-                //UI Thread work here
-                // Notify the adapter that an item was changed at position
-                for (Integer position : positions) {
-                    adapter.notifyItemRemoved(position);
-                }
+                updateHomeWidget();
             });
         });
     }
@@ -382,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
                 //rvTasks.scheduleLayoutAnimation();
                 rvItems.scrollToPosition(0);
                 //rvTasks.scheduleLayoutAnimation();
+                updateHomeWidget();
             });
         });
     }
