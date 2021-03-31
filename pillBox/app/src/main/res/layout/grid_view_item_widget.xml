@@ -51,7 +51,7 @@
             android:autoSizeMinTextSize="11sp"
             android:autoSizeMaxTextSize="14sp"
             android:textColor="@android:color/tab_indicator_text"
-            android:layout_marginTop="33dp"
+            android:layout_marginTop="40dp"
             app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
 
 </RelativeLayout>

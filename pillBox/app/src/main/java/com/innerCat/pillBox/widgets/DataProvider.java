@@ -2,8 +2,12 @@ package com.innerCat.pillBox.widgets;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
+
+import androidx.core.content.ContextCompat;
 
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
@@ -54,7 +58,14 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
                 R.layout.grid_view_item_widget);
         Item thisItem = items.get(position);
         widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
-        widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getStock()));
+        int stock = thisItem.getStock();
+        if (stock < 10) {
+            SpannableString redStockText = new SpannableString(String.valueOf(thisItem.getStock()));
+            redStockText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.primaryColor)), 0, redStockText.length(), 0);
+            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, redStockText);
+        } else {
+            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getStock()));
+        }
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
 
 //        // Create an Intent to launch MainActivity
