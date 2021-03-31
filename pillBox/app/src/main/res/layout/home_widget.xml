@@ -1,12 +1,20 @@
-<GridView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/widgetGridView"
-        android:numColumns="auto_fit"
-        android:columnWidth="140dp">
+        android:overScrollMode="never">
+
+    <GridView
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/widgetGridView"
+            android:numColumns="auto_fit"
+            android:columnWidth="140dp"
+            android:scrollbarSize="0dp">
 
 
-</GridView>
+    </GridView>
 
+</LinearLayout>

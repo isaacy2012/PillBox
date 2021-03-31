@@ -2,6 +2,7 @@ package com.innerCat.pillBox.widgets;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.widget.RemoteViews;
@@ -69,10 +70,11 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
 
         // Create an Intent to launch update the item by sending the id
+        Bundle extras = new Bundle();
+        extras.putInt("id", thisItem.getId());
         Intent intent = new Intent();
-        intent.putExtra("id", thisItem.getId());
+        intent.putExtras(extras);
         widgetGridViewHolder.setOnClickFillInIntent(R.id.widgetRelativeLayout, intent);
-//        widgetGridViewHolder.setOnClickFillInIntent(R.id.listItemWidgetTextView, intent);
 
         return widgetGridViewHolder;
     }

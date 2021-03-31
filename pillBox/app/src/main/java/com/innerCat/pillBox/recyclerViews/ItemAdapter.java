@@ -45,9 +45,9 @@ public class ItemAdapter extends
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
-        public TextView nameTextView;
-        public TextView stockTextView;
-        public TextView lastTakenTextView;
+        public TextView nameTV;
+        public TextView stockTV;
+        public TextView lastTakenTV;
         public ImageButton refillButton;
         public Item item;
         public Context context;
@@ -61,9 +61,9 @@ public class ItemAdapter extends
             this.context = context;
 
 
-            nameTextView = itemView.findViewById(R.id.nameView);
-            lastTakenTextView = itemView.findViewById(R.id.lastTakenTextView);
-            stockTextView = itemView.findViewById(R.id.stockTextView);
+            nameTV = itemView.findViewById(R.id.nameTV);
+            lastTakenTV = itemView.findViewById(R.id.lastTakenTV);
+            stockTV = itemView.findViewById(R.id.stockTV);
 
             refillButton = itemView.findViewById(R.id.refillButton);
             refillButton.setOnClickListener(v -> {
@@ -232,10 +232,10 @@ public class ItemAdapter extends
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View taskView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
+        View itemView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
 
         // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(taskView, context);
+        ViewHolder viewHolder = new ViewHolder(itemView, context);
         return viewHolder;
     }
 
@@ -246,28 +246,28 @@ public class ItemAdapter extends
         holder.item = items.get(position);
 
         // Set item views based on your views and data model
-        TextView nameTextView = holder.nameTextView;
-        TextView stockTextView = holder.stockTextView;
-        TextView lastTakenTextView = holder.lastTakenTextView;
-        nameTextView.setText(holder.item.getName());
+        TextView nameTV = holder.nameTV;
+        TextView stockTV = holder.stockTV;
+        TextView lastTakenTV = holder.lastTakenTV;
+        nameTV.setText(holder.item.getName());
         int stock = holder.item.getStock();
-        stockTextView.setText(String.valueOf(stock));
+        stockTV.setText(String.valueOf(stock));
 
         //Set the color if the stock is low
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
                 .getInt("stockThreshold", 10);
         if (stock <= stockThreshold) {
-            stockTextView.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+            stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
         } else {
             //get the default color
             int[] attribute = new int[] { android.R.attr.textColor };
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
-            stockTextView.setTextColor(color);
+            stockTV.setTextColor(color);
         }
 
         //set the text of the last taken text view
-        lastTakenTextView.setText(StringFormatter.getLastTakenText(holder.item));
+        lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
 
         mBoundViewHolders.add(holder);
     }
@@ -278,7 +278,7 @@ public class ItemAdapter extends
      */
     public void checkLastTaken() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            viewHolder.lastTakenTextView.setText(StringFormatter.getLastTakenText(viewHolder.item));
+            viewHolder.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.item));
         }
     }
 

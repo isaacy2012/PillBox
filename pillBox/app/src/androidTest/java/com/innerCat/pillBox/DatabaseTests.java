@@ -8,8 +8,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 
-import com.innerCat.pillBox.room.Converters;
-import com.innerCat.pillBox.room.DBMethods;
 import com.innerCat.pillBox.room.ItemDatabase;
 
 import org.junit.After;
@@ -18,7 +16,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -35,39 +32,22 @@ public class DatabaseTests {
      * Add a task into the database, setting its id in the process
      * @param item the task to add
      */
-    public void addTask( Item item ) {
+    public void addItem( Item item ) {
         int id = (int) itemDatabase.itemDao().insert(item);
         item.setId(id);
     }
 
     /**
      * Make and add a task with name and offset quickly
-     * @param name the name of the task
-     * @param dayOffset the dayOffset (from today)
+     *
+     * @param name         the name of the task
+     * @param initialStock the initial stock
+     * @return the item
      */
-    public Item makeAndAddTask( String name, int dayOffset, boolean completed) {
-        if (dayOffset > 0) {
-            Item addItem = new Item(name, LocalDate.now().plusDays(dayOffset));
-            if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUsed());
-            }
-            addTask(addItem);
-            return addItem;
-        } else if (dayOffset < 0) {
-            Item addItem = new Item(name, LocalDate.now().minusDays(-dayOffset));
-            if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUsed());
-            }
-            addTask(addItem);
-            return addItem;
-        } else {
-            Item addItem = new Item(name);
-            if (completed == true) {
-                addItem.setCompleteDate(addItem.getLastUsed());
-            }
-            addTask(addItem);
-            return addItem;
-        }
+    public Item makeAndAddItem( String name, int initialStock ) {
+        Item newItem = new Item( name, initialStock );
+        addItem(newItem);
+        return newItem;
     }
 
     @Before
@@ -117,39 +97,5 @@ public class DatabaseTests {
         Item retrievedItem = itemDatabase.itemDao().getItem(id);
         assertNull(retrievedItem);
     }
-
-    @Test
-    public void check_getDateTasks1() {
-        Item expected = makeAndAddTask("D", -4, false);
-        makeAndAddTask("A", -3, true);
-        makeAndAddTask("B", -3, true);
-        makeAndAddTask("C", -3, true);
-        Item actual = itemDatabase.itemDao().getLastStreakTask(Converters.todayString());
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void check_getDateTasks2() {
-        makeAndAddTask("A", -4, false);
-        makeAndAddTask("B", -3, true);
-        makeAndAddTask("C", -3, true);
-        Item expected = makeAndAddTask("D", -3, false);
-        Item actual = itemDatabase.itemDao().getLastStreakTask(Converters.todayString());
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void check_maxStreak() {
-        int maxStreak = 10;
-        makeAndAddTask("A", -(maxStreak+1), false);
-        makeAndAddTask("B", -4, true);
-        makeAndAddTask("C", -3, true);
-        makeAndAddTask("D", -2, true);
-        makeAndAddTask("E", -1, true);
-        int actualMaxStreak = DBMethods.calculateMaxStreak(context, itemDatabase);
-        assertEquals(maxStreak, actualMaxStreak);
-    }
-
-
 
 }

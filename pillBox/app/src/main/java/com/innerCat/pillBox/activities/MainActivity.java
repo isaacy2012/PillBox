@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         itemDatabase = ItemDatabaseFactory.getItemDatabase(this);
 
         //get the recyclerview in activity layout
-        rvItems = findViewById(R.id.rvTasks);
+        rvItems = findViewById(R.id.rvItems);
 
         // Extend the Callback class
         Context context = this;
@@ -126,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean isLongPressDragEnabled() {
-                //return getEditMode();
                 return true;
             }
 
@@ -156,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
-            //today rvTask
+            //today rvItem
             List<Item> items = itemDatabase.itemDao().getAllItems();
 
 
@@ -172,11 +171,9 @@ public class MainActivity extends AppCompatActivity {
 
         //set timer to refresh at 12:00
         Handler timerHandler = new Handler();
-        Runnable runTask = () -> {
-            // Execute tasks on main thread
-            newDay();
-        };
-        timerHandler.postDelayed(runTask, getDelayToStartOfTomorrow());
+        // Execute items on main thread
+        Runnable runItem = this::newDay;
+        timerHandler.postDelayed(runItem, getDelayToStartOfTomorrow());
     }
 
     /**
@@ -191,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             executor.execute(() -> {
                 //Background work here
                 //NB: This is the new thread in which the database stuff happens
-                //today rvTask
+                //today rvItem
                 List<Item> items = itemDatabase.itemDao().getAllItems();
                 adapter.setItems(items);
 
@@ -211,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called at 00:00, moves all Tasks in "Tomorrow" to "Today" and checks the visibility of the RecyclerViews
+     * Called at 00:00, updates the lastTakenTV for the widget
      */
     public void newDay() {
         adapter.checkLastTaken();
@@ -325,18 +322,18 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTextView = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
-        EditText refillInput = editTextView.findViewById(R.id.editRefill);
+        View editTV = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
+        EditText refillInput = editTV.findViewById(R.id.editRefill);
 
         refillInput.requestFocus();
 
         builder.setMessage("Refill Amount")
-                .setView(editTextView)
+                .setView(editTV)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //get the name of the Task to add
+                        //get the name of the Item to add
                         int refillAmount = Integer.parseInt(refillInput.getText().toString().trim());
-                        //add the task
+                        //add the item
                         item.refill(refillAmount);
                         updateItem(item, position);
                         fab.setVisibility(View.VISIBLE);
@@ -379,13 +376,13 @@ public class MainActivity extends AppCompatActivity {
             item.setId((int) id);
             handler.post(() -> {
                 //UI Thread work here
-                // Add a new task
+                // Add a new item
                 adapter.addItem(0, item);
                 // Notify the adapter that an item was inserted at position 0
                 adapter.notifyInserted(this, 0);
-                //rvTasks.scheduleLayoutAnimation();
+                //rvItems.scheduleLayoutAnimation();
                 rvItems.scrollToPosition(0);
-                //rvTasks.scheduleLayoutAnimation();
+                //rvItems.scheduleLayoutAnimation();
                 updateHomeWidget();
             });
         });
@@ -424,9 +421,9 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTextView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
-        EditText nameInput = editTextView.findViewById(R.id.editName);
-        EditText stockInput = editTextView.findViewById(R.id.editStock);
+        View editTV = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
+        EditText nameInput = editTV.findViewById(R.id.editName);
+        EditText stockInput = editTV.findViewById(R.id.editStock);
 
         //Set the capitalisation
         nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
@@ -434,17 +431,17 @@ public class MainActivity extends AppCompatActivity {
         nameInput.requestFocus();
 
         builder.setMessage("Name")
-                .setView(editTextView)
+                .setView(editTV)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //get the name of the Task to add
+                        //get the name of the Item to add
                         String name = nameInput.getText().toString();
                         int stock = 0;
                         try {
                             stock = Integer.parseInt(stockInput.getText().toString().trim());
                         } catch (NumberFormatException ignored) {}
 
-                        //add the task
+                        //add the item
                         addItem(name, stock);
                         fab.setVisibility(View.VISIBLE);
                     }
