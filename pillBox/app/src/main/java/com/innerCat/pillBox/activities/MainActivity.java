@@ -463,8 +463,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        boolean nameInputValid = nameInput.getText().toString().trim().length() > 0;
-        okButton.setEnabled(nameInputValid);
+        okButton.setEnabled(false);
         nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
     }
 

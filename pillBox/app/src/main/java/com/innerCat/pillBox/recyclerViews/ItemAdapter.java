@@ -98,22 +98,22 @@ public class ItemAdapter extends
                 ExtendedFloatingActionButton fab = ((MainActivity) context).findViewById(R.id.floatingActionButton);
                 fab.setVisibility(View.INVISIBLE);
                 View editView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
-                EditText input = editView.findViewById(R.id.editName);
+                EditText nameInput = editView.findViewById(R.id.editName);
                 SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
                 showInWidgetSwitch.setChecked(item.getShowInWidget());
 
 
                 //Set the capitalisation
-                input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                input.setText(item.getName());
+                nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                nameInput.setText(item.getName());
 
-                input.requestFocus();
+                nameInput.requestFocus();
 
                 builder.setMessage("Name")
                         .setView(editView)
                         .setPositiveButton("Ok", ( dialog, id ) -> {
                             //get the name of the Task to edit
-                            String newName = input.getText().toString();
+                            String newName = nameInput.getText().toString();
                             //edit the item
                             item.setName(newName);
                             item.setShowInWidget(showInWidgetSwitch.isChecked());
@@ -137,8 +137,9 @@ public class ItemAdapter extends
                 dialog.show();
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
                 Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                okButton.setEnabled(false);
-                input.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(input, okButton));
+                boolean nameInputValid = nameInput.getText().toString().trim().length() > 0;
+                okButton.setEnabled(nameInputValid);
+                nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
             }
         }
 
