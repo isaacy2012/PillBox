@@ -6,7 +6,7 @@ import androidx.room.TypeConverters;
 
 import com.innerCat.pillBox.Item;
 
-@Database(entities = { Item.class }, version = 1)
+@Database(entities = { Item.class }, version = 2)
 @TypeConverters({ Converters.class })
 public abstract class ItemDatabase extends RoomDatabase {
     public abstract ItemDao itemDao();

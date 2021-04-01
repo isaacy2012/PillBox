@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
@@ -96,21 +97,26 @@ public class ItemAdapter extends
                 //get the UI elements
                 ExtendedFloatingActionButton fab = ((MainActivity) context).findViewById(R.id.floatingActionButton);
                 fab.setVisibility(View.INVISIBLE);
-                View editTextView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
-                EditText input = editTextView.findViewById(R.id.editName);
+                View editView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
+                EditText input = editView.findViewById(R.id.editName);
+                SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
+                showInWidgetSwitch.setChecked(item.getShowInWidget());
+
 
                 //Set the capitalisation
                 input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                input.setText(item.getName());
 
                 input.requestFocus();
 
                 builder.setMessage("Name")
-                        .setView(editTextView)
+                        .setView(editView)
                         .setPositiveButton("Ok", ( dialog, id ) -> {
                             //get the name of the Task to edit
                             String newName = input.getText().toString();
                             //edit the item
                             item.setName(newName);
+                            item.setShowInWidget(showInWidgetSwitch.isChecked());
                             ((MainActivity) context).updateItem(item, position);
                         })
                         .setNegativeButton("Cancel", ( dialog, id ) -> {

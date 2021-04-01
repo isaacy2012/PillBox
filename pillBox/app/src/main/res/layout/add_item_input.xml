@@ -34,10 +34,17 @@
             android:ems="10"
             android:id="@+id/editStock"
             android:layout_weight="1"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginEnd="20dp"
             android:inputType="number|none"
             android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:hint="0" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+            android:text="@string/show_in_widget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="23dp"
+            android:layout_marginEnd="20dp"
+            android:id="@+id/widgetSwitch"
+            android:layout_weight="0" />
 </LinearLayout>

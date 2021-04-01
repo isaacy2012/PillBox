@@ -24,6 +24,7 @@ public class Item  {
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
     private int viewHolderPosition;
+    private boolean showInWidget = false;
 
     /**
      * Instantiates a new Item.
@@ -41,9 +42,10 @@ public class Item  {
      * @param stock the stock
      */
     @Ignore
-    public Item(String name, int stock) {
+    public Item(String name, int stock, boolean showInWidget) {
         this.name = name;
         this.stock = stock;
+        this.showInWidget = showInWidget;
     }
 
     /**
@@ -144,6 +146,24 @@ public class Item  {
      */
     public void setViewHolderPosition( int viewHolderPosition ) {
         this.viewHolderPosition = viewHolderPosition;
+    }
+
+    /**
+     * Is show in widget boolean.
+     *
+     * @return the boolean
+     */
+    public boolean getShowInWidget() {
+        return showInWidget;
+    }
+
+    /**
+     * Sets show in widget.
+     *
+     * @param showInWidget the show in widget
+     */
+    public void setShowInWidget( boolean showInWidget ) {
+        this.showInWidget = showInWidget;
     }
 
     /**

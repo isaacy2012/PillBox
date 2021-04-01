@@ -40,7 +40,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
      */
     @Override
     public void onDataSetChanged() {
-        items = itemDatabase.itemDao().getAllItems();
+        items = itemDatabase.itemDao().getAllWidgetItems();
     }
 
     @Override

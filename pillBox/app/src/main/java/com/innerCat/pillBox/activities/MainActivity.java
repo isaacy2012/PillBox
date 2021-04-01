@@ -26,6 +26,7 @@ import androidx.room.ColumnInfo;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
@@ -365,13 +366,13 @@ public class MainActivity extends AppCompatActivity {
      * @param name  the name of the item
      * @param stock the stock
      */
-    private void addItem( String name, int stock ) {
+    private void addItem( String name, int stock, boolean showInWidget) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            Item item = new Item(name, stock);
+            Item item = new Item(name, stock, showInWidget);
             long id = itemDatabase.itemDao().insert(item);
             item.setId((int) id);
             handler.post(() -> {
@@ -421,9 +422,10 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTV = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
-        EditText nameInput = editTV.findViewById(R.id.editName);
-        EditText stockInput = editTV.findViewById(R.id.editStock);
+        View editView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
+        EditText nameInput = editView.findViewById(R.id.editName);
+        EditText stockInput = editView.findViewById(R.id.editStock);
+        SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
 
         //Set the capitalisation
         nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
@@ -431,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
         nameInput.requestFocus();
 
         builder.setMessage("Name")
-                .setView(editTV)
+                .setView(editView)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //get the name of the Item to add
@@ -442,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
                         } catch (NumberFormatException ignored) {}
 
                         //add the item
-                        addItem(name, stock);
+                        addItem(name, stock, showInWidgetSwitch.isChecked());
                         fab.setVisibility(View.VISIBLE);
                     }
                 })
@@ -461,7 +463,8 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        okButton.setEnabled(false);
+        boolean nameInputValid = nameInput.getText().toString().trim().length() > 0;
+        okButton.setEnabled(nameInputValid);
         nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
     }
 
