@@ -9,12 +9,12 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
 import com.innerCat.pillBox.room.ItemDatabase;
 
@@ -53,6 +53,14 @@ public class HomeWidgetProvider extends AppWidgetProvider {
             RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.home_widget);
             setRemoteAdapter(context, views);
 
+            views.setEmptyView(R.id.widgetGridView, R.id.emptyGridViewLayout);
+
+            // Create an Intent to launch MainActivity
+            Intent intent = new Intent(context, MainActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+            views.setOnClickPendingIntent(R.id.emptyGridViewLayout, pendingIntent);
+
+            // Create an intent to decrement
             Intent decrementIntent = new Intent(context, HomeWidgetProvider.class);
             decrementIntent.setAction(DECREMENT);
             PendingIntent decrementPendingIntent = PendingIntent.getBroadcast(context,
