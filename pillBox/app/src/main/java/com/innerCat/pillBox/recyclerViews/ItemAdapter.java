@@ -117,6 +117,7 @@ public class ItemAdapter extends
                             //edit the item
                             item.setName(newName);
                             item.setShowInWidget(showInWidgetSwitch.isChecked());
+                            fab.setVisibility(View.VISIBLE);
                             ((MainActivity) context).updateItem(item, position);
                         })
                         .setNegativeButton("Cancel", ( dialog, id ) -> {

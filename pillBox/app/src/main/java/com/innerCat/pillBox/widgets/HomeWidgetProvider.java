@@ -97,8 +97,6 @@ public class HomeWidgetProvider extends AppWidgetProvider {
                     HomeWidgetProvider.broadcastUpdate(context);
                 });
             });
-
-
         }
         //Show information
         super.onReceive(context, intent);

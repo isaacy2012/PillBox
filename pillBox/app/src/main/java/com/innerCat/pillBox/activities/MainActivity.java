@@ -184,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (adapter != null) {
             //ROOM Threads
+            updateHomeWidget();
             ExecutorService executor = Executors.newSingleThreadExecutor();
             Handler handler = new Handler(Looper.getMainLooper());
             executor.execute(() -> {
