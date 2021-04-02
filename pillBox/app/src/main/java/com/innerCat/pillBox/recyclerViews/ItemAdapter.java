@@ -20,19 +20,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
@@ -47,9 +46,9 @@ public class ItemAdapter extends
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
-        public TextView nameTextView;
-        public TextView stockTextView;
-        public TextView lastTakenTextView;
+        public TextView nameTV;
+        public TextView stockTV;
+        public TextView lastTakenTV;
         public ImageButton refillButton;
         public Item item;
         public Context context;
@@ -63,9 +62,9 @@ public class ItemAdapter extends
             this.context = context;
 
 
-            nameTextView = itemView.findViewById(R.id.nameView);
-            lastTakenTextView = itemView.findViewById(R.id.lastTakenTextView);
-            stockTextView = itemView.findViewById(R.id.stockTextView);
+            nameTV = itemView.findViewById(R.id.nameTV);
+            lastTakenTV = itemView.findViewById(R.id.lastTakenTV);
+            stockTV = itemView.findViewById(R.id.stockTV);
 
             refillButton = itemView.findViewById(R.id.refillButton);
             refillButton.setOnClickListener(v -> {
@@ -98,21 +97,27 @@ public class ItemAdapter extends
                 //get the UI elements
                 ExtendedFloatingActionButton fab = ((MainActivity) context).findViewById(R.id.floatingActionButton);
                 fab.setVisibility(View.INVISIBLE);
-                View editTextView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
-                EditText input = editTextView.findViewById(R.id.editName);
+                View editView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
+                EditText nameInput = editView.findViewById(R.id.editName);
+                SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
+                showInWidgetSwitch.setChecked(item.getShowInWidget());
+
 
                 //Set the capitalisation
-                input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+                nameInput.setText(item.getName());
 
-                input.requestFocus();
+                nameInput.requestFocus();
 
                 builder.setMessage("Name")
-                        .setView(editTextView)
+                        .setView(editView)
                         .setPositiveButton("Ok", ( dialog, id ) -> {
                             //get the name of the Task to edit
-                            String newName = input.getText().toString();
+                            String newName = nameInput.getText().toString();
                             //edit the item
                             item.setName(newName);
+                            item.setShowInWidget(showInWidgetSwitch.isChecked());
+                            fab.setVisibility(View.VISIBLE);
                             ((MainActivity) context).updateItem(item, position);
                         })
                         .setNegativeButton("Cancel", ( dialog, id ) -> {
@@ -121,7 +126,7 @@ public class ItemAdapter extends
                         })
                         .setNeutralButton("Delete", ( dialog, id ) -> {
                             items.remove(item);
-                            ((MainActivity) context).deleteItem(item, position);
+                            ((MainActivity) context).removeItem(item, position);
                             fab.setVisibility(View.VISIBLE);
                         });
                 AlertDialog dialog = builder.create();
@@ -133,8 +138,9 @@ public class ItemAdapter extends
                 dialog.show();
                 dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
                 Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                okButton.setEnabled(false);
-                input.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(input, okButton));
+                boolean nameInputValid = nameInput.getText().toString().trim().length() > 0;
+                okButton.setEnabled(nameInputValid);
+                nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
             }
         }
 
@@ -234,10 +240,10 @@ public class ItemAdapter extends
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View taskView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
+        View itemView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
 
         // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(taskView, context);
+        ViewHolder viewHolder = new ViewHolder(itemView, context);
         return viewHolder;
     }
 
@@ -248,63 +254,39 @@ public class ItemAdapter extends
         holder.item = items.get(position);
 
         // Set item views based on your views and data model
-        TextView nameTextView = holder.nameTextView;
-        TextView stockTextView = holder.stockTextView;
-        TextView lastTakenTextView = holder.lastTakenTextView;
-        nameTextView.setText(holder.item.getName());
+        TextView nameTV = holder.nameTV;
+        TextView stockTV = holder.stockTV;
+        TextView lastTakenTV = holder.lastTakenTV;
+        nameTV.setText(holder.item.getName());
         int stock = holder.item.getStock();
-        stockTextView.setText(String.valueOf(stock));
+        stockTV.setText(String.valueOf(stock));
 
         //Set the color if the stock is low
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
                 .getInt("stockThreshold", 10);
         if (stock <= stockThreshold) {
-            stockTextView.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+            stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
         } else {
             //get the default color
             int[] attribute = new int[] { android.R.attr.textColor };
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
-            stockTextView.setTextColor(color);
+            stockTV.setTextColor(color);
         }
 
         //set the text of the last taken text view
-        setLastTakenText( lastTakenTextView, holder.item );
+        lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
 
         mBoundViewHolders.add(holder);
     }
 
-    /**
-     * Sets last taken text.
-     *
-     * @param lastTakenTextView the last taken text view
-     * @param item              the item
-     */
-    public void setLastTakenText( TextView lastTakenTextView, Item item ) {
-        LocalDate lastUsed = item.getLastUsed();
-        if (lastUsed != null) {
-            int daysBetween = (int) DAYS.between(lastUsed, LocalDate.now());
-            StringBuilder sb = new StringBuilder();
-            sb.append("Last taken ");
-            if (daysBetween == 0) {
-                sb.append("today");
-            } else if (daysBetween == 1) {
-                sb.append("yesterday");
-            } else {
-                sb.append(daysBetween).append(" days ago");
-            }
-            lastTakenTextView.setText(sb.toString());
-        } else {
-            lastTakenTextView.setText("");
-        }
-    }
 
     /**
      * Check last taken.
      */
     public void checkLastTaken() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            setLastTakenText(viewHolder.lastTakenTextView, viewHolder.item);
+            viewHolder.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.item));
         }
     }
 
@@ -314,9 +296,21 @@ public class ItemAdapter extends
         return items.size();
     }
 
+    /**
+     * Gets items.
+     *
+     * @return the items
+     */
     public List<Item> getItems() {
         return this.items;
     }
 
-
+    /**
+     * Sets items.
+     *
+     * @param items the items
+     */
+    public void setItems( List<Item> items ) {
+        this.items = items;
+    }
 }

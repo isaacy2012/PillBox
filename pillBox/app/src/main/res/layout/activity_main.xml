@@ -59,7 +59,7 @@
                     android:layout_marginStart="16dp" />
 
             <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvTasks"
+                    android:id="@+id/rvItems"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:overScrollMode="never"

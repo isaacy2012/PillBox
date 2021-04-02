@@ -8,7 +8,7 @@
             android:layout_height="wrap_content"
             android:scrollbars="vertical"
             android:text="TextView"
-            android:id="@+id/updateTextView"
+            android:id="@+id/updateTV"
             android:layout_marginHorizontal="24dp"
             android:maxHeight="400dp" />
 

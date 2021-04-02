@@ -26,6 +26,7 @@ import androidx.room.ColumnInfo;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
@@ -34,6 +35,7 @@ import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.ItemDao;
 import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.widgets.HomeWidgetProvider;
 
 import java.util.Calendar;
 import java.util.List;
@@ -41,6 +43,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+/**
+ * The type Main activity.
+ */
 public class MainActivity extends AppCompatActivity {
 
     int ANIMATION_DURATION = 0;
@@ -76,10 +81,10 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         //initialise the database
-        itemDatabase = ItemDatabaseFactory.getTaskDatabase(this);
+        itemDatabase = ItemDatabaseFactory.getItemDatabase(this);
 
         //get the recyclerview in activity layout
-        rvItems = findViewById(R.id.rvTasks);
+        rvItems = findViewById(R.id.rvItems);
 
         // Extend the Callback class
         Context context = this;
@@ -105,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // and notify the adapter that its dataset has changed
                 adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                updateHomeWidget();
                 return true;
             }
 
@@ -121,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean isLongPressDragEnabled() {
-                //return getEditMode();
                 return true;
             }
 
@@ -151,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
-            //today rvTask
+            //today rvItem
             List<Item> items = itemDatabase.itemDao().getAllItems();
 
 
@@ -167,11 +172,9 @@ public class MainActivity extends AppCompatActivity {
 
         //set timer to refresh at 12:00
         Handler timerHandler = new Handler();
-        Runnable runTask = () -> {
-            // Execute tasks on main thread
-            newDay();
-        };
-        timerHandler.postDelayed(runTask, getDelayToStartOfTomorrow());
+        // Execute items on main thread
+        Runnable runItem = this::newDay;
+        timerHandler.postDelayed(runItem, getDelayToStartOfTomorrow());
     }
 
     /**
@@ -179,10 +182,35 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onResume() {
         super.onResume();
+        if (adapter != null) {
+            //ROOM Threads
+            updateHomeWidget();
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Handler handler = new Handler(Looper.getMainLooper());
+            executor.execute(() -> {
+                //Background work here
+                //NB: This is the new thread in which the database stuff happens
+                //today rvItem
+                List<Item> items = itemDatabase.itemDao().getAllItems();
+                adapter.setItems(items);
+
+
+                handler.post(() -> {
+                    adapter.notifyDataSetChanged();
+                });
+            });
+        }
     }
 
     /**
-     * Called at 00:00, moves all Tasks in "Tomorrow" to "Today" and checks the visibility of the RecyclerViews
+     * Update home widget.
+     */
+    private void updateHomeWidget() {
+        HomeWidgetProvider.broadcastUpdate(this);
+    }
+
+    /**
+     * Called at 00:00, updates the lastTakenTV for the widget
      */
     public void newDay() {
         adapter.checkLastTaken();
@@ -239,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyChanged(this, position);
+                updateHomeWidget();
             });
         });
     }
@@ -265,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item the item to remove
      * @param position its position in the RecyclerView
      */
-    public void deleteItem( Item item, int position ) {
+    public void removeItem( Item item, int position ) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -276,31 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
                 adapter.notifyRemoved( this, position);
-            });
-        });
-    }
-
-    /**
-     * Update multiple items.
-     *
-     * @param items the items
-     */
-    public void updateMultipleItems(List<Item> items, List<Integer> positions) {
-        //ROOM Threads
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Handler handler = new Handler(Looper.getMainLooper());
-        executor.execute(() -> {
-            //Background work here
-            ItemDao dao = itemDatabase.itemDao();
-            for (Item item : items) {
-                dao.update(item);
-            }
-            handler.post(() -> {
-                //UI Thread work here
-                // Notify the adapter that an item was changed at position
-                for (Integer position : positions) {
-                    adapter.notifyItemRemoved(position);
-                }
+                updateHomeWidget();
             });
         });
     }
@@ -319,18 +324,18 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTextView = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
-        EditText refillInput = editTextView.findViewById(R.id.editRefill);
+        View editTV = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
+        EditText refillInput = editTV.findViewById(R.id.editRefill);
 
         refillInput.requestFocus();
 
         builder.setMessage("Refill Amount")
-                .setView(editTextView)
+                .setView(editTV)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //get the name of the Task to add
+                        //get the name of the Item to add
                         int refillAmount = Integer.parseInt(refillInput.getText().toString().trim());
-                        //add the task
+                        //add the item
                         item.refill(refillAmount);
                         updateItem(item, position);
                         fab.setVisibility(View.VISIBLE);
@@ -362,24 +367,25 @@ public class MainActivity extends AppCompatActivity {
      * @param name  the name of the item
      * @param stock the stock
      */
-    private void addItem( String name, int stock ) {
+    private void addItem( String name, int stock, boolean showInWidget) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            Item item = new Item(name, stock);
+            Item item = new Item(name, stock, showInWidget);
             long id = itemDatabase.itemDao().insert(item);
             item.setId((int) id);
             handler.post(() -> {
                 //UI Thread work here
-                // Add a new task
+                // Add a new item
                 adapter.addItem(0, item);
                 // Notify the adapter that an item was inserted at position 0
                 adapter.notifyInserted(this, 0);
-                //rvTasks.scheduleLayoutAnimation();
+                //rvItems.scheduleLayoutAnimation();
                 rvItems.scrollToPosition(0);
-                //rvTasks.scheduleLayoutAnimation();
+                //rvItems.scheduleLayoutAnimation();
+                updateHomeWidget();
             });
         });
     }
@@ -417,9 +423,10 @@ public class MainActivity extends AppCompatActivity {
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTextView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
-        EditText nameInput = editTextView.findViewById(R.id.editName);
-        EditText stockInput = editTextView.findViewById(R.id.editStock);
+        View editView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
+        EditText nameInput = editView.findViewById(R.id.editName);
+        EditText stockInput = editView.findViewById(R.id.editStock);
+        SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
 
         //Set the capitalisation
         nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
@@ -427,18 +434,18 @@ public class MainActivity extends AppCompatActivity {
         nameInput.requestFocus();
 
         builder.setMessage("Name")
-                .setView(editTextView)
+                .setView(editView)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        //get the name of the Task to add
+                        //get the name of the Item to add
                         String name = nameInput.getText().toString();
                         int stock = 0;
                         try {
                             stock = Integer.parseInt(stockInput.getText().toString().trim());
                         } catch (NumberFormatException ignored) {}
 
-                        //add the task
-                        addItem(name, stock);
+                        //add the item
+                        addItem(name, stock, showInWidgetSwitch.isChecked());
                         fab.setVisibility(View.VISIBLE);
                     }
                 })

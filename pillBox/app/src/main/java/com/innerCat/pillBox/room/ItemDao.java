@@ -51,11 +51,19 @@ public interface ItemDao {
     public Item getItem( int id );
 
     /**
-     * Returns all Tasks as a List
+     * Returns all Items as a List
      *
-     * @return all the Tasks in the database as a List
+     * @return all the Items in the database as a List
      */
     @Query("SELECT * FROM items ORDER BY viewHolderPosition")
     public List<Item> getAllItems();
+
+    /**
+     * Gets all widget items.
+     *
+     * @return all Items that should be shown in the widget as a List
+     */
+    @Query("SELECT * FROM items WHERE showInWidget is 1 ORDER BY viewHolderPosition")
+    public List<Item> getAllWidgetItems();
 
 }
