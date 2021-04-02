@@ -1,5 +1,7 @@
 package com.innerCat.pillBox.activities;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -11,6 +13,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -19,11 +22,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.ColumnInfo;
 
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -127,7 +133,8 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean isLongPressDragEnabled() {
-                return true;
+                return getEditMode();
+                //return true;
             }
 
             @Override
@@ -167,6 +174,8 @@ public class MainActivity extends AppCompatActivity {
                 rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
                 rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                // Set the initial padding
+                updateRVPadding();
             });
         });
 
@@ -193,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
                 //today rvItem
                 List<Item> items = itemDatabase.itemDao().getAllItems();
                 adapter.setItems(items);
-
 
                 handler.post(() -> {
                     adapter.notifyDataSetChanged();
@@ -306,8 +314,23 @@ public class MainActivity extends AppCompatActivity {
                 // Notify the adapter that an item was changed at position
                 adapter.notifyRemoved( this, position);
                 updateHomeWidget();
+                updateRVPadding();
             });
         });
+    }
+
+    /**
+     * Updates the recylerView padding. If there are an even number of items then padding to
+     * accomodate for the FAB button, otherwise no padding
+     */
+    private void updateRVPadding() {
+        int normal = Converters.fromDpToPixels(10, getResources());
+        if (adapter.getItemCount()%2 == 0) { //if even
+            int bottom = Converters.fromDpToPixels(80, getResources());
+            rvItems.setPadding(normal, normal, normal, bottom);
+        } else {
+            rvItems.setPadding(normal, normal, normal, normal);
+        }
     }
 
 
@@ -386,6 +409,7 @@ public class MainActivity extends AppCompatActivity {
                 rvItems.scrollToPosition(0);
                 //rvItems.scheduleLayoutAnimation();
                 updateHomeWidget();
+                updateRVPadding();
             });
         });
     }
@@ -407,11 +431,37 @@ public class MainActivity extends AppCompatActivity {
     public void editButton( View view ) {
         editMode = !editMode;
         ImageButton editButton = findViewById(R.id.editButton);
+        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
+        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbarLayout.getLayoutParams();
+        int transparent = ContextCompat.getColor(this, R.color.transparent);
+        int primaryColor = ContextCompat.getColor(this, R.color.primaryColor);
+        ValueAnimator colorAnimator = new ValueAnimator();
         if (editMode == true) {
+            //set the toolbar to red
+            colorAnimator.setIntValues(transparent, primaryColor);
+            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
+                    | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
+
             editButton.setImageResource(R.drawable.ic_baseline_close_24);
         } else {
+            //set the toolbar to clear
+            colorAnimator.setIntValues(primaryColor, transparent);
+            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+
             editButton.setImageResource(R.drawable.ic_baseline_edit_24);
         }
+        colorAnimator.setEvaluator(new ArgbEvaluator());
+        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                int animatedValue = (int) animation.getAnimatedValue();
+                toolbarLayout.setContentScrimColor(animatedValue);
+            }
+        });
+        //colorAnimator.setDuration(ANIMATION_DURATION);
+        colorAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        colorAnimator.start();
+        toolbarLayout.setLayoutParams(params);
     }
 
     /** Called when the user taps the FAB button */
