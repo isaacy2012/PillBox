@@ -49,6 +49,22 @@ public class Item  {
     }
 
     /**
+     * Instantiates a new Item.
+     *
+     * @param id           the id
+     * @param name         the name
+     * @param stock        the stock
+     * @param showInWidget the show in widget
+     */
+    @Ignore
+    public Item(int id, String name, int stock, boolean showInWidget) {
+        this.id = id;
+        this.name = name;
+        this.stock = stock;
+        this.showInWidget = showInWidget;
+    }
+
+    /**
      * Gets id.
      *
      * @return the id

@@ -6,7 +6,9 @@
         android:layout_height="match_parent"
         tools:context=".activities.MainActivity"
         android:backgroundTintMode="add"
-        android:animateLayoutChanges="true">
+        android:animateLayoutChanges="true"
+        android:clipChildren="true"
+        android:id="@+id/coordinatorLayout">
 
     <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
@@ -68,19 +70,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:fillViewport="true"
             android:overScrollMode="always"
-            android:clipChildren="true"
             android:animateLayoutChanges="true"
             android:visibility="visible"
-            tools:layout_editor_absoluteY="180dp">
+            tools:layout_editor_absoluteY="180dp"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:animateLayoutChanges="true"
-                android:clipChildren="false"
-                android:scrollbarSize="0dp">
+                android:scrollbarSize="0dp"
+                android:clipChildren="false">
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvItems"
@@ -96,7 +98,8 @@
                     android:clipToPadding="false"
                     android:paddingHorizontal="10dp"
                     android:paddingBottom="10dp"
-                    android:paddingTop="10dp" />
+                    android:paddingTop="10dp"
+                    android:clipChildren="false" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

@@ -3,30 +3,21 @@ package com.innerCat.pillBox.recyclerViews;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
-import com.innerCat.pillBox.factories.TextWatcherFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -91,56 +82,7 @@ public class ItemAdapter extends
             } else {
                 int position = getAdapterPosition(); // gets item position
                 Item item = items.get(position);
-                // Use the Builder class for convenient dialog construction
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, R.style.MaterialAlertDialog_Rounded);
-
-                //get the UI elements
-                ExtendedFloatingActionButton fab = ((MainActivity) context).findViewById(R.id.floatingActionButton);
-                fab.setVisibility(View.INVISIBLE);
-                View editView = LayoutInflater.from(context).inflate(R.layout.text_input, null);
-                EditText nameInput = editView.findViewById(R.id.editName);
-                SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
-                showInWidgetSwitch.setChecked(item.getShowInWidget());
-
-
-                //Set the capitalisation
-                nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-                nameInput.setText(item.getName());
-
-                nameInput.requestFocus();
-
-                builder.setMessage("Name")
-                        .setView(editView)
-                        .setPositiveButton("Ok", ( dialog, id ) -> {
-                            //get the name of the Task to edit
-                            String newName = nameInput.getText().toString();
-                            //edit the item
-                            item.setName(newName);
-                            item.setShowInWidget(showInWidgetSwitch.isChecked());
-                            fab.setVisibility(View.VISIBLE);
-                            ((MainActivity) context).updateItem(item, position);
-                        })
-                        .setNegativeButton("Cancel", ( dialog, id ) -> {
-                            // User cancelled the dialog
-                            fab.setVisibility(View.VISIBLE);
-                        })
-                        .setNeutralButton("Delete", ( dialog, id ) -> {
-                            items.remove(item);
-                            ((MainActivity) context).removeItem(item, position);
-                            fab.setVisibility(View.VISIBLE);
-                        });
-                AlertDialog dialog = builder.create();
-                dialog.setOnCancelListener(dialog1 -> {
-                    // dialog dismisses
-                    fab.setVisibility(View.VISIBLE);
-                });
-                dialog.getWindow().setDimAmount(0.0f);
-                dialog.show();
-                dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-                Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                boolean nameInputValid = nameInput.getText().toString().trim().length() > 0;
-                okButton.setEnabled(nameInputValid);
-                nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
+                ((MainActivity) context).toFormUpdate(item, position);
             }
         }
 

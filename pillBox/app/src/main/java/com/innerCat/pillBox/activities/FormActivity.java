@@ -1,0 +1,124 @@
+package com.innerCat.pillBox.activities;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.room.Converters;
+
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
+public class FormActivity extends AppCompatActivity {
+
+    int requestCode;
+
+    @Override
+    protected void onCreate( Bundle savedInstanceState ) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_form);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+
+        //Adding textChangedListener for nameEdit
+        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
+        ImageButton okButton = findViewById(R.id.okButton);
+        EditText nameEdit = findViewById(R.id.editName);
+        EditText stockEdit = findViewById(R.id.editStock);
+        SwitchMaterial widgetSwitch = findViewById(R.id.widgetSwitch);
+
+        nameEdit.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
+                nameEdit,
+                collapsingToolbarLayout,
+                okButton));
+
+        //Add offset listener for when the view is collapsing or expanded
+        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+
+                //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
+                if (Math.abs(verticalOffset) > appBarLayout.getTotalScrollRange()*0.3) {
+                    //  Collapsing
+                    nameEdit.setFocusableInTouchMode(false);
+                    nameEdit.setFocusable(false);
+                    nameEdit.setVisibility(GONE);
+                    stockEdit.requestFocus();
+                } else {
+                    //Expanded
+                    nameEdit.setVisibility(VISIBLE);
+                    nameEdit.setFocusableInTouchMode(true);
+                    nameEdit.setFocusable(true);
+                }
+            }
+        });
+
+        Intent intent = getIntent();
+        requestCode = intent.getIntExtra("requestCode", -1);
+        if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
+            String name = intent.getStringExtra("name");
+            int stock = intent.getIntExtra("stock", 0);
+            boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
+            nameEdit.setText(name);
+            stockEdit.setText(String.valueOf(stock));
+            widgetSwitch.setChecked(showInWidget);
+        }
+    }
+
+    /**
+     * Ok button.
+     *
+     * @param view the view
+     */
+    public void okButton( View view ) {
+        Intent intent = new Intent();
+        String name = ((EditText)findViewById(R.id.editName)).getText().toString();
+        int stock = Integer.parseInt(((EditText)findViewById(R.id.editStock)).getText().toString());
+        boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
+
+        Item item = new Item(name, stock, showInWidget);
+
+        intent.putExtras(Converters.getBundleFromItem(item));
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    /**
+     * Cancel.
+     */
+    private void cancel() {
+        Intent intent = new Intent();
+        setResult(RESULT_CANCELED, intent);
+        finish();
+    }
+
+    /**
+     * Cancel button.
+     *
+     * @param view the view
+     */
+    public void cancelButton( View view ) {
+        cancel();
+    }
+
+    /**
+     * When the hardware/software back button is pressed
+     */
+    @Override
+    public void onBackPressed() {
+        cancel();
+    }
+}

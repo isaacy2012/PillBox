@@ -4,12 +4,12 @@ import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -32,7 +33,6 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
@@ -61,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView rvItems;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
+    Item itemToUpdate = null;
 
     boolean editMode = false;
 
     @ColumnInfo(defaultValue = "0")
 
-    private final int LIST_TASK_REQUEST = 1;
+    public static final int ADD_ITEM_REQUEST = 1;
+    public static final int EDIT_ITEM_REQUEST = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +80,25 @@ public class MainActivity extends AppCompatActivity {
 
         //streak
         sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+
+        //Add offset listener for when the view is collapsing or expanded
+        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+
+                CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
+                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0 &&
+                        getEditMode() == true) {
+                    //  Collapsed and edit mode is on
+                    coordinatorLayout.setClipChildren(true);
+
+                } else {
+                    //Expanded
+                    coordinatorLayout.setClipChildren(true);
+                }
+            }
+        });
 
         //setUpdateUnseen("update_1_dot_1");
 
@@ -380,7 +401,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         okButton.setEnabled(false);
-        refillInput.addTextChangedListener(TextWatcherFactory.getNonEmptyRefillWatcher(refillInput, okButton));
+        refillInput.addTextChangedListener(TextWatcherFactory.getRefill(refillInput, okButton));
 
     }
 
@@ -466,56 +487,69 @@ public class MainActivity extends AppCompatActivity {
 
     /** Called when the user taps the FAB button */
     public void fabButton(View view) {
+        Intent intent = new Intent(this, FormActivity.class);
+        int requestCode = ADD_ITEM_REQUEST;
+        intent.putExtra("requestCode", requestCode);
+        startActivityForResult(intent, requestCode);
+    }
 
-        // Use the Builder class for convenient dialog construction
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+    /**
+     * Opens the formActivity to update an item
+     *
+     * @param item     the item
+     * @param position the position
+     */
+    public void toFormUpdate(Item item, int position) {
+        itemToUpdate = item;
+        Intent intent = new Intent(this, FormActivity.class);
+        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        int requestCode = EDIT_ITEM_REQUEST;
+        intent.putExtra("requestCode", requestCode);
+        startActivityForResult(intent, requestCode);
+    }
 
-        //get the UI elements
-        ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
-        fab.setVisibility(View.INVISIBLE);
-        View editView = LayoutInflater.from(this).inflate(R.layout.add_item_input, null);
-        EditText nameInput = editView.findViewById(R.id.editName);
-        EditText stockInput = editView.findViewById(R.id.editStock);
-        SwitchMaterial showInWidgetSwitch = editView.findViewById(R.id.widgetSwitch);
+    /**
+     * Inject data into an item.
+     *
+     * @param item the item
+     * @param data the data
+     */
+    private void injectDataToItem(Item item, Intent data) {
+        String name = data.getStringExtra("name");
+        int stock = data.getIntExtra("stock", 0);
+        boolean showInWidget = data.getBooleanExtra("showInWidget", false);
+        item.setName(name);
+        item.setStock(stock);
+        item.setShowInWidget(showInWidget);
+    }
 
-        //Set the capitalisation
-        nameInput.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-
-        nameInput.requestFocus();
-
-        builder.setMessage("Name")
-                .setView(editView)
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        //get the name of the Item to add
-                        String name = nameInput.getText().toString();
-                        int stock = 0;
-                        try {
-                            stock = Integer.parseInt(stockInput.getText().toString().trim());
-                        } catch (NumberFormatException ignored) {}
-
-                        //add the item
-                        addItem(name, stock, showInWidgetSwitch.isChecked());
-                        fab.setVisibility(View.VISIBLE);
+    /**
+     * When there is a result from an activity
+     * @param requestCode the requestCode
+     * @param resultCode the resultCode
+     * @param data the data from the activity
+     */
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case ADD_ITEM_REQUEST:
+                    String name = data.getStringExtra("name");
+                    int stock = data.getIntExtra("stock", 0);
+                    boolean showInWidget = data.getBooleanExtra("showInWidget", false);
+                    addItem(name, stock, showInWidget);
+                    break;
+                case EDIT_ITEM_REQUEST:
+                    if (itemToUpdate == null) {
+                        return;
                     }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User cancelled the dialog
-                        fab.setVisibility(View.VISIBLE);
-                    }
-                });
-        AlertDialog dialog = builder.create();
-        dialog.setOnCancelListener(dialog1 -> {
-            // dialog dismisses
-            fab.setVisibility(View.VISIBLE);
-        });
-        dialog.getWindow().setDimAmount(0.0f);
-        dialog.show();
-        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        okButton.setEnabled(false);
-        nameInput.addTextChangedListener(TextWatcherFactory.getNonEmptyTextWatcher(nameInput, okButton));
+                    injectDataToItem(itemToUpdate, data);
+                    int pos = data.getIntExtra("position", -1);
+                    updateItem(itemToUpdate, pos);
+                    itemToUpdate = null;
+                    break;
+            }
+        }
     }
 
 }

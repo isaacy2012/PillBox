@@ -1,6 +1,7 @@
 package com.innerCat.pillBox.room;
 
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.util.TypedValue;
 
 import androidx.room.TypeConverter;
@@ -8,6 +9,7 @@ import androidx.room.TypeConverter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.innerCat.pillBox.Box;
+import com.innerCat.pillBox.Item;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
@@ -95,4 +97,49 @@ public class Converters {
         Type type = new TypeToken<List<Box>>() {}.getType();
         return gson.fromJson(boxesString, type);
     }
+
+    /**
+     * Gets bundle from item for adding.
+     *
+     * @param item the item
+     * @return the bundle from item
+     */
+    public static Bundle getBundleFromItem( Item item ) {
+        Bundle bundle = new Bundle();
+        bundle.putString("name", item.getName());
+        bundle.putInt("stock", item.getStock());
+        bundle.putBoolean("showInWidget", item.getShowInWidget());
+        return bundle;
+    }
+
+    /**
+     * Gets edit bundle from item and position for editing.
+     *
+     * @param item     the item
+     * @param position the position
+     * @return the edit bundle from item and position
+     */
+    public static Bundle getEditBundleFromItemAndPosition( Item item, int position ) {
+        Bundle bundle = getBundleFromItem(item);
+
+        bundle.putInt("position", position);
+        return bundle;
+    }
+
+    /**
+     * Checks if a bundle contains all the keys required
+     *
+     * @param bundle the bundle
+     * @param keys   the keys
+     * @return the boolean
+     */
+    private static boolean bundleContainsAllKeys( Bundle bundle, List<String> keys ) {
+        for (String key : keys) {
+            if (bundle.containsKey(key) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
