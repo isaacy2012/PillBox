@@ -30,7 +30,6 @@
                 app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
                 app:expandedTitleGravity="center_vertical"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Collapsed"
-                android:descendantFocusability="blocksDescendants"
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="23dp"
                 app:expandedTitleMargin="0dp"
@@ -127,7 +126,7 @@
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
                     android:hint="0"
-                    android:fontFamily="@font/montserrat" />
+                    android:fontFamily="sans-serif" />
 
             <com.google.android.material.switchmaterial.SwitchMaterial
                     android:text="@string/show_in_widget"
@@ -138,9 +137,20 @@
                     android:id="@+id/widgetSwitch"
                     android:layout_weight="0"
                     android:fontFamily="@font/montserrat" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <Button
+            android:text="Delete Item"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/deleteButton"
+            android:layout_weight="0"
+            android:layout_gravity="bottom"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="20dp"
+            android:onClick="deleteButton" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

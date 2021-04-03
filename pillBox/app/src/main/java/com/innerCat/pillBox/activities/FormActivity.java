@@ -3,6 +3,7 @@ package com.innerCat.pillBox.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -38,6 +39,7 @@ public class FormActivity extends AppCompatActivity {
         EditText nameEdit = findViewById(R.id.editName);
         EditText stockEdit = findViewById(R.id.editStock);
         SwitchMaterial widgetSwitch = findViewById(R.id.widgetSwitch);
+        Button deleteButton = findViewById(R.id.deleteButton);
 
         nameEdit.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
                 nameEdit,
@@ -75,7 +77,16 @@ public class FormActivity extends AppCompatActivity {
             nameEdit.setText(name);
             stockEdit.setText(String.valueOf(stock));
             widgetSwitch.setChecked(showInWidget);
+            deleteButton.setVisibility(VISIBLE);
+        } else {
+            deleteButton.setVisibility(GONE);
         }
+    }
+
+    public void deleteButton( View view ) {
+        Intent intent = new Intent();
+        setResult(MainActivity.RESULT_DELETE, intent);
+        finish();
     }
 
     /**
@@ -86,7 +97,14 @@ public class FormActivity extends AppCompatActivity {
     public void okButton( View view ) {
         Intent intent = new Intent();
         String name = ((EditText)findViewById(R.id.editName)).getText().toString();
-        int stock = Integer.parseInt(((EditText)findViewById(R.id.editStock)).getText().toString());
+        int stock = 0;
+        String stockString = ((EditText) findViewById(R.id.editStock)).getText().toString();
+        if (stockString.isEmpty() == false) {
+            try {
+                stock = Integer.parseInt(stockString);
+            } catch (NumberFormatException ignored) {
+            }
+        }
         boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
 
         Item item = new Item(name, stock, showInWidget);

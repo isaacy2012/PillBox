@@ -7,8 +7,8 @@
         tools:context=".activities.MainActivity"
         android:backgroundTintMode="add"
         android:animateLayoutChanges="true"
-        android:clipChildren="true"
-        android:id="@+id/coordinatorLayout">
+        android:id="@+id/coordinatorLayout"
+        android:clipChildren="true">
 
     <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
@@ -27,8 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:toolbarId="@+id/toolbar"
-                app:layout_scrollFlags="scroll"
-                app:contentScrim="@color/transparent"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:title="My Pills"
                 app:statusBarScrim="@color/transparent"
                 app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
@@ -37,7 +36,8 @@
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="16dp"
                 app:expandedTitleMargin="0dp"
-                app:expandedTitleMarginTop="40dp">
+                app:expandedTitleMarginTop="40dp"
+                app:contentScrim="?attr/colorOnPrimarySurface">
 
 
             <androidx.appcompat.widget.Toolbar
@@ -75,31 +75,36 @@
             android:visibility="visible"
             tools:layout_editor_absoluteY="180dp"
             android:clipChildren="false"
-            android:clipToPadding="false">
+            android:clipToPadding="false"
+            android:fillViewport="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:animateLayoutChanges="true"
                 android:scrollbarSize="0dp"
-                android:clipChildren="false">
+                android:outlineProvider="background"
+                android:clipChildren="false"
+                android:id="@+id/constraintLayout">
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvItems"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0dp"
                     android:overScrollMode="never"
                     android:scrollbars="vertical"
                     app:layoutManager="LinearLayoutManager"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/titleText"
-                    android:clipToPadding="false"
                     android:paddingHorizontal="10dp"
                     android:paddingBottom="10dp"
                     android:paddingTop="10dp"
-                    android:clipChildren="false" />
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:nestedScrollingEnabled="true"
+                    android:scrollbarSize="0dp"
+                    android:clipToPadding="false" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

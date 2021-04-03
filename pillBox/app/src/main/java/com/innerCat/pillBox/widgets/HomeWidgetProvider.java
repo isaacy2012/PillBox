@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.RemoteViews;
@@ -16,6 +17,7 @@ import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
+import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.room.ItemDatabase;
 
 import java.util.concurrent.ExecutorService;
@@ -76,6 +78,12 @@ public class HomeWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         if(intent.getAction().equals(DECREMENT)){
+
+            //Tell sharedPreferences to update on next app launch
+            SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(context);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("widgetUpdate", true);
+            editor.apply();
 
             ItemDatabase itemDatabase = ItemDatabaseFactory.getItemDatabase(context);
 

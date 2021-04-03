@@ -36,6 +36,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ItemDatabaseFactory;
+import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
+    public static final int RESULT_DELETE = 123;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,14 +90,13 @@ public class MainActivity extends AppCompatActivity {
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
 
                 CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
-                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0 &&
-                        getEditMode() == true) {
-                    //  Collapsed and edit mode is on
+                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
+                    //  Collapsed
                     coordinatorLayout.setClipChildren(true);
 
                 } else {
                     //Expanded
-                    coordinatorLayout.setClipChildren(true);
+                    coordinatorLayout.setClipChildren(false);
                 }
             }
         });
@@ -215,19 +216,28 @@ public class MainActivity extends AppCompatActivity {
         if (adapter != null) {
             //ROOM Threads
             updateHomeWidget();
-            ExecutorService executor = Executors.newSingleThreadExecutor();
-            Handler handler = new Handler(Looper.getMainLooper());
-            executor.execute(() -> {
-                //Background work here
-                //NB: This is the new thread in which the database stuff happens
-                //today rvItem
-                List<Item> items = itemDatabase.itemDao().getAllItems();
-                adapter.setItems(items);
 
-                handler.post(() -> {
-                    adapter.notifyDataSetChanged();
+            //only update rv if widget asked for an update
+            SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(this);
+            if (sharedPreferences.getBoolean("widgetUpdate", false) == true) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("widgetUpdate", false);
+                editor.apply();
+
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler(Looper.getMainLooper());
+                executor.execute(() -> {
+                    //Background work here
+                    //NB: This is the new thread in which the database stuff happens
+                    //today rvItem
+                    List<Item> items = itemDatabase.itemDao().getAllItems();
+                    adapter.setItems(items);
+
+                    handler.post(() -> {
+                        adapter.notifyDataSetChanged();
+                    });
                 });
-            });
+            }
         }
     }
 
@@ -467,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             //set the toolbar to clear
             colorAnimator.setIntValues(primaryColor, transparent);
-            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
+            //params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
 
             editButton.setImageResource(R.drawable.ic_baseline_edit_24);
         }
@@ -530,7 +540,6 @@ public class MainActivity extends AppCompatActivity {
      * @param data the data from the activity
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK) {
             switch (requestCode) {
                 case ADD_ITEM_REQUEST:
@@ -549,7 +558,14 @@ public class MainActivity extends AppCompatActivity {
                     itemToUpdate = null;
                     break;
             }
+        } else if (resultCode == RESULT_DELETE) {
+            if (itemToUpdate == null) {
+                return;
+            }
+            int pos = itemToUpdate.getViewHolderPosition();
+            removeItem(itemToUpdate, pos);
         }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
 }
