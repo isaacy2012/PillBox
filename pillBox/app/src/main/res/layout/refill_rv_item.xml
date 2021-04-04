@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="20dp">
+
+        <TextView
+                android:text="Amount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/amountTV"
+                android:layout_weight="1"
+                android:textSize="16sp" />
+
+        <TextView
+                android:text="Date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/dateTV"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:textSize="16sp" />
+    </LinearLayout>
+
+    <View
+            android:id="@+id/bottomDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider" />
+</LinearLayout>

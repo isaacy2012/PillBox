@@ -47,7 +47,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/stockTV"
-                android:layout_marginTop="25dp" />
+                android:layout_marginTop="40dp" />
 
         <TextView
                 android:layout_width="0dp"
@@ -83,6 +83,17 @@
                 android:autoSizeMaxTextSize="14sp"
                 android:textColor="@android:color/tab_indicator_text"
                 app:layout_constraintEnd_toStartOf="@+id/refillButton" />
+
+        <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/expiryTV"
+                app:layout_constraintStart_toStartOf="parent"
+                android:autoSizeMinTextSize="11sp"
+                android:autoSizeMaxTextSize="14sp"
+                android:textColor="@android:color/tab_indicator_text"
+                app:layout_constraintTop_toBottomOf="@+id/nameTV"
+                app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -19,10 +19,13 @@ import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
@@ -38,6 +41,7 @@ public class ItemAdapter extends
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         public TextView nameTV;
+        public TextView expiryTV;
         public TextView stockTV;
         public TextView lastTakenTV;
         public ImageButton refillButton;
@@ -54,8 +58,9 @@ public class ItemAdapter extends
 
 
             nameTV = itemView.findViewById(R.id.nameTV);
-            lastTakenTV = itemView.findViewById(R.id.lastTakenTV);
+            expiryTV = itemView.findViewById(R.id.expiryTV);
             stockTV = itemView.findViewById(R.id.stockTV);
+            lastTakenTV = itemView.findViewById(R.id.lastTakenTV);
 
             refillButton = itemView.findViewById(R.id.refillButton);
             refillButton.setOnClickListener(v -> {
@@ -93,7 +98,13 @@ public class ItemAdapter extends
          */
         @Override
         public boolean onLongClick(View view) {
-            return true; // or false
+            int position = getAdapterPosition(); // gets item position
+            if (((MainActivity) context).getEditMode() == false) {
+                Item item = items.get(position);
+                int id = item.getId();
+                ((MainActivity) context).toRefill(id);
+            }
+            return true;
         }
 
     }
@@ -202,7 +213,7 @@ public class ItemAdapter extends
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View itemView = inflater.inflate(R.layout.recycler_view_item_main, parent, false);
+        View itemView = inflater.inflate(R.layout.main_rv_item, parent, false);
 
         // Return a new holder instance
         ViewHolder viewHolder = new ViewHolder(itemView, context);
@@ -217,12 +228,14 @@ public class ItemAdapter extends
 
         // Set item views based on your views and data model
         TextView nameTV = holder.nameTV;
+        TextView expiryTV = holder.expiryTV;
         TextView stockTV = holder.stockTV;
         TextView lastTakenTV = holder.lastTakenTV;
         nameTV.setText(holder.item.getName());
         int stock = holder.item.getStock();
-        stockTV.setText(String.valueOf(stock));
 
+        //Set the text of the stockTV
+        stockTV.setText(String.valueOf(stock));
         //Set the color if the stock is low
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
                 .getInt("stockThreshold", 10);
@@ -234,6 +247,30 @@ public class ItemAdapter extends
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
             stockTV.setTextColor(color);
+        }
+
+        if (holder.item.getExpiringRefill() != null) {
+            //4 weeks show warning
+            LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
+            int warningDayThreshold = SharedPreferencesFactory.getSP(holder.context)
+                    .getInt("warningDayThreshold", 28);
+            long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
+            if (daysTillExpiry <= warningDayThreshold) {
+                //Set the text of the stockTV
+                expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
+                //Set the color of the text if it is close
+                int redDayThreshold = SharedPreferencesFactory.getSP(holder.context)
+                        .getInt("redDayThreshold", 7);
+                if (daysTillExpiry <= redDayThreshold) {
+                    expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+                } else {
+                    //get the default color
+                    int[] attribute = new int[]{ android.R.attr.textColor };
+                    TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
+                    int color = array.getColor(0, Color.TRANSPARENT);
+                    expiryTV.setTextColor(color);
+                }
+            }
         }
 
         //set the text of the last taken text view
