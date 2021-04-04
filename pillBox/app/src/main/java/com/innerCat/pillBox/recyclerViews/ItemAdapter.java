@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
@@ -101,8 +101,7 @@ public class ItemAdapter extends
             int position = getAdapterPosition(); // gets item position
             if (((MainActivity) context).getEditMode() == false) {
                 Item item = items.get(position);
-                int id = item.getId();
-                ((MainActivity) context).toRefill(id);
+                ((MainActivity) context).toRefill(item);
             }
             return true;
         }

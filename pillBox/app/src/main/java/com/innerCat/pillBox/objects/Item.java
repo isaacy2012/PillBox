@@ -1,4 +1,4 @@
-package com.innerCat.pillBox;
+package com.innerCat.pillBox.objects;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -145,6 +145,18 @@ public class Item  {
         if (this.stock > 0) {
             setLastUsed(LocalDate.now());
             this.stock = this.stock - 1;
+        }
+    }
+
+    /**
+     * Decrement stock by an amount
+     *
+     * @param num the num
+     */
+    public void decrementStockBy(int num) {
+        this.stock = this.stock-num;
+        if (this.stock < 0) {
+            this.stock = 0;
         }
     }
 

@@ -1,7 +1,6 @@
-package com.innerCat.pillBox;
+package com.innerCat.pillBox.objects;
 
 import androidx.room.Entity;
-import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 import java.time.LocalDate;
@@ -20,14 +19,8 @@ public class Refill implements Comparable<Refill> {
     private int id = 0;
 
     private int itemId;
-    private LocalDate expiryDate;
     private int amount;
-
-    public Refill( int itemId, int amount ) {
-        this.itemId = itemId;
-        this.amount = amount;
-        this.expiryDate = null;
-    }
+    private LocalDate expiryDate;
 
 
     /**
@@ -36,7 +29,6 @@ public class Refill implements Comparable<Refill> {
      * @param expiryDate the expiry date
      * @param amount     the amount
      */
-    @Ignore
     public Refill( int itemId, int amount, LocalDate expiryDate ) {
         this.itemId = itemId;
         this.amount = amount;

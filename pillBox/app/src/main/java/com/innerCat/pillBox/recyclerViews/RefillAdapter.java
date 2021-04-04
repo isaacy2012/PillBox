@@ -4,14 +4,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.Refill;
 import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.activities.RefillActivity;
+import com.innerCat.pillBox.objects.Refill;
 
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ public class RefillAdapter extends
         public TextView amountTV;
         public TextView dateTV;
         public Context context;
+        public CheckBox deleteCheckBox;
 
         // We also create a constructor that accepts the entire refill row
         // and does the view lookups to find each subview
@@ -46,7 +49,43 @@ public class RefillAdapter extends
 
             amountTV = refillView.findViewById(R.id.amountTV);
             dateTV = refillView.findViewById(R.id.dateTV);
+            deleteCheckBox = itemView.findViewById(R.id.checkBox);
+            deleteCheckBox.setOnClickListener(v -> {
+                if (deleteCheckBox.isChecked() == true) {
+                    ((RefillActivity) context).addDeleteRefill(refill);
+                } else {
+                    ((RefillActivity) context).removeDeleteRefill(refill);
+                }
+            });
+        }
 
+        /**
+         * Update the state of the checkboxes in the recyclerview wrt the modes in ArchiveActivity
+         */
+        public void updateState() {
+            if (((RefillActivity) context).getEditMode() == true) {
+                deleteCheckBox.setVisibility(View.VISIBLE);
+                if (((RefillActivity) context).getSelectAllMode() == true) {
+                    deleteCheckBox.setChecked(true);
+                    ((RefillActivity) context).addDeleteRefill(refill);
+                }
+            } else {
+                deleteCheckBox.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    /**
+     * Enables deletion of all the tasks
+     */
+    public void checkDelete( boolean deleteMode ) {
+        for (ViewHolder viewHolder : mBoundViewHolders) {
+            if (deleteMode == true) {
+                viewHolder.deleteCheckBox.setVisibility(View.VISIBLE);
+                viewHolder.deleteCheckBox.setChecked(false);
+            } else {
+                viewHolder.deleteCheckBox.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -59,6 +98,20 @@ public class RefillAdapter extends
         this.refills = refills;
     }
 
+
+    /**
+     * Select all the refills in the RecyclerView
+     *
+     * @param context the context (RefillActivity instance)
+     */
+    public void selectAll( Context context ) {
+        for (ViewHolder viewHolder : mBoundViewHolders) {
+            viewHolder.deleteCheckBox.setChecked(true);
+        }
+        for (Refill refill : refills) {
+            ((RefillActivity) context).addDeleteRefill(refill);
+        }
+    }
 
     /**
      * Add a refill

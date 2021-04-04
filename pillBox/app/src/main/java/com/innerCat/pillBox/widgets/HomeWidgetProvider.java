@@ -13,7 +13,7 @@ import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.DatabaseFactory;

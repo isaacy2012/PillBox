@@ -6,8 +6,8 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import com.innerCat.pillBox.Item;
-import com.innerCat.pillBox.Refill;
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ import java.util.List;
 public interface DataDao {
 
     /**
-     * Inserts an Task
-     * In the case of a conflict, it simply replaces the existing Task
+     * Inserts an Item
+     * In the case of a conflict, it simply replaces the existing Item
      *
-     * @param item the Task to insert
-     * @return the rowID (primary key) of the Task
+     * @param item the Item to insert
+     * @return the rowID (primary key) of the Item
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public long insert( Item item );
@@ -35,15 +35,15 @@ public interface DataDao {
     public void update( Item item );
 
     /**
-     * Removes an Task by id
+     * Removes an Item by id
      *
-     * @param id the id of the Task to remove
+     * @param id the id of the Item to remove
      */
     @Query("DELETE FROM items WHERE id = :id")
-    public void removeById( int id );
+    public void removeItemById( int id );
 
     /**
-     * Get a single Task from the id
+     * Get a single Item from the id
      *
      * @param id the id (primary key) of the task
      * @return the task
@@ -81,7 +81,7 @@ public interface DataDao {
 
     /**
      * Inserts a Refill
-     * In the case of a conflict, it simply replaces the existing Task
+     * In the case of a conflict, it simply replaces the existing Item
      *
      * @param refill the refill
      * @return the id of the Refill in the database
@@ -109,5 +109,12 @@ public interface DataDao {
     @Query("DELETE FROM refills WHERE julianday(expiryDate) < julianday(:today)")
     public void deleteRefillsOlderThanToday(String today);
 
+    /**
+     * Removes a Refill by id
+     *
+     * @param id the id of the Item to remove
+     */
+    @Query("DELETE FROM refills WHERE id = :id")
+    public void removeRefillById( int id );
 
 }

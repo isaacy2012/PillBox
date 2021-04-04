@@ -8,6 +8,8 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.Database;
 
@@ -146,7 +148,7 @@ public class DatabaseTests {
         Item item = new Item("A");
         int id = (int) database.getDao().insert(item);
         item.setId(id);
-        database.getDao().removeById(id);
+        database.getDao().removeItemById(id);
         Item retrievedItem = database.getDao().getItem(id);
         assertNull(retrievedItem);
     }

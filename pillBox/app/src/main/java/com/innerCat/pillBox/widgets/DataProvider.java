@@ -10,7 +10,7 @@ import android.widget.RemoteViewsService;
 
 import androidx.core.content.ContextCompat;
 
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.factories.DatabaseFactory;

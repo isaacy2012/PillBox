@@ -8,8 +8,8 @@ import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.innerCat.pillBox.Refill;
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Refill;
+import com.innerCat.pillBox.objects.Item;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;

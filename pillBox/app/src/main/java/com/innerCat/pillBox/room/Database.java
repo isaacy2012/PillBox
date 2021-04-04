@@ -3,8 +3,8 @@ package com.innerCat.pillBox.room;
 import androidx.room.RoomDatabase;
 import androidx.room.TypeConverters;
 
-import com.innerCat.pillBox.Item;
-import com.innerCat.pillBox.Refill;
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
 
 @androidx.room.Database(entities = { Item.class, Refill.class }, version = 1)
 @TypeConverters({ Converters.class })

@@ -13,7 +13,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.room.Converters;

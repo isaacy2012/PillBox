@@ -35,9 +35,9 @@ import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.Refill;
+import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
     //private fields for the Dao and the Database
     public Database database;
+    DataDao dao;
     RecyclerView rvItems;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
@@ -105,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
         //initialise the database
         database = DatabaseFactory.create(this);
+        dao = database.getDao();
 
         //get the recyclerview in activity layout
         rvItems = findViewById(R.id.rvItems);
@@ -181,9 +183,9 @@ public class MainActivity extends AppCompatActivity {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
             //today rvItem
-            List<Item> items = database.getDao().getAllItems();
+            List<Item> items = dao.getAllItems();
             for (Item item : items) {
-                Refill expiringRefill = database.getDao().getSoonestExpiringRefillOfItemId(item.getId());
+                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId());
                 item.setExpiringRefill(expiringRefill);
             }
 
@@ -229,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                     //Background work here
                     //NB: This is the new thread in which the database stuff happens
                     //today rvItem
-                    List<Item> items = database.getDao().getAllItems();
+                    List<Item> items = dao.getAllItems();
                     adapter.setItems(items);
 
                     handler.post(() -> {
@@ -300,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            database.getDao().update(item);
+            dao.update(item);
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
@@ -320,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             //Background work here
-            DataDao dao = database.getDao();
             for (Item item : updated) {
                 dao.update(item);
             }
@@ -338,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            database.getDao().removeById(item.getId());
+            dao.removeItemById(item.getId());
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was removed at position
@@ -354,7 +355,7 @@ public class MainActivity extends AppCompatActivity {
      * accomodate for the FAB button, otherwise no padding
      */
     private void updateRVPadding() {
-        int normal = Converters.fromDpToPixels(10, getResources());
+        int normal = Converters.fromDpToPixels(16, getResources());
         if (adapter.getItemCount()%2 == 0) { //if even
             int bottom = Converters.fromDpToPixels(80, getResources());
             rvItems.setPadding(normal, normal, normal, bottom);
@@ -413,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
                         if (date[0] != null) {
                             refill = new Refill( item.getId(), refillAmount, date[0] );
                             Refill itemRefill = item.getExpiringRefill();
-                            if (itemRefill != null && refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
+                            if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
                                 item.setExpiringRefill(refill);
                             }
                             if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
@@ -465,7 +466,6 @@ public class MainActivity extends AppCompatActivity {
             //If there is another refill of this item with the same expiry date, merge them together
             //so that their amounts are added into a single refill
             Refill refillToUpdate = null;
-            DataDao dao = database.getDao();
             List<Refill> refillsOfSameItem = dao.getRefillsOfItemId(addRefill.getItemId());
             for (Refill refill : refillsOfSameItem) {
                 if (refill.getExpiryDate().equals(addRefill.getExpiryDate())) {
@@ -491,7 +491,7 @@ public class MainActivity extends AppCompatActivity {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             //Background work here
-            database.getDao().update(updateRefill);
+            dao.update(updateRefill);
         });
     }
 
@@ -508,7 +508,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             Item item = new Item(name, stock, showInWidget);
-            long id = database.getDao().insert(item);
+            long id = dao.insert(item);
             item.setId((int) id);
             handler.post(() -> {
                 //UI Thread work here
@@ -548,15 +548,10 @@ public class MainActivity extends AppCompatActivity {
         if (editMode == true) {
             //set the toolbar to red
             colorAnimator.setIntValues(transparent, primaryColor);
-            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-                    | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
-
             editButton.setImageResource(R.drawable.ic_baseline_close_24);
         } else {
             //set the toolbar to clear
             colorAnimator.setIntValues(primaryColor, transparent);
-            //params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
-
             editButton.setImageResource(R.drawable.ic_baseline_edit_24);
         }
         colorAnimator.setEvaluator(new ArgbEvaluator());
@@ -601,9 +596,10 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param itemId the item id
      */
-    public void toRefill( int itemId ) {
+    public void toRefill( Item item ) {
         Intent intent = new Intent(this, RefillActivity.class);
-        intent.putExtra("itemId", itemId);
+        intent.putExtra("name", item.getName());
+        intent.putExtra("itemId", item.getId());
         startActivity(intent);
     }
 
