@@ -342,8 +342,8 @@ public class MainActivity extends AppCompatActivity {
             itemDatabase.itemDao().removeById(item.getId());
             handler.post(() -> {
                 //UI Thread work here
-                // Notify the adapter that an item was changed at position
-                adapter.notifyRemoved( this, position);
+                // Notify the adapter that an item was removed at position
+                adapter.removeItem(this, item, position);
                 updateHomeWidget();
                 updateRVPadding();
             });
@@ -433,9 +433,7 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Add a new item
-                adapter.addItem(0, item);
-                // Notify the adapter that an item was inserted at position 0
-                adapter.notifyInserted(this, 0);
+                adapter.addItem(this, item, 0);
                 //rvItems.scheduleLayoutAnimation();
                 rvItems.scrollToPosition(0);
                 //rvItems.scheduleLayoutAnimation();

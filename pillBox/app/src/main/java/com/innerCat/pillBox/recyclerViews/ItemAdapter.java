@@ -111,13 +111,33 @@ public class ItemAdapter extends
     /**
      * Add a item
      *
-     * @param position the position of the new Item in the List
+     * @param context  the context
      * @param item     the Item to add
+     * @param position the position of the new Item in the List
      */
-    public void addItem( int position, Item item ) {
+    public void addItem( Context context, Item item, int position) {
         items.add(position, item);
+        notifyInserted(context, position);
     }
 
+    /**
+     * Remove an item.
+     *
+     * @param context  the context
+     * @param item     the item to remove
+     * @param position the position of the Item in the List
+     */
+    public void removeItem( Context context, Item item, int position) {
+        items.remove(item);
+        notifyRemoved( context, position );
+    }
+
+    /**
+     * Update indexes in range, starting from the item at fromIndex to the end
+     *
+     * @param context   the context
+     * @param fromIndex the from index
+     */
     public void updateIndexesInRange( Context context, int fromIndex ) {
         List<Item> updated = new ArrayList<>();
         for (int i = fromIndex; i < items.size(); i++) {
