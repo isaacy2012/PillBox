@@ -3,6 +3,7 @@ package com.innerCat.pillBox.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -80,6 +81,8 @@ public class FormActivity extends AppCompatActivity {
             deleteButton.setVisibility(VISIBLE);
         } else {
             deleteButton.setVisibility(GONE);
+            nameEdit.requestFocus();
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
     }
 
