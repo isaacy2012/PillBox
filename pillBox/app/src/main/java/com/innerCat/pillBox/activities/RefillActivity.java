@@ -145,8 +145,9 @@ public class RefillActivity extends AppCompatActivity {
                             changed = true;
                             editMode = false;
                             selectAllMode = false;
-                            int defPadding = Converters.fromDpToPixels(16, getResources());
-                            rvRefills.setPadding(defPadding, 0, defPadding, defPadding);
+                            int defHorizPadding = Converters.fromDpToPixels(16, getResources());
+                            int defTopPadding = Converters.fromDpToPixels(10, getResources());
+                            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
                             deleteFAB.setVisibility(View.INVISIBLE);
                             checkDelete();
 
@@ -188,15 +189,16 @@ public class RefillActivity extends AppCompatActivity {
      */
     private void checkDelete() {
         adapter.checkDelete(editMode);
-        int defPadding = Converters.fromDpToPixels(16, getResources());
+        int defHorizPadding = Converters.fromDpToPixels(16, getResources());
+        int defTopPadding = Converters.fromDpToPixels(10, getResources());
         if (editMode == true) {
-            rvRefills.setPadding(defPadding, 0, defPadding, Converters.fromDpToPixels(68, getResources()));
+            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, Converters.fromDpToPixels(68, getResources()));
             deleteFAB.setVisibility(View.VISIBLE);
             deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_check_24));
             deleteFAB.setText("SELECT ALL");
             editButton.setImageResource(R.drawable.ic_baseline_close_24);
         } else {
-            rvRefills.setPadding(defPadding, 0, defPadding, defPadding);
+            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
             deleteFAB.setVisibility(View.INVISIBLE);
             selectAllMode = false;
             editButton.setImageResource(R.drawable.ic_baseline_edit_24);
