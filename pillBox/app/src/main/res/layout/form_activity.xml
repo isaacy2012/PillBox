@@ -147,7 +147,9 @@
             android:layout_marginHorizontal="20dp"
             android:layout_marginBottom="20dp"
             android:onClick="deleteButton"
-            app:cornerRadius="100dp" />
+            app:cornerRadius="100dp"
+            android:stateListAnimator="@null"
+            android:elevation="0dp" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
