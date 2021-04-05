@@ -101,7 +101,7 @@ public class ItemAdapter extends
             int position = getAdapterPosition(); // gets item position
             if (((MainActivity) context).getEditMode() == false) {
                 Item item = items.get(position);
-                ((MainActivity) context).toRefill(item);
+                ((MainActivity) context).toRefill(item, position);
             }
             return true;
         }

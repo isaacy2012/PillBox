@@ -26,7 +26,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.ColumnInfo;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -35,14 +34,14 @@ import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.DataDao;
@@ -76,11 +75,11 @@ public class MainActivity extends AppCompatActivity {
 
     boolean editMode = false;
 
-    @ColumnInfo(defaultValue = "0")
-
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
+    public static final int REFILL_EDIT_REQUEST = 3;
     public static final int RESULT_DELETE = 123;
+    public static final int RESULT_OK_CHANGED = 124;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,6 +231,10 @@ public class MainActivity extends AppCompatActivity {
                     //NB: This is the new thread in which the database stuff happens
                     //today rvItem
                     List<Item> items = dao.getAllItems();
+                    for (Item item : items) {
+                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId());
+                        item.setExpiringRefill(expiringRefill);
+                    }
                     adapter.setItems(items);
 
                     handler.post(() -> {
@@ -596,11 +599,10 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param itemId the item id
      */
-    public void toRefill( Item item ) {
+    public void toRefill( Item item, int position ) {
         Intent intent = new Intent(this, RefillActivity.class);
-        intent.putExtra("name", item.getName());
-        intent.putExtra("itemId", item.getId());
-        startActivity(intent);
+        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        startActivityForResult(intent, REFILL_EDIT_REQUEST);
     }
 
     /**
@@ -626,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK) {
+            int pos = data.getIntExtra("position", -1);
             switch (requestCode) {
                 case ADD_ITEM_REQUEST:
                     String name = data.getStringExtra("name");
@@ -638,7 +641,6 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     injectDataToItem(itemToUpdate, data);
-                    int pos = data.getIntExtra("position", -1);
                     updateItem(itemToUpdate, pos);
                     itemToUpdate = null;
                     break;
@@ -649,6 +651,30 @@ public class MainActivity extends AppCompatActivity {
             }
             int pos = itemToUpdate.getViewHolderPosition();
             removeItem(itemToUpdate, pos);
+        } else if (resultCode == RESULT_OK_CHANGED) {
+            if (requestCode == REFILL_EDIT_REQUEST) {
+                int pos = data.getIntExtra("position", -1);
+                //ROOM Threads
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler(Looper.getMainLooper());
+                executor.execute(() -> {
+                    //Background work here
+                    int id = data.getIntExtra("id", -1);
+                    if (id == -1 || pos == -1) {
+                        return;
+                    }
+                    Item replaceItem = dao.getItem(id);
+                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId());
+                    replaceItem.setExpiringRefill(expiringRefill);
+                    adapter.getItems().set(pos, replaceItem);
+                    handler.post(() -> {
+                        //UI Thread work here
+                        // Add a new item
+                        adapter.notifyItemChanged(pos);
+                        updateHomeWidget();
+                    });
+                });
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

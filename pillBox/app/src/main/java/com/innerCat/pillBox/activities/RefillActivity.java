@@ -49,6 +49,7 @@ public class RefillActivity extends AppCompatActivity {
     RefillAdapter adapter;
     boolean editMode;
     boolean selectAllMode = false;
+    boolean changed = false;
     ArrayList<Refill> deleteRefills = new ArrayList<>();
 
     @Override
@@ -56,7 +57,7 @@ public class RefillActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
-        int itemId = intent.getIntExtra("itemId", -1);
+        int itemId = intent.getIntExtra("id", -1);
         String name = intent.getStringExtra("name");
 
         setContentView(R.layout.refill_activity);
@@ -89,6 +90,7 @@ public class RefillActivity extends AppCompatActivity {
             //NB: This is the new thread in which the database stuff happens
             //today rvItem
             dao.deleteRefillsOlderThanToday(Converters.todayString());
+            System.out.println("WINNOW: itemId -> " + itemId);
             List<Refill> refills = dao.getRefillsOfItemId(itemId);
             Collections.sort(refills);
 
@@ -159,6 +161,7 @@ public class RefillActivity extends AppCompatActivity {
             builder.setMessage("Are you sure you wish to delete " + deleteRefills.size() + " " + (deleteRefills.size() > 1 ? "refills" : "refill") + "?")
                     .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, int id ) {
+                            changed = true;
                             editMode = false;
                             selectAllMode = false;
                             int defPadding = Converters.fromDpToPixels(16, getResources());
@@ -182,6 +185,7 @@ public class RefillActivity extends AppCompatActivity {
                                         adapter.notifyItemRemoved(adapter.getRefills().indexOf(refill));
                                         adapter.getRefills().remove(refill);
                                     }
+                                    deleteRefills.clear();
                                 });
                             });
                         }
@@ -238,15 +242,6 @@ public class RefillActivity extends AppCompatActivity {
     }
 
     /**
-     * Software back button.
-     *
-     * @param view the view
-     */
-    public void backButton( View view ) {
-        finish();
-    }
-
-    /**
      * Gets edit mode.
      *
      * @return the edit mode
@@ -284,6 +279,19 @@ public class RefillActivity extends AppCompatActivity {
         checkFAB(true);
     }
 
+    @Override
+    public void finish() {
+        Intent intent = new Intent();
+        intent.putExtra("position", getIntent().getIntExtra("position", -1));
+        intent.putExtra("id", getIntent().getIntExtra("id", -1));
+        if (changed == true) {
+            setResult(MainActivity.RESULT_OK_CHANGED, intent);
+        } else {
+            setResult(RESULT_OK, intent);
+        }
+        super.finish();
+    }
+
     /**
      * When the hardware/software back button is pressed
      */
@@ -291,4 +299,15 @@ public class RefillActivity extends AppCompatActivity {
     public void onBackPressed() {
         finish();
     }
+
+
+    /**
+     * Software back button.
+     *
+     * @param view the view
+     */
+    public void backButton( View view ) {
+        finish();
+    }
+
 }

@@ -106,6 +106,7 @@ public class Converters {
      */
     public static Bundle getBundleFromItem( Item item ) {
         Bundle bundle = new Bundle();
+        bundle.putInt("id", item.getId());
         bundle.putString("name", item.getName());
         bundle.putInt("stock", item.getStock());
         bundle.putBoolean("showInWidget", item.getShowInWidget());
