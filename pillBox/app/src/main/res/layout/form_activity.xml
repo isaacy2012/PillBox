@@ -27,13 +27,13 @@
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:contentScrim="@color/primaryColor"
                 app:statusBarScrim="@color/transparent"
-                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Collapsed"
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="23dp"
                 app:expandedTitleMargin="0dp"
                 app:expandedTitleMarginTop="20dp"
-                app:expandedTitleGravity="center_vertical">
+                app:expandedTitleGravity="center_vertical"
+                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded">
 
             <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -79,10 +79,10 @@
                     app:layout_collapseMode="parallax"
                     android:fontFamily="@font/montserrat"
                     android:textColor="@color/transparent"
-                    android:textSize="32sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
                     android:hint="Title"
-                    android:layout_marginTop="30dp" />
+                    android:layout_marginTop="40dp" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 

@@ -269,7 +269,11 @@ public class ItemAdapter extends
                     int color = array.getColor(0, Color.TRANSPARENT);
                     expiryTV.setTextColor(color);
                 }
+            } else {
+               expiryTV.setVisibility(View.GONE);
             }
+        } else {
+            expiryTV.setVisibility(View.GONE);
         }
 
         //set the text of the last taken text view

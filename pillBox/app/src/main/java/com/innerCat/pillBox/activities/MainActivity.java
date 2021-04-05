@@ -20,9 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -54,6 +54,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL;
 
 
 /**
@@ -193,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
                 // Attach the adapter to the recyclerview to populate items
                 rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
-                rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                //rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
                 // Set the initial padding
                 updateRVPadding();
             });

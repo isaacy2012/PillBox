@@ -30,7 +30,7 @@
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:title="My Pills"
                 app:statusBarScrim="@color/transparent"
-                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
+                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded.WithSize"
                 app:expandedTitleGravity="center_vertical"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Collapsed"
                 android:background="@color/transparent"
