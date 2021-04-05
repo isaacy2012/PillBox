@@ -1,5 +1,8 @@
 package com.innerCat.pillBox;
 
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
+
 import java.time.LocalDate;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -27,6 +30,34 @@ public class StringFormatter {
             return sb.toString();
         } else {
             return "";
+        }
+    }
+
+
+    /**
+     * Date to string string.
+     *
+     * @param date the date
+     * @return the string
+     */
+    public static String dateToString(LocalDate date) {
+        return date.toString();
+    }
+
+    /**
+     * Gets expiry text.
+     *
+     * @param refill the refill
+     * @return the expiry text
+     */
+    public static String getExpiryText( Refill refill) {
+        long daysTillExpiry = DAYS.between(LocalDate.now(), refill.getExpiryDate());
+        if (daysTillExpiry == 0) {
+            return refill.getAmount() + " expiring today";
+        } else if (daysTillExpiry == 1) {
+            return refill.getAmount() + " expiring tomorrow";
+        } else {
+            return refill.getAmount() + " expiring in " + daysTillExpiry + " days";
         }
     }
 }

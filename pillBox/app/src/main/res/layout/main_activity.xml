@@ -30,14 +30,14 @@
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
                 app:title="My Pills"
                 app:statusBarScrim="@color/transparent"
-                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
+                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded.WithSize"
                 app:expandedTitleGravity="center_vertical"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Collapsed"
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="16dp"
                 app:expandedTitleMargin="0dp"
                 app:expandedTitleMarginTop="40dp"
-                app:contentScrim="?attr/colorOnPrimarySurface">
+                app:contentScrim="?attr/colorOnToolbar">
 
 
             <androidx.appcompat.widget.Toolbar
@@ -97,9 +97,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.0"
                     app:layout_constraintStart_toStartOf="parent"
-                    android:paddingHorizontal="10dp"
-                    android:paddingBottom="10dp"
-                    android:paddingTop="10dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingBottom="8dp"
+                    android:paddingTop="8dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     android:nestedScrollingEnabled="true"

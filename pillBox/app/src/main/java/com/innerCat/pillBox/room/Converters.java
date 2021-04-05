@@ -8,8 +8,8 @@ import androidx.room.TypeConverter;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.innerCat.pillBox.Box;
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Refill;
+import com.innerCat.pillBox.objects.Item;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
@@ -69,17 +69,17 @@ public class Converters {
     /**
      * From box list string.
      *
-     * @param boxes the boxes
+     * @param refills the boxes
      * @return the string
      */
     @TypeConverter
-    public String fromBoxList(List<Box> boxes) {
-        if (boxes == null) {
+    public String fromBoxList(List<Refill> refills ) {
+        if (refills == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<Box>>() {}.getType();
-        return gson.toJson(boxes, type);
+        Type type = new TypeToken<List<Refill>>() {}.getType();
+        return gson.toJson(refills, type);
     }
 
     /**
@@ -89,12 +89,12 @@ public class Converters {
      * @return the list
      */
     @TypeConverter
-    public List<Box> toBoxList(String boxesString) {
+    public List<Refill> toBoxList( String boxesString) {
         if (boxesString == null) {
             return (null);
         }
         Gson gson = new Gson();
-        Type type = new TypeToken<List<Box>>() {}.getType();
+        Type type = new TypeToken<List<Refill>>() {}.getType();
         return gson.fromJson(boxesString, type);
     }
 
@@ -106,6 +106,7 @@ public class Converters {
      */
     public static Bundle getBundleFromItem( Item item ) {
         Bundle bundle = new Bundle();
+        bundle.putInt("id", item.getId());
         bundle.putString("name", item.getName());
         bundle.putInt("stock", item.getStock());
         bundle.putBoolean("showInWidget", item.getShowInWidget());

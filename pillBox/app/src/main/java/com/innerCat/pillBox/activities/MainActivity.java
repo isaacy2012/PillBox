@@ -1,6 +1,5 @@
 package com.innerCat.pillBox.activities;
 
-import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,7 +12,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -22,32 +20,42 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.ColumnInfo;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
-import com.innerCat.pillBox.Item;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.factories.ItemDatabaseFactory;
+import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.factories.DatabaseFactory;
+import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
+import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
-import com.innerCat.pillBox.room.ItemDao;
-import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.room.DataDao;
+import com.innerCat.pillBox.room.Database;
 import com.innerCat.pillBox.widgets.HomeWidgetProvider;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL;
 
 
 /**
@@ -58,7 +66,8 @@ public class MainActivity extends AppCompatActivity {
     int ANIMATION_DURATION = 0;
 
     //private fields for the Dao and the Database
-    public static ItemDatabase itemDatabase;
+    public Database database;
+    DataDao dao;
     RecyclerView rvItems;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
@@ -66,40 +75,26 @@ public class MainActivity extends AppCompatActivity {
 
     boolean editMode = false;
 
-    @ColumnInfo(defaultValue = "0")
-
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
+    public static final int REFILL_EDIT_REQUEST = 3;
     public static final int RESULT_DELETE = 123;
+    public static final int RESULT_OK_CHANGED = 124;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_activity);
 
         //constants
         ANIMATION_DURATION = getResources().getInteger(R.integer.animation_duration);
 
-        //streak
+        //shared preferences
         sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE);
 
         //Add offset listener for when the view is collapsing or expanded
         AppBarLayout appBarLayout = findViewById(R.id.app_bar);
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-
-                CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
-                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
-                    //  Collapsed
-                    coordinatorLayout.setClipChildren(true);
-
-                } else {
-                    //Expanded
-                    coordinatorLayout.setClipChildren(false);
-                }
-            }
-        });
+        appBarLayout.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
         //setUpdateUnseen("update_1_dot_1");
 
@@ -109,7 +104,8 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
         //initialise the database
-        itemDatabase = ItemDatabaseFactory.getItemDatabase(this);
+        database = DatabaseFactory.create(this);
+        dao = database.getDao();
 
         //get the recyclerview in activity layout
         rvItems = findViewById(R.id.rvItems);
@@ -164,9 +160,9 @@ public class MainActivity extends AppCompatActivity {
                                      @NonNull RecyclerView.ViewHolder viewHolder,
                                      float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
-                float end = Converters.fromDpToPixels(8, getResources());
+                float end = Converters.fromDpToPixels(0, getResources());
                 if (isCurrentlyActive) {
-                    end = Converters.fromDpToPixels(16, getResources());
+                    end = Converters.fromDpToPixels(8, getResources());
                 }
                 cardView.animate().z(end);
                 //cardView.setCardElevation(end);
@@ -186,7 +182,11 @@ public class MainActivity extends AppCompatActivity {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
             //today rvItem
-            List<Item> items = itemDatabase.itemDao().getAllItems();
+            List<Item> items = dao.getAllItems();
+            for (Item item : items) {
+                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
+                item.setExpiringRefill(expiringRefill);
+            }
 
 
             handler.post(() -> {
@@ -195,7 +195,8 @@ public class MainActivity extends AppCompatActivity {
                 // Attach the adapter to the recyclerview to populate items
                 rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
-                rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                //rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
                 // Set the initial padding
                 updateRVPadding();
             });
@@ -230,7 +231,11 @@ public class MainActivity extends AppCompatActivity {
                     //Background work here
                     //NB: This is the new thread in which the database stuff happens
                     //today rvItem
-                    List<Item> items = itemDatabase.itemDao().getAllItems();
+                    List<Item> items = dao.getAllItems();
+                    for (Item item : items) {
+                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
+                        item.setExpiringRefill(expiringRefill);
+                    }
                     adapter.setItems(items);
 
                     handler.post(() -> {
@@ -301,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            itemDatabase.itemDao().update(item);
+            dao.update(item);
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
@@ -321,7 +326,6 @@ public class MainActivity extends AppCompatActivity {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             //Background work here
-            ItemDao dao = itemDatabase.itemDao();
             for (Item item : updated) {
                 dao.update(item);
             }
@@ -339,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            itemDatabase.itemDao().removeById(item.getId());
+            dao.removeItemById(item.getId());
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was removed at position
@@ -355,7 +359,7 @@ public class MainActivity extends AppCompatActivity {
      * accomodate for the FAB button, otherwise no padding
      */
     private void updateRVPadding() {
-        int normal = Converters.fromDpToPixels(10, getResources());
+        int normal = Converters.fromDpToPixels(8, getResources());
         if (adapter.getItemCount()%2 == 0) { //if even
             int bottom = Converters.fromDpToPixels(80, getResources());
             rvItems.setPadding(normal, normal, normal, bottom);
@@ -372,26 +376,64 @@ public class MainActivity extends AppCompatActivity {
      * @param position the position
      */
     public void refillItem( Item item, int position) {
-        // Use the Builder class for convenient dialog construction
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
-
         //get the UI elements
         ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
         fab.setVisibility(View.INVISIBLE);
-        View editTV = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
-        EditText refillInput = editTV.findViewById(R.id.editRefill);
+        View refillInput = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
+        EditText refillTV = refillInput.findViewById(R.id.editRefill);
+        Button expiryButton = refillInput.findViewById(R.id.expiryButton);
+        final LocalDate[] date = new LocalDate[1];
 
-        refillInput.requestFocus();
+        refillTV.requestFocus();
 
+        //Set the behaviour of the expiry button
+        expiryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick( View v ) {
+                CalendarConstraints.Builder constraintsBuilder = new CalendarConstraints.Builder()
+                        .setValidator(DateValidatorPointForward.now());
+
+                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                        .setTitleText("Select date")
+                        .setCalendarConstraints(constraintsBuilder.build())
+                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                        .build();
+                datePicker.show(getSupportFragmentManager(), "tag");
+                datePicker.addOnPositiveButtonClickListener(selection -> { //long selection
+                    date[0] = LocalDate.from(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()));
+                    expiryButton.setText(StringFormatter.dateToString(date[0]));
+                });
+            }
+        });
+
+        // Use the Builder class for convenient dialog construction
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
         builder.setMessage("Refill Amount")
-                .setView(editTV)
+                .setView(refillInput)
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //get the name of the Item to add
-                        int refillAmount = Integer.parseInt(refillInput.getText().toString().trim());
-                        //add the item
-                        item.refill(refillAmount);
+                        int refillAmount = Integer.parseInt(refillTV.getText().toString().trim());
+                        Refill refill;
+                        if (date[0] != null) {
+                            refill = new Refill( item.getId(), refillAmount, date[0] );
+                            Refill itemRefill = item.getExpiringRefill();
+                            if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
+                                item.setExpiringRefill(refill);
+                            }
+                            if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
+                                itemRefill.mergeWith(refill);
+                                updateRefillInBackground(itemRefill);
+                                adapter.notifyItemChanged(position);
+                            } else {
+                                //add the refill
+                                addRefillInBackground(refill);
+                            }
+                        }
+                        item.refillByAmount( refillAmount );
                         updateItem(item, position);
+
+                        //set the visibility of the fab
                         fab.setVisibility(View.VISIBLE);
                     }
                 })
@@ -411,8 +453,51 @@ public class MainActivity extends AppCompatActivity {
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         okButton.setEnabled(false);
-        refillInput.addTextChangedListener(TextWatcherFactory.getRefill(refillInput, okButton));
+        refillTV.addTextChangedListener(TextWatcherFactory.getRefill(refillTV, okButton));
+    }
 
+    /**
+     * Add a addRefill to the database
+     *
+     * @param addRefill the addRefill
+     */
+    private void addRefillInBackground( Refill addRefill ) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            //Background work here
+
+            //If there is another refill of this item with the same expiry date, merge them together
+            //so that their amounts are added into a single refill
+            Refill refillToUpdate = null;
+            List<Refill> refillsOfSameItem = dao.getFutureRefillsOfItemId(addRefill.getItemId(),
+                    Converters.todayString());
+            for (Refill refill : refillsOfSameItem) {
+                if (refill.getExpiryDate().equals(addRefill.getExpiryDate())) {
+                    refillToUpdate = refill;
+                }
+            }
+            if (refillToUpdate != null) {
+                refillToUpdate.mergeWith(addRefill);
+                dao.update(refillToUpdate);
+            } else {
+                dao.insert(addRefill);
+            }
+        });
+    }
+
+    /**
+     * Update refill in background.
+     *
+     * @param updateRefill the update refill
+     */
+    private void updateRefillInBackground( Refill updateRefill ) {
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            //Background work here
+            dao.update(updateRefill);
+        });
     }
 
     /**
@@ -428,7 +513,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             Item item = new Item(name, stock, showInWidget);
-            long id = itemDatabase.itemDao().insert(item);
+            long id = dao.insert(item);
             item.setId((int) id);
             handler.post(() -> {
                 //UI Thread work here
@@ -461,36 +546,9 @@ public class MainActivity extends AppCompatActivity {
         editMode = !editMode;
         ImageButton editButton = findViewById(R.id.editButton);
         CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
-        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbarLayout.getLayoutParams();
-        int transparent = ContextCompat.getColor(this, R.color.transparent);
-        int primaryColor = ContextCompat.getColor(this, R.color.primaryColor);
-        ValueAnimator colorAnimator = new ValueAnimator();
-        if (editMode == true) {
-            //set the toolbar to red
-            colorAnimator.setIntValues(transparent, primaryColor);
-            params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
-                    | AppBarLayout.LayoutParams.SCROLL_FLAG_EXIT_UNTIL_COLLAPSED);
-
-            editButton.setImageResource(R.drawable.ic_baseline_close_24);
-        } else {
-            //set the toolbar to clear
-            colorAnimator.setIntValues(primaryColor, transparent);
-            //params.setScrollFlags(AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL);
-
-            editButton.setImageResource(R.drawable.ic_baseline_edit_24);
-        }
-        colorAnimator.setEvaluator(new ArgbEvaluator());
-        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int animatedValue = (int) animation.getAnimatedValue();
-                toolbarLayout.setContentScrimColor(animatedValue);
-            }
-        });
-        //colorAnimator.setDuration(ANIMATION_DURATION);
-        colorAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
+                editButton, toolbarLayout);
         colorAnimator.start();
-        toolbarLayout.setLayoutParams(params);
     }
 
     /** Called when the user taps the FAB button */
@@ -517,6 +575,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * To refill.
+     *
+     * @param itemId the item id
+     */
+    public void toRefill( Item item, int position ) {
+        Intent intent = new Intent(this, RefillActivity.class);
+        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        startActivityForResult(intent, REFILL_EDIT_REQUEST);
+    }
+
+    /**
      * Inject data into an item.
      *
      * @param item the item
@@ -539,6 +608,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK) {
+            int pos = data.getIntExtra("position", -1);
             switch (requestCode) {
                 case ADD_ITEM_REQUEST:
                     String name = data.getStringExtra("name");
@@ -551,7 +621,6 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     injectDataToItem(itemToUpdate, data);
-                    int pos = data.getIntExtra("position", -1);
                     updateItem(itemToUpdate, pos);
                     itemToUpdate = null;
                     break;
@@ -562,6 +631,31 @@ public class MainActivity extends AppCompatActivity {
             }
             int pos = itemToUpdate.getViewHolderPosition();
             removeItem(itemToUpdate, pos);
+        } else if (resultCode == RESULT_OK_CHANGED) {
+            if (requestCode == REFILL_EDIT_REQUEST) {
+                int pos = data.getIntExtra("position", -1);
+                //ROOM Threads
+                ExecutorService executor = Executors.newSingleThreadExecutor();
+                Handler handler = new Handler(Looper.getMainLooper());
+                executor.execute(() -> {
+                    //Background work here
+                    int id = data.getIntExtra("id", -1);
+                    if (id == -1 || pos == -1) {
+                        return;
+                    }
+                    Item replaceItem = dao.getItem(id);
+                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId(),
+                            Converters.todayString());
+                    replaceItem.setExpiringRefill(expiringRefill);
+                    adapter.getItems().set(pos, replaceItem);
+                    handler.post(() -> {
+                        //UI Thread work here
+                        // Add a new item
+                        adapter.notifyItemChanged(pos);
+                        updateHomeWidget();
+                    });
+                });
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

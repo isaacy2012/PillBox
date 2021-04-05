@@ -1,4 +1,4 @@
-package com.innerCat.pillBox;
+package com.innerCat.pillBox.objects;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * The type Item.
  */
-//table name is 'entries'
+//table name is 'items'
 @Entity(tableName = "items")
 public class Item  {
 
@@ -25,6 +25,8 @@ public class Item  {
     private int stock = 0;
     private int viewHolderPosition;
     private boolean showInWidget = false;
+    @Ignore
+    private Refill expiringRefill = null;
 
     /**
      * Instantiates a new Item.
@@ -147,6 +149,18 @@ public class Item  {
     }
 
     /**
+     * Decrement stock by an amount
+     *
+     * @param num the num
+     */
+    public void decrementStockBy(int num) {
+        this.stock = this.stock-num;
+        if (this.stock < 0) {
+            this.stock = 0;
+        }
+    }
+
+    /**
      * Gets view holder position.
      *
      * @return the view holder position
@@ -187,10 +201,28 @@ public class Item  {
      *
      * @param refillAmount the refill amount
      */
-    public void refill(int refillAmount) {
+    public void refillByAmount( int refillAmount) {
         this.stock = this.stock+refillAmount;
     }
 
+
+    /**
+     * Gets expiring refill.
+     *
+     * @return the expiring refill
+     */
+    public Refill getExpiringRefill() {
+        return expiringRefill;
+    }
+
+    /**
+     * Sets expiring refill.
+     *
+     * @param expiringRefill the expiring refill
+     */
+    public void setExpiringRefill( Refill expiringRefill ) {
+        this.expiringRefill = expiringRefill;
+    }
 
     @Override
     public boolean equals( Object o ) {

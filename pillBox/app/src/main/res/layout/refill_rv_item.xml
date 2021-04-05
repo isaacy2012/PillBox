@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        app:cardCornerRadius="5dp"
+        android:layout_marginVertical="5dp"
+        app:cardMaxElevation="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="?attr/colorOnCard">
+
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:animateLayoutChanges="true">
+
+        <TextView
+                android:text="Amount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/amountTV"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:layout_marginVertical="20dp"
+                android:layout_marginStart="12dp" />
+
+        <TextView
+                android:text="Date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/dateTV"
+                android:layout_weight="1"
+                android:textAlignment="textEnd"
+                android:textSize="16sp"
+                android:layout_marginVertical="20dp"
+                android:layout_marginEnd="12dp" />
+
+        <CheckBox
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:id="@+id/checkBox"
+                android:layout_weight="0"
+                android:layout_gravity="clip_vertical"
+                android:visibility="gone"
+                android:buttonTint="?attr/colorOnSecondary" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

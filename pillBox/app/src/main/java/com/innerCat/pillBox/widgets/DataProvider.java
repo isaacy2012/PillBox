@@ -10,11 +10,11 @@ import android.widget.RemoteViewsService;
 
 import androidx.core.content.ContextCompat;
 
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
-import com.innerCat.pillBox.factories.ItemDatabaseFactory;
-import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.factories.DatabaseFactory;
+import com.innerCat.pillBox.room.Database;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.List;
 public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
 
     List<Item> items = new ArrayList<>();
-    ItemDatabase itemDatabase;
+    Database database;
     Context context;
 
     public DataProvider(Context context, Intent intent) {
@@ -32,7 +32,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
 
     @Override
     public void onCreate() {
-        itemDatabase = ItemDatabaseFactory.getItemDatabase(context);
+        database = DatabaseFactory.create(context);
     }
 
     /**
@@ -40,7 +40,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
      */
     @Override
     public void onDataSetChanged() {
-        items = itemDatabase.itemDao().getAllWidgetItems();
+        items = database.getDao().getAllWidgetItems();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
     @Override
     public RemoteViews getViewAt(int position) {
         RemoteViews widgetGridViewHolder = new RemoteViews(context.getPackageName(),
-                R.layout.grid_view_item_widget);
+                R.layout.widget_grid_item);
         Item thisItem = items.get(position);
         widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
         int stock = thisItem.getStock();

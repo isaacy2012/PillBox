@@ -4,12 +4,12 @@ import android.content.Context;
 
 import androidx.room.Room;
 
-import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.room.Database;
 
-public class ItemDatabaseFactory {
-    public static ItemDatabase getItemDatabase( Context context ) {
+public class DatabaseFactory {
+    public static Database create( Context context ) {
         return Room.databaseBuilder(context.getApplicationContext(),
-                ItemDatabase.class, "items")
+                Database.class, "items")
                 .fallbackToDestructiveMigration()
                 .build();
     }

@@ -13,12 +13,12 @@ import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 
-import com.innerCat.pillBox.Item;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.activities.MainActivity;
-import com.innerCat.pillBox.factories.ItemDatabaseFactory;
+import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
-import com.innerCat.pillBox.room.ItemDatabase;
+import com.innerCat.pillBox.room.Database;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,8 +41,8 @@ public class HomeWidgetProvider extends AppWidgetProvider {
         //update intent
         intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
         //ids of widgets
-        int[] ids = AppWidgetManager.getInstance(context.getApplicationContext()).getAppWidgetIds(new ComponentName(context.getApplicationContext(), HomeWidgetProvider.class));
-        ;
+        int[] ids = AppWidgetManager.getInstance(context.getApplicationContext()).
+                getAppWidgetIds(new ComponentName(context.getApplicationContext(), HomeWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         context.sendBroadcast(intent);
     }
@@ -52,7 +52,7 @@ public class HomeWidgetProvider extends AppWidgetProvider {
     public void onUpdate( Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds ) {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.home_widget);
+            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_layout);
             setRemoteAdapter(context, views);
 
             views.setEmptyView(R.id.widgetGridView, R.id.emptyGridViewLayout);
@@ -85,7 +85,7 @@ public class HomeWidgetProvider extends AppWidgetProvider {
             editor.putBoolean("widgetUpdate", true);
             editor.apply();
 
-            ItemDatabase itemDatabase = ItemDatabaseFactory.getItemDatabase(context);
+            Database database = DatabaseFactory.create(context);
 
             //Passed info from WidgetService.java
             int id = intent.getIntExtra("id", -1);
@@ -95,9 +95,9 @@ public class HomeWidgetProvider extends AppWidgetProvider {
             Handler handler = new Handler(Looper.getMainLooper());
             executor.execute(() -> {
                 //Background work here
-                Item item = itemDatabase.itemDao().getItem(id);
+                Item item = database.getDao().getItem(id);
                 item.decrementStock();
-                itemDatabase.itemDao().update(item);
+                database.getDao().update(item);
 
                 handler.post(() -> {
                     //UI Thread work here

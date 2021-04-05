@@ -1,5 +1,7 @@
 package com.innerCat.pillBox;
 
+import com.innerCat.pillBox.objects.Item;
+
 import org.junit.Test;
 import org.testng.annotations.AfterTest;
 
