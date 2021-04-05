@@ -15,5 +15,5 @@
             android:fontFamily="@font/montserrat"
             android:textStyle="bold"
             android:textSize="24sp"
-            android:textColor="@color/primaryDarkColor" />
+            android:textColor="@color/primaryColor" />
 </LinearLayout>

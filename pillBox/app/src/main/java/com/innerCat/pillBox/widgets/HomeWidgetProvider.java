@@ -41,8 +41,8 @@ public class HomeWidgetProvider extends AppWidgetProvider {
         //update intent
         intent.setAction("android.appwidget.action.APPWIDGET_UPDATE");
         //ids of widgets
-        int[] ids = AppWidgetManager.getInstance(context.getApplicationContext()).getAppWidgetIds(new ComponentName(context.getApplicationContext(), HomeWidgetProvider.class));
-        ;
+        int[] ids = AppWidgetManager.getInstance(context.getApplicationContext()).
+                getAppWidgetIds(new ComponentName(context.getApplicationContext(), HomeWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         context.sendBroadcast(intent);
     }

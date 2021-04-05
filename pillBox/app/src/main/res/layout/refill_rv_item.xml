@@ -9,7 +9,7 @@
         android:layout_marginVertical="5dp"
         app:cardMaxElevation="0dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="?attr/colorOnSurface">
+        app:cardBackgroundColor="?attr/colorOnCard">
 
     <LinearLayout
             android:orientation="horizontal"
@@ -25,7 +25,7 @@
                 android:layout_weight="1"
                 android:textSize="16sp"
                 android:layout_marginVertical="20dp"
-                android:layout_marginStart="8dp" />
+                android:layout_marginStart="12dp" />
 
         <TextView
                 android:text="Date"
@@ -36,7 +36,7 @@
                 android:textAlignment="textEnd"
                 android:textSize="16sp"
                 android:layout_marginVertical="20dp"
-                android:layout_marginEnd="8dp" />
+                android:layout_marginEnd="12dp" />
 
         <CheckBox
                 android:layout_width="40dp"

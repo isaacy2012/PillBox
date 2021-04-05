@@ -19,7 +19,7 @@
         app:cardMaxElevation="16dp"
         android:animateLayoutChanges="true"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="?attr/colorOnSurface">
+        app:cardBackgroundColor="?attr/colorOnCard">
     <!-- app:layout_constraintDimensionRatio="1:1" -->
 
 

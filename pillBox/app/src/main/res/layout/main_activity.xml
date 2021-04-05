@@ -37,7 +37,7 @@
                 app:expandedTitleMarginStart="16dp"
                 app:expandedTitleMargin="0dp"
                 app:expandedTitleMarginTop="40dp"
-                app:contentScrim="?attr/colorOnPrimarySurface">
+                app:contentScrim="?attr/colorOnToolbar">
 
 
             <androidx.appcompat.widget.Toolbar

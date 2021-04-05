@@ -16,7 +16,7 @@ import com.innerCat.pillBox.R;
 public class ToolbarAnimatorFactory {
     public static ValueAnimator create( Context context, boolean editMode,
                                         ImageButton editButton, CollapsingToolbarLayout toolbarLayout ) {
-        int defaultColor = MaterialColors.getColor(context, R.attr.colorOnPrimarySurface, Color.TRANSPARENT);
+        int defaultColor = MaterialColors.getColor(context, R.attr.colorOnToolbar, Color.TRANSPARENT);
         int primaryColor = ContextCompat.getColor(context, R.color.primaryColor);
         ValueAnimator colorAnimator = new ValueAnimator();
         if (editMode == true) {

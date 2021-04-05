@@ -5,8 +5,8 @@
         <item name="colorPrimary">@color/primaryColor</item>
         <item name="colorPrimaryVariant">@color/primaryDarkColor</item>
         <item name="colorOnPrimary">@color/white</item>
-        <item name="colorOnPrimarySurface">#D0D0D0</item>
-        <item name="colorOnSurface">#F6F6F6</item>
+        <item name="colorOnToolbar">#D0D0D0</item>
+        <item name="colorOnCard">#F6F6F6</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/secondaryColor</item>
         <item name="colorSecondaryVariant">@color/secondaryDarkColor</item>

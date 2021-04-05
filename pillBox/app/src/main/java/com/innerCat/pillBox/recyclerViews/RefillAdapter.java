@@ -1,10 +1,12 @@
 package com.innerCat.pillBox.recyclerViews;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,6 +18,7 @@ import com.innerCat.pillBox.activities.RefillActivity;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.objects.RefillListHeader;
 import com.innerCat.pillBox.objects.RefillListObject;
+import com.innerCat.pillBox.room.Converters;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -90,14 +93,21 @@ public class RefillAdapter extends
     /**
      * Enables deletion of all the tasks
      */
-    public void checkDelete( boolean deleteMode ) {
+    public void checkDelete( Resources resources, boolean deleteMode ) {
         for (ViewHolderItem viewHolderItem : mBoundItemViewHolders) {
+            LinearLayout.MarginLayoutParams params = (LinearLayout.MarginLayoutParams)
+                    viewHolderItem.dateTV.getLayoutParams();
             if (deleteMode == true) {
+                int endMargin = Converters.fromDpToPixels(6, resources);
+                params.setMarginEnd(endMargin);
                 viewHolderItem.deleteCheckBox.setVisibility(View.VISIBLE);
                 viewHolderItem.deleteCheckBox.setChecked(false);
             } else {
+                int defaultMargin = Converters.fromDpToPixels(12, resources);
+                params.setMarginEnd(defaultMargin);
                 viewHolderItem.deleteCheckBox.setVisibility(View.GONE);
             }
+            viewHolderItem.dateTV.setLayoutParams(params);
         }
     }
 

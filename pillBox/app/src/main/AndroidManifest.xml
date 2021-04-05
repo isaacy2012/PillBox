@@ -15,7 +15,7 @@
                 android:theme="@style/Theme.pillBox.NoActionBar"></activity>
         <activity
                 android:name=".activities.FormActivity"
-                android:label="@string/title_activity_scrolling"
+                android:label="@string/title_activity_form"
                 android:theme="@style/Theme.pillBox.NoActionBar" />
         <activity android:name=".activities.MainActivity">
             <intent-filter>

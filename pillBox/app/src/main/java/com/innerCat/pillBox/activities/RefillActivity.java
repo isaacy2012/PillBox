@@ -9,6 +9,7 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -104,8 +105,23 @@ public class RefillActivity extends AppCompatActivity {
                 rvRefills.setAdapter(adapter);
                 // Set layout manager to position the items
                 rvRefills.setLayoutManager(new LinearLayoutManager(this));
+                updateRVVisibility();
             });
         });
+    }
+
+    /**
+     * Update rv visibility.
+     */
+    private void updateRVVisibility() {
+        TextView emptyView = findViewById(R.id.emptyRefillRVView);
+        if (adapter.getItemCount() == 0) {
+            rvRefills.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        } else {
+            rvRefills.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
     }
 
     /**
@@ -168,6 +184,7 @@ public class RefillActivity extends AppCompatActivity {
                                         adapter.getRefillListObjects().remove(refill);
                                     }
                                     deleteRefills.clear();
+                                    updateRVVisibility();
                                 });
                             });
                         }
@@ -188,7 +205,7 @@ public class RefillActivity extends AppCompatActivity {
      * Check the status of the UI items with respect to the editMode
      */
     private void checkDelete() {
-        adapter.checkDelete(editMode);
+        adapter.checkDelete(getResources(), editMode);
         int defHorizPadding = Converters.fromDpToPixels(16, getResources());
         int defTopPadding = Converters.fromDpToPixels(10, getResources());
         if (editMode == true) {

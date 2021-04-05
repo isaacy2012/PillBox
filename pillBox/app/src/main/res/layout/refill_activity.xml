@@ -27,7 +27,7 @@
                 android:layout_height="match_parent"
                 app:toolbarId="@+id/toolbar"
                 app:layout_scrollFlags="scroll|exitUntilCollapsed"
-                app:contentScrim="?attr/colorOnPrimarySurface"
+                app:contentScrim="?attr/colorOnToolbar"
                 app:statusBarScrim="@color/transparent"
                 app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded"
                 app:collapsedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Collapsed"
@@ -80,7 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:overScrollMode="always"
+            android:overScrollMode="never"
             android:animateLayoutChanges="true"
             android:visibility="visible"
             tools:layout_editor_absoluteY="180dp"
@@ -96,6 +96,18 @@
                 android:outlineProvider="background"
                 android:clipChildren="false"
                 android:id="@+id/constraintLayout">
+
+            <TextView
+                    android:text="No refills have been added."
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:visibility="visible"
+                    android:id="@+id/emptyRefillRVView"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@android:color/tab_indicator_text"
+                    app:layout_constraintStart_toStartOf="parent"
+                    android:layout_marginStart="16dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvRefills"

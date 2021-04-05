@@ -109,7 +109,7 @@
                     android:layout_marginTop="10dp"
                     android:layout_marginBottom="5dp"
                     android:id="@+id/textView"
-                    android:fontFamily="@font/montserrat" />
+                    android:fontFamily="sans-serif-medium" />
 
             <EditText
                     android:layout_width="match_parent"
@@ -131,7 +131,8 @@
                     android:layout_marginEnd="20dp"
                     android:id="@+id/widgetSwitch"
                     android:layout_weight="0"
-                    android:fontFamily="@font/montserrat" />
+                    app:useMaterialThemeColors="true"
+                    android:fontFamily="sans-serif-medium" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -145,7 +146,8 @@
             android:layout_gravity="bottom"
             android:layout_marginHorizontal="20dp"
             android:layout_marginBottom="20dp"
-            android:onClick="deleteButton" />
+            android:onClick="deleteButton"
+            app:cornerRadius="100dp" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
