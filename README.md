@@ -5,12 +5,13 @@
 
 <p float="left">
   <img src="readMeImages/home_screen_light.png"  width="270" height="555">
-  <img src="readMeImages/refill_light.png"  width="270" height="555">
   <img src="readMeImages/rearrange_light.png"  width="270" height="555">
-  <img src="readMeImages/refill_dark.png"  width="270" height="555">
+  <img src="readMeImages/refill_light.png"  width="270" height="555">
   <img src="readMeImages/home_screen_dark.png"  width="270" height="555">
   <img src="readMeImages/rearrange_dark.png"  width="270" height="555">
+  <img src="readMeImages/refill_dark.png"  width="270" height="555">
  </p>
+
 
 
 Keep track of all your pills so you don't run out unexpectedly.
