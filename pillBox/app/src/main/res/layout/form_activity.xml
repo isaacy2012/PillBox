@@ -33,7 +33,6 @@
                 app:expandedTitleMarginStart="23dp"
                 app:expandedTitleMargin="0dp"
                 app:expandedTitleMarginTop="20dp"
-                app:title="Title"
                 app:expandedTitleGravity="center_vertical">
 
             <androidx.appcompat.widget.Toolbar

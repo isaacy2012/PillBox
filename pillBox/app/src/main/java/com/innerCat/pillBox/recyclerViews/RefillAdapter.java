@@ -14,7 +14,10 @@ import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.RefillActivity;
 import com.innerCat.pillBox.objects.Refill;
+import com.innerCat.pillBox.objects.RefillListHeader;
+import com.innerCat.pillBox.objects.RefillListObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,14 +25,16 @@ import java.util.Set;
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
 public class RefillAdapter extends
-        RecyclerView.Adapter<RefillAdapter.ViewHolder> {
+        RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final int TYPE_HEADER = 0;
+    private static final int TYPE_ITEM = 1;
 
-    private List<Refill> refills;
-    private Set<ViewHolder> mBoundViewHolders = new HashSet<>();
+    private List<RefillListObject> refillListObjects = new ArrayList<>();
+    private Set<ViewHolderItem> mBoundItemViewHolders = new HashSet<>();
 
     // Provide a direct reference to each of the views within a data refill
     // Used to cache the views within the refill layout for fast access
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolderItem extends RecyclerView.ViewHolder {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
         public Refill refill;
@@ -40,10 +45,11 @@ public class RefillAdapter extends
 
         // We also create a constructor that accepts the entire refill row
         // and does the view lookups to find each subview
-        public ViewHolder( View refillView, Context context ) {
+        public ViewHolderItem( View refillView, Context context ) {
             // Stores the refillView in a public final member variable that can be used
             // to access the context from any ViewHolder instance.
             super(refillView);
+
             this.context = context;
 
 
@@ -74,28 +80,39 @@ public class RefillAdapter extends
             }
         }
     }
-
+    public class ViewHolderHeader extends RecyclerView.ViewHolder {
+        TextView titleTV;
+        public ViewHolderHeader( View itemView ) {
+            super(itemView);
+            this.titleTV = itemView.findViewById(R.id.titleTV);
+        }
+    }
     /**
      * Enables deletion of all the tasks
      */
     public void checkDelete( boolean deleteMode ) {
-        for (ViewHolder viewHolder : mBoundViewHolders) {
+        for (ViewHolderItem viewHolderItem : mBoundItemViewHolders) {
             if (deleteMode == true) {
-                viewHolder.deleteCheckBox.setVisibility(View.VISIBLE);
-                viewHolder.deleteCheckBox.setChecked(false);
+                viewHolderItem.deleteCheckBox.setVisibility(View.VISIBLE);
+                viewHolderItem.deleteCheckBox.setChecked(false);
             } else {
-                viewHolder.deleteCheckBox.setVisibility(View.GONE);
+                viewHolderItem.deleteCheckBox.setVisibility(View.GONE);
             }
         }
     }
 
     /**
-     * Pass in the tasks array into the Adapter
+     * Pass in the refills array into the Adapter
      *
-     * @param refills the list of Tasks
+     * @param expired the expired
+     * @param future  the future
      */
-    public RefillAdapter( List<Refill> refills ) {
-        this.refills = refills;
+    public RefillAdapter( List<? extends RefillListObject> expired, List<? extends RefillListObject> future ) {
+        refillListObjects.addAll(future);
+        if (expired.isEmpty() == false) {
+            refillListObjects.add(new RefillListHeader("Expired Refills"));
+            refillListObjects.addAll(expired);
+        }
     }
 
 
@@ -105,11 +122,13 @@ public class RefillAdapter extends
      * @param context the context (RefillActivity instance)
      */
     public void selectAll( Context context ) {
-        for (ViewHolder viewHolder : mBoundViewHolders) {
-            viewHolder.deleteCheckBox.setChecked(true);
+        for (ViewHolderItem viewHolderItem : mBoundItemViewHolders) {
+            viewHolderItem.deleteCheckBox.setChecked(true);
         }
-        for (Refill refill : refills) {
-            ((RefillActivity) context).addDeleteRefill(refill);
+        for (RefillListObject refillObject : refillListObjects) {
+            if (refillObject instanceof Refill) {
+                ((RefillActivity) context).addDeleteRefill((Refill)refillObject);
+            }
         }
     }
 
@@ -121,7 +140,7 @@ public class RefillAdapter extends
      * @param position the position of the new Refill in the List
      */
     public void addRefill( Context context, Refill refill, int position) {
-        refills.add(position, refill);
+        refillListObjects.add(position, refill);
         notifyInserted(context, position);
     }
 
@@ -133,7 +152,7 @@ public class RefillAdapter extends
      * @param position the position of the Refill in the List
      */
     public void removeRefill( Context context, Refill refill, int position) {
-        refills.remove(refill);
+        refillListObjects.remove(refill);
         notifyRemoved( context, position );
     }
 
@@ -170,38 +189,63 @@ public class RefillAdapter extends
     // Usually involves inflating a layout from XML and returning the holder
     @NonNull
     @Override
-    public RefillAdapter.ViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
+    public RecyclerView.ViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View refillView = inflater.inflate(R.layout.refill_rv_item, parent, false);
+        View refillView;
+        if (viewType == TYPE_HEADER) {
+            refillView = inflater.inflate(R.layout.refill_rv_header, parent, false);
+            // Return a new holder instance
+            ViewHolderHeader viewHolderHeader = new ViewHolderHeader(refillView);
+            return viewHolderHeader;
+        } else {
+            refillView = inflater.inflate(R.layout.refill_rv_item, parent, false);
+            // Return a new holder instance
+            ViewHolderItem viewHolderItem = new ViewHolderItem(refillView, context);
+            return viewHolderItem;
+        }
 
-        // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(refillView, context);
-        return viewHolder;
     }
 
     // Involves populating data into the refill through holder
     @Override
-    public void onBindViewHolder( RefillAdapter.ViewHolder holder, int position ) {
-        // Get the data model based on position
-        holder.refill = refills.get(position);
+    public void onBindViewHolder( RecyclerView.ViewHolder holder, int position ) {
+        if (holder instanceof ViewHolderHeader) {
+            //if it is a viewHolderHeader
+            //cast the object to a Header objects
+            RefillListHeader header = (RefillListHeader) refillListObjects.get(position);
+            ViewHolderHeader headerViewHolder = (ViewHolderHeader) holder;
+            //set the title of the viewHolder to the title of the header object
+            headerViewHolder.titleTV.setText(header.getTitle());
+        } else if (holder instanceof ViewHolderItem) {
+            // Get the data model based on position
+            ViewHolderItem refillViewHolder = (ViewHolderItem) holder;
+            refillViewHolder.refill = (Refill) refillListObjects.get(position);
 
-        // Set refill views based on your views and data model
-        TextView amountTV = holder.amountTV;
-        TextView dateTV = holder.dateTV;
-        amountTV.setText(String.valueOf(holder.refill.getAmount()));
-        dateTV.setText(StringFormatter.dateToString(holder.refill.getExpiryDate()));
-
-        mBoundViewHolders.add(holder);
+            // Set refill views based on your views and data model
+            TextView amountTV = refillViewHolder.amountTV;
+            TextView dateTV = refillViewHolder.dateTV;
+            amountTV.setText(String.valueOf(refillViewHolder.refill.getAmount()));
+            dateTV.setText(StringFormatter.dateToString(refillViewHolder.refill.getExpiryDate()));
+            mBoundItemViewHolders.add(refillViewHolder);
+        }
     }
 
 
     // Returns the total count of refills in the list
     @Override
     public int getItemCount() {
-        return refills.size();
+        return refillListObjects.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (refillListObjects.get(position) instanceof RefillListHeader) {
+            return TYPE_HEADER;
+        }
+        return TYPE_ITEM;
     }
 
     /**
@@ -209,16 +253,8 @@ public class RefillAdapter extends
      *
      * @return the refills
      */
-    public List<Refill> getRefills() {
-        return this.refills;
+    public List<RefillListObject> getRefillListObjects() {
+        return this.refillListObjects;
     }
 
-    /**
-     * Sets refills.
-     *
-     * @param refills the refills
-     */
-    public void setRefills( List<Refill> refills ) {
-        this.refills = refills;
-    }
 }

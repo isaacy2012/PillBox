@@ -1,6 +1,5 @@
 package com.innerCat.pillBox.activities;
 
-import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,7 +8,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AlertDialog;
@@ -26,6 +24,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
+import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.recyclerViews.RefillAdapter;
@@ -38,6 +37,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static java.util.Comparator.reverseOrder;
 
 public class RefillActivity extends AppCompatActivity {
 
@@ -89,14 +90,16 @@ public class RefillActivity extends AppCompatActivity {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
             //today rvItem
-            dao.deleteRefillsOlderThanToday(Converters.todayString());
-            System.out.println("WINNOW: itemId -> " + itemId);
-            List<Refill> refills = dao.getRefillsOfItemId(itemId);
-            Collections.sort(refills);
+            List<Refill> futureRefills = dao.getFutureRefillsOfItemId(itemId, Converters.todayString());
+            //soonest first
+            Collections.sort(futureRefills);
+            List<Refill> expiredRefills = dao.getExpiredRefillsOfItemId(itemId, Converters.todayString());
+            //least expired first
+            expiredRefills.sort(reverseOrder());
 
             handler.post(() -> {
                 // Create adapter passing in the sample user data
-                adapter = new RefillAdapter(refills);
+                adapter = new RefillAdapter(expiredRefills, futureRefills);
                 // Attach the adapter to the recyclerview to populate items
                 rvRefills.setAdapter(adapter);
                 // Set layout manager to position the items
@@ -113,31 +116,9 @@ public class RefillActivity extends AppCompatActivity {
     public void editButton( View view ) {
         editMode = !editMode;
         CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
-        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbarLayout.getLayoutParams();
-        int transparent = ContextCompat.getColor(this, R.color.transparent);
-        int primaryColor = ContextCompat.getColor(this, R.color.primaryColor);
-        ValueAnimator colorAnimator = new ValueAnimator();
-        if (editMode == true) {
-            //set the toolbar to red
-            colorAnimator.setIntValues(transparent, primaryColor);
-            editButton.setImageResource(R.drawable.ic_baseline_close_24);
-        } else {
-            //set the toolbar to clear
-            colorAnimator.setIntValues(primaryColor, transparent);
-            editButton.setImageResource(R.drawable.ic_baseline_edit_24);
-        }
-        colorAnimator.setEvaluator(new ArgbEvaluator());
-        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int animatedValue = (int) animation.getAnimatedValue();
-                toolbarLayout.setContentScrimColor(animatedValue);
-            }
-        });
-        //colorAnimator.setDuration(ANIMATION_DURATION);
-        colorAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
+                editButton, toolbarLayout);
         colorAnimator.start();
-        toolbarLayout.setLayoutParams(params);
 
         deleteRefills = new ArrayList<>();
         checkDelete();
@@ -182,8 +163,8 @@ public class RefillActivity extends AppCompatActivity {
                                 }
                                 handler.post(() -> {
                                     for (Refill refill : deleteRefills) {
-                                        adapter.notifyItemRemoved(adapter.getRefills().indexOf(refill));
-                                        adapter.getRefills().remove(refill);
+                                        adapter.notifyItemRemoved(adapter.getRefillListObjects().indexOf(refill));
+                                        adapter.getRefillListObjects().remove(refill);
                                     }
                                     deleteRefills.clear();
                                 });

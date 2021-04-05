@@ -18,7 +18,8 @@
         android:id="@+id/cardView"
         app:cardMaxElevation="16dp"
         android:animateLayoutChanges="true"
-        app:cardElevation="8dp">
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="?attr/colorOnSurface">
     <!-- app:layout_constraintDimensionRatio="1:1" -->
 
 
@@ -47,7 +48,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/stockTV"
-                android:layout_marginTop="40dp" />
+                android:layout_marginTop="45dp" />
 
         <TextView
                 android:layout_width="0dp"
@@ -93,7 +94,8 @@
                 android:autoSizeMaxTextSize="14sp"
                 android:textColor="@android:color/tab_indicator_text"
                 app:layout_constraintTop_toBottomOf="@+id/nameTV"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"
+                android:layout_marginTop="6dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

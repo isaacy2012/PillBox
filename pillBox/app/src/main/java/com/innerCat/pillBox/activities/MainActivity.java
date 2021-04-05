@@ -1,6 +1,5 @@
 package com.innerCat.pillBox.activities;
 
-import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,7 +12,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -22,7 +20,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -40,6 +37,7 @@ import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
@@ -160,9 +158,9 @@ public class MainActivity extends AppCompatActivity {
                                      @NonNull RecyclerView.ViewHolder viewHolder,
                                      float dX, float dY, int actionState, boolean isCurrentlyActive) {
                 CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
-                float end = Converters.fromDpToPixels(8, getResources());
+                float end = Converters.fromDpToPixels(0, getResources());
                 if (isCurrentlyActive) {
-                    end = Converters.fromDpToPixels(16, getResources());
+                    end = Converters.fromDpToPixels(8, getResources());
                 }
                 cardView.animate().z(end);
                 //cardView.setCardElevation(end);
@@ -184,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
             //today rvItem
             List<Item> items = dao.getAllItems();
             for (Item item : items) {
-                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId());
+                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
                 item.setExpiringRefill(expiringRefill);
             }
 
@@ -232,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
                     //today rvItem
                     List<Item> items = dao.getAllItems();
                     for (Item item : items) {
-                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId());
+                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
                         item.setExpiringRefill(expiringRefill);
                     }
                     adapter.setItems(items);
@@ -358,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
      * accomodate for the FAB button, otherwise no padding
      */
     private void updateRVPadding() {
-        int normal = Converters.fromDpToPixels(16, getResources());
+        int normal = Converters.fromDpToPixels(8, getResources());
         if (adapter.getItemCount()%2 == 0) { //if even
             int bottom = Converters.fromDpToPixels(80, getResources());
             rvItems.setPadding(normal, normal, normal, bottom);
@@ -469,7 +467,8 @@ public class MainActivity extends AppCompatActivity {
             //If there is another refill of this item with the same expiry date, merge them together
             //so that their amounts are added into a single refill
             Refill refillToUpdate = null;
-            List<Refill> refillsOfSameItem = dao.getRefillsOfItemId(addRefill.getItemId());
+            List<Refill> refillsOfSameItem = dao.getFutureRefillsOfItemId(addRefill.getItemId(),
+                    Converters.todayString());
             for (Refill refill : refillsOfSameItem) {
                 if (refill.getExpiryDate().equals(addRefill.getExpiryDate())) {
                     refillToUpdate = refill;
@@ -544,31 +543,9 @@ public class MainActivity extends AppCompatActivity {
         editMode = !editMode;
         ImageButton editButton = findViewById(R.id.editButton);
         CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
-        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) toolbarLayout.getLayoutParams();
-        int transparent = ContextCompat.getColor(this, R.color.transparent);
-        int primaryColor = ContextCompat.getColor(this, R.color.primaryColor);
-        ValueAnimator colorAnimator = new ValueAnimator();
-        if (editMode == true) {
-            //set the toolbar to red
-            colorAnimator.setIntValues(transparent, primaryColor);
-            editButton.setImageResource(R.drawable.ic_baseline_close_24);
-        } else {
-            //set the toolbar to clear
-            colorAnimator.setIntValues(primaryColor, transparent);
-            editButton.setImageResource(R.drawable.ic_baseline_edit_24);
-        }
-        colorAnimator.setEvaluator(new ArgbEvaluator());
-        colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
-                int animatedValue = (int) animation.getAnimatedValue();
-                toolbarLayout.setContentScrimColor(animatedValue);
-            }
-        });
-        //colorAnimator.setDuration(ANIMATION_DURATION);
-        colorAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
+                editButton, toolbarLayout);
         colorAnimator.start();
-        toolbarLayout.setLayoutParams(params);
     }
 
     /** Called when the user taps the FAB button */
@@ -664,7 +641,8 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
                     Item replaceItem = dao.getItem(id);
-                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId());
+                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId(),
+                            Converters.todayString());
                     replaceItem.setExpiringRefill(expiringRefill);
                     adapter.getItems().set(pos, replaceItem);
                     handler.post(() -> {

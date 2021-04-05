@@ -73,11 +73,39 @@ public interface DataDao {
      * @param itemId the itemId
      * @return the refills of item itemId
      */
-    @Query("SELECT * FROM refills WHERE itemId = :itemId")
-    public List<Refill> getRefillsOfItemId( int itemId );
+    @Query("SELECT * FROM refills WHERE itemId = :itemId AND julianday(expiryDate) >= julianday(:today)")
+    public List<Refill> getFutureRefillsOfItemId( int itemId, String today);
 
-    @Query("SELECT * FROM refills WHERE itemId = :itemId ORDER BY julianday(expiryDate) ASC LIMIT 1")
-    public Refill getSoonestExpiringRefillOfItemId(int itemId);
+    /**
+     * Gets expired refills of item id.
+     *
+     * @param itemId the item id
+     * @param today  the today
+     * @return the expired refills of item id
+     */
+    @Query("SELECT * FROM refills WHERE itemId = :itemId AND julianday(expiryDate) < julianday(:today)")
+    public List<Refill> getExpiredRefillsOfItemId( int itemId, String today);
+
+    /**
+     * Gets soonest expiring refill of item id.
+     *
+     * @param itemId the item id
+     * @param today  the today
+     * @return the soonest expiring refill of item id
+     */
+    @Query( "SELECT * FROM refills " +
+            "WHERE itemId = :itemId " +
+            "AND julianday(expiryDate) >= julianday(:today) " +
+            "ORDER BY julianday(expiryDate) " +
+            "ASC LIMIT 1")
+    public Refill getSoonestExpiringRefillOfItemId(int itemId, String today);
+
+
+    /**
+     * Removes a Refill by id
+     *
+     * @param id the id of the Item to remove
+     */
 
     /**
      * Inserts a Refill
@@ -88,7 +116,6 @@ public interface DataDao {
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public long insert( Refill refill );
-
 
     /**
      * Updates an refill
@@ -106,13 +133,11 @@ public interface DataDao {
     @Query("SELECT * FROM refills")
     public List<Refill> getAllRefills();
 
-    @Query("DELETE FROM refills WHERE julianday(expiryDate) < julianday(:today)")
-    public void deleteRefillsOlderThanToday(String today);
 
     /**
-     * Removes a Refill by id
+     * Remove refill by id.
      *
-     * @param id the id of the Item to remove
+     * @param id the id
      */
     @Query("DELETE FROM refills WHERE id = :id")
     public void removeRefillById( int id );

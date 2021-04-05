@@ -12,7 +12,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
  */
 //table name is 'refills'
 @Entity(tableName = "refills")
-public class Refill implements Comparable<Refill> {
+public class Refill extends RefillListObject implements Comparable<Refill> {
     //set the primary key to auto generate and increment
     @PrimaryKey(autoGenerate = true)
     //placeholder id

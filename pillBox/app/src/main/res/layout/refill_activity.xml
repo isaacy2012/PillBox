@@ -113,7 +113,8 @@
                     app:layout_constraintTop_toTopOf="parent"
                     android:nestedScrollingEnabled="true"
                     android:scrollbarSize="0dp"
-                    android:clipToPadding="false" />
+                    android:clipToPadding="false"
+                    android:paddingTop="10dp" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

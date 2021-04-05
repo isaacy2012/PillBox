@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:animateLayoutChanges="true">
+        android:animateLayoutChanges="true"
+        app:cardCornerRadius="5dp"
+        android:layout_marginVertical="5dp"
+        app:cardMaxElevation="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="?attr/colorOnSurface">
 
     <LinearLayout
             android:orientation="horizontal"
@@ -18,7 +24,8 @@
                 android:id="@+id/amountTV"
                 android:layout_weight="1"
                 android:textSize="16sp"
-                android:layout_marginVertical="20dp" />
+                android:layout_marginVertical="20dp"
+                android:layout_marginStart="8dp" />
 
         <TextView
                 android:text="Date"
@@ -28,21 +35,16 @@
                 android:layout_weight="1"
                 android:textAlignment="textEnd"
                 android:textSize="16sp"
-                android:layout_marginVertical="20dp" />
+                android:layout_marginVertical="20dp"
+                android:layout_marginEnd="8dp" />
 
         <CheckBox
                 android:layout_width="40dp"
                 android:layout_height="match_parent"
                 android:id="@+id/checkBox"
                 android:layout_weight="0"
-                android:visibility="gone"
                 android:layout_gravity="clip_vertical"
-                android:layout_marginStart="8dp" />
+                android:visibility="gone" />
     </LinearLayout>
 
-    <View
-            android:id="@+id/bottomDivider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?android:attr/listDivider" />
-</LinearLayout>
+</androidx.cardview.widget.CardView>
