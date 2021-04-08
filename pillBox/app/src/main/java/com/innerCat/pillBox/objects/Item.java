@@ -25,6 +25,7 @@ public class Item  {
     private int stock = 0;
     private int viewHolderPosition;
     private boolean showInWidget = false;
+    private int color = ColorItem.NO_COLOR;
     @Ignore
     private Refill expiringRefill = null;
 
@@ -47,6 +48,21 @@ public class Item  {
     public Item(String name, int stock, boolean showInWidget) {
         this.name = name;
         this.stock = stock;
+        this.showInWidget = showInWidget;
+    }
+
+    /**
+     * Instantiates a new Item.
+     *
+     * @param name         the name
+     * @param stock        the stock
+     * @param showInWidget the show in widget
+     */
+    @Ignore
+    public Item(String name, int stock, int color, boolean showInWidget) {
+        this.name = name;
+        this.stock = stock;
+        this.color = color;
         this.showInWidget = showInWidget;
     }
 
@@ -205,6 +221,23 @@ public class Item  {
         this.stock = this.stock+refillAmount;
     }
 
+    /**
+     * Gets color.
+     *
+     * @return the color
+     */
+    public int getColor() {
+        return color;
+    }
+
+    /**
+     * Sets color.
+     *
+     * @param color the color
+     */
+    public void setColor( int color ) {
+        this.color = color;
+    }
 
     /**
      * Gets expiring refill.

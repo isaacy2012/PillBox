@@ -43,6 +43,8 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.4.0-alpha04'
     androidTestUtil 'androidx.test:orchestrator:1.4.0-alpha04'
 
+
+    //testing
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'

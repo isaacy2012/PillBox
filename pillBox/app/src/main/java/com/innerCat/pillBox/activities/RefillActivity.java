@@ -1,7 +1,6 @@
 package com.innerCat.pillBox.activities;
 
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,9 +24,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.DatabaseFactory;
-import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;

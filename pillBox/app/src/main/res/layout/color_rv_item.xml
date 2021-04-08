@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="28dip"
+        android:layout_height="wrap_content"
+        app:cornerRadius="10000dp"
+        android:stateListAnimator="@null"
+        android:minWidth="28dip"
+        android:insetBottom="0dp"
+        android:insetTop="0dp"
+        android:id="@+id/colorButton"
+        android:minHeight="28dip"
+        android:layout_marginHorizontal="4dp"
+        android:textSize="0sp"
+        android:insetLeft="0dp">
+
+</Button>

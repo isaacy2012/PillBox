@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -13,11 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
+import com.innerCat.pillBox.objects.ColorItem;
+import com.innerCat.pillBox.objects.Item;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static android.view.View.GONE;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
@@ -40,6 +43,7 @@ public class ItemAdapter extends
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
+        public Button colorDot;
         public TextView nameTV;
         public TextView expiryTV;
         public TextView stockTV;
@@ -57,6 +61,7 @@ public class ItemAdapter extends
             this.context = context;
 
 
+            colorDot = itemView.findViewById(R.id.colorDot);
             nameTV = itemView.findViewById(R.id.nameTV);
             expiryTV = itemView.findViewById(R.id.expiryTV);
             stockTV = itemView.findViewById(R.id.stockTV);
@@ -226,12 +231,22 @@ public class ItemAdapter extends
         holder.item = items.get(position);
 
         // Set item views based on your views and data model
+        Button colorDot = holder.colorDot;
         TextView nameTV = holder.nameTV;
         TextView expiryTV = holder.expiryTV;
         TextView stockTV = holder.stockTV;
         TextView lastTakenTV = holder.lastTakenTV;
-        nameTV.setText(holder.item.getName());
         int stock = holder.item.getStock();
+
+        nameTV.setText(holder.item.getName());
+        if (holder.item.getColor() == ColorItem.NO_COLOR) {
+            holder.colorDot.setVisibility(GONE);
+            int currentRightPadding = holder.nameTV.getPaddingRight();
+            holder.nameTV.setPadding(0, 0, currentRightPadding, 0);
+        } else {
+            holder.colorDot.setVisibility(View.VISIBLE);
+            holder.colorDot.setBackgroundColor(holder.item.getColor());
+        }
 
         //Set the text of the stockTV
         stockTV.setText(String.valueOf(stock));
@@ -255,6 +270,8 @@ public class ItemAdapter extends
                     .getInt("warningDayThreshold", 28);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
+                expiryTV.setVisibility(View.VISIBLE);
+                System.out.println("WINNOW set " + holder.item.getName() + " to YES");
                 //Set the text of the stockTV
                 expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
                 //Set the color of the text if it is close
@@ -270,10 +287,12 @@ public class ItemAdapter extends
                     expiryTV.setTextColor(color);
                 }
             } else {
-               expiryTV.setVisibility(View.GONE);
+                System.out.println("WINNOW set " + holder.item.getName() + " to far away");
+               expiryTV.setVisibility(GONE);
             }
         } else {
-            expiryTV.setVisibility(View.GONE);
+            System.out.println("WINNOW set " + holder.item.getName() + " to none");
+            expiryTV.setVisibility(GONE);
         }
 
         //set the text of the last taken text view

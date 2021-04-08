@@ -12,6 +12,8 @@ import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -20,6 +22,7 @@ import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.recyclerViews.ColorAdapter;
 import com.innerCat.pillBox.room.Converters;
 
 import static android.view.View.GONE;
@@ -28,6 +31,9 @@ import static android.view.View.VISIBLE;
 public class FormActivity extends AppCompatActivity {
 
     int requestCode;
+    RecyclerView rvColors;
+    ColorAdapter adapter;
+    int color;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -44,6 +50,7 @@ public class FormActivity extends AppCompatActivity {
         EditText stockEdit = findViewById(R.id.editStock);
         SwitchMaterial widgetSwitch = findViewById(R.id.widgetSwitch);
         Button deleteButton = findViewById(R.id.deleteButton);
+        RecyclerView rvColors = findViewById(R.id.rvColors);
 
         nameEdit.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
                 nameEdit,
@@ -95,6 +102,10 @@ public class FormActivity extends AppCompatActivity {
             nameEdit.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+
+        adapter = new ColorAdapter();
+        rvColors.setAdapter(adapter);
+        rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
     }
 
     public void deleteButton( View view ) {
@@ -121,7 +132,7 @@ public class FormActivity extends AppCompatActivity {
         }
         boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
 
-        Item item = new Item(name, stock, showInWidget);
+        Item item = new Item(name, stock, color, showInWidget);
         //get the pos from the original incoming intent
         int pos = getIntent().getIntExtra("position", -1);
 
@@ -154,5 +165,9 @@ public class FormActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         cancel();
+    }
+
+    public void setChosenColor( Integer color ) {
+        this.color = color;
     }
 }

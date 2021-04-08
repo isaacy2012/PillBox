@@ -63,14 +63,15 @@
                 android:gravity="center_vertical"
                 android:text="Name"
                 android:visibility="visible"
-                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/stockTV"
                 android:layout_marginEnd="5dp"
                 android:ellipsize="end"
                 android:autoSizeMaxTextSize="18sp"
                 android:autoSizeMinTextSize="14sp"
-                android:autoSizeTextType="uniform" />
+                android:autoSizeTextType="uniform"
+                app:layout_constraintStart_toEndOf="@+id/colorDot"
+                android:layout_marginStart="5dp" />
 
         <TextView
                 android:text="TextView"
@@ -96,6 +97,22 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="6dp"
                 android:visibility="visible" />
+
+        <Button
+                android:layout_width="4dp"
+                android:layout_height="0dp"
+                android:id="@+id/colorDot"
+                android:clickable="false"
+                app:cornerRadius="10000dip"
+                app:layout_constraintTop_toTopOf="@+id/nameTV"
+                app:layout_constraintBottom_toBottomOf="@+id/nameTV"
+                android:insetBottom="3dp"
+                android:insetTop="3dp"
+                app:layout_constraintStart_toStartOf="parent"
+                android:focusableInTouchMode="false"
+                android:focusable="false"
+                android:stateListAnimator="@null"
+                android:enabled="false" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

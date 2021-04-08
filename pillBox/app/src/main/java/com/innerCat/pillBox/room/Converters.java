@@ -109,6 +109,7 @@ public class Converters {
         bundle.putInt("id", item.getId());
         bundle.putString("name", item.getName());
         bundle.putInt("stock", item.getStock());
+        bundle.putInt("color", item.getColor());
         bundle.putBoolean("showInWidget", item.getShowInWidget());
         return bundle;
     }

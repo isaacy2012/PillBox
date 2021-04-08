@@ -506,13 +506,13 @@ public class MainActivity extends AppCompatActivity {
      * @param name  the name of the item
      * @param stock the stock
      */
-    private void addItem( String name, int stock, boolean showInWidget) {
+    private void addItem( String name, int stock, int color, boolean showInWidget) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            Item item = new Item(name, stock, showInWidget);
+            Item item = new Item(name, stock, color, showInWidget);
             long id = dao.insert(item);
             item.setId((int) id);
             handler.post(() -> {
@@ -613,8 +613,9 @@ public class MainActivity extends AppCompatActivity {
                 case ADD_ITEM_REQUEST:
                     String name = data.getStringExtra("name");
                     int stock = data.getIntExtra("stock", 0);
+                    int color = data.getIntExtra("color", 0);
                     boolean showInWidget = data.getBooleanExtra("showInWidget", false);
-                    addItem(name, stock, showInWidget);
+                    addItem(name, stock, color, showInWidget);
                     break;
                 case EDIT_ITEM_REQUEST:
                     if (itemToUpdate == null) {
