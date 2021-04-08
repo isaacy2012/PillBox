@@ -1,6 +1,7 @@
 package com.innerCat.pillBox.activities;
 
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +25,7 @@ import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
@@ -48,30 +51,20 @@ public class RefillActivity extends AppCompatActivity {
     RecyclerView rvRefills;
     ExtendedFloatingActionButton deleteFAB;
     ImageButton editButton;
+    TextView subtitle;
     RefillAdapter adapter;
     boolean editMode;
     boolean selectAllMode = false;
     boolean changed = false;
     ArrayList<Refill> deleteRefills = new ArrayList<>();
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) {
-        super.onCreate(savedInstanceState);
-
-        Intent intent = getIntent();
-        int itemId = intent.getIntExtra("id", -1);
-        String name = intent.getStringExtra("name");
-
-        setContentView(R.layout.refill_activity);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    /**
+     * Bind and set views.
+     */
+    private void bindAndSetViews() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //Add offset listener for when the view is collapsing or expanded
-        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
-        appBarLayout.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
-
-        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
-        collapsingToolbarLayout.setTitle("Refills of " + name);
 
         //initialise the database
         database = DatabaseFactory.create(this);
@@ -83,6 +76,31 @@ public class RefillActivity extends AppCompatActivity {
         //get the FAB
         deleteFAB = findViewById(R.id.deleteFAB);
         editButton = findViewById(R.id.editButton);
+
+        //get the subtitle
+        subtitle = findViewById(R.id.subtitleTV);
+
+        //Add offset listener for when the view is collapsing or expanded
+        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
+        System.out.println(appBarLayout);
+        appBarLayout.addOnOffsetChangedListener(this::updateScroll);
+    }
+
+    @Override
+    protected void onCreate( Bundle savedInstanceState ) {
+        super.onCreate(savedInstanceState);
+
+        Intent intent = getIntent();
+        int itemId = intent.getIntExtra("id", -1);
+        String name = intent.getStringExtra("name");
+
+        setContentView(R.layout.refill_activity);
+
+        bindAndSetViews();
+
+        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
+        collapsingToolbarLayout.setTitle(name);
+
 
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -108,6 +126,31 @@ public class RefillActivity extends AppCompatActivity {
                 updateRVVisibility();
             });
         });
+    }
+
+    /**
+     * Update scroll.
+     *
+     * @param appBarLayout   the app bar layout
+     * @param verticalOffset the vertical offset
+     */
+    private void updateScroll(AppBarLayout appBarLayout, int verticalOffset) {
+        //set the behaviour for the coordinatorLayout
+        CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
+        if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
+            //  Collapsed
+            coordinatorLayout.setClipChildren(true);
+            subtitle.setAlpha(1);
+
+        } else if (Math.abs(verticalOffset) > 0) {
+            //  In the middle
+            float percentage = (float) (Math.abs(verticalOffset)/(appBarLayout.getTotalScrollRange()*0.15));
+            if (percentage > 1) { percentage = 1; }
+            subtitle.setAlpha(1-percentage);
+        } else {
+            //Expanded
+            coordinatorLayout.setClipChildren(false);
+        }
     }
 
     /**

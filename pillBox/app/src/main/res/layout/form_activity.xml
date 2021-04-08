@@ -31,9 +31,8 @@
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="23dp"
                 app:expandedTitleMargin="0dp"
-                app:expandedTitleMarginTop="20dp"
-                app:expandedTitleGravity="center_vertical"
-                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded">
+                app:expandedTitleMarginBottom="20dp"
+                app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded.Invisible">
 
             <androidx.appcompat.widget.Toolbar
                     android:id="@+id/toolbar"
@@ -74,14 +73,14 @@
                     android:ems="10"
                     android:id="@+id/editName"
                     android:layout_weight="0"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="19dp"
                     android:layout_marginEnd="20dp"
                     app:layout_collapseMode="parallax"
+                    android:layout_gravity="bottom"
                     android:fontFamily="@font/montserrat"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:hint="Title"
-                    android:layout_marginTop="60dp" />
+                    android:hint="Title" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
 

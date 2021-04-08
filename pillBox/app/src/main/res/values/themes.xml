@@ -61,6 +61,12 @@
         <item name="fontFamily">@font/montserrat</item>
         <item name="android:fontFamily">@font/montserrat</item>
         <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.CollapsingToolbar.Expanded.Invisible" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="fontFamily">@font/montserrat</item>
+        <item name="android:fontFamily">@font/montserrat</item>
+        <item name="android:textStyle">bold</item>
         <!--TRANSPARENT COLOR FOR INVISIBLE -->
         <item name="android:textColor">@color/transparent</item>
     </style>

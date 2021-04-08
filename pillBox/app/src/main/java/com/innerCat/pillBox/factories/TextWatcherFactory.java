@@ -83,10 +83,11 @@ public class TextWatcherFactory {
             @Override
             public void onTextChanged( CharSequence s, int start, int before, int count ) {
                 String str = input.getText().toString();
-                toolbarLayout.setTitle(str);
                 if (str.trim().length() > 0) {
+                    toolbarLayout.setTitle(str);
                     okButton.setEnabled(true);
                 } else {
+                    toolbarLayout.setTitle("Title");
                     okButton.setEnabled(false);
                 }
             }

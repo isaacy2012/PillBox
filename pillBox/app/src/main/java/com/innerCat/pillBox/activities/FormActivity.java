@@ -58,11 +58,12 @@ public class FormActivity extends AppCompatActivity {
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
 
                 //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
-                if (Math.abs(verticalOffset) > appBarLayout.getTotalScrollRange()*0.3) {
+                if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
                     //  Collapsing
                     nameEdit.setFocusableInTouchMode(false);
                     nameEdit.setFocusable(false);
                     nameEdit.setTextColor(ContextCompat.getColor(context, R.color.transparent));
+                    nameEdit.setHint("");
                     //nameEdit.setVisibility(GONE);
                     stockEdit.requestFocus();
                 } else {
@@ -71,6 +72,7 @@ public class FormActivity extends AppCompatActivity {
                     //get the default color
                     int color = ColorFactory.getDefaultTextColor(context);
                     nameEdit.setTextColor(color);
+                    nameEdit.setHint("Title");
 
                     nameEdit.setFocusableInTouchMode(true);
                     nameEdit.setFocusable(true);

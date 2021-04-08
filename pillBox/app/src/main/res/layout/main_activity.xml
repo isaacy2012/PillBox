@@ -78,35 +78,19 @@
             android:clipToPadding="false"
             android:fillViewport="true">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvItems"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:animateLayoutChanges="true"
+                android:layout_height="wrap_content"
+                android:overScrollMode="never"
+                android:scrollbars="vertical"
+                app:layoutManager="LinearLayoutManager"
+                android:paddingHorizontal="8dp"
+                android:paddingBottom="8dp"
+                android:paddingTop="8dp"
+                android:nestedScrollingEnabled="true"
                 android:scrollbarSize="0dp"
-                android:outlineProvider="background"
-                android:clipChildren="false"
-                android:id="@+id/constraintLayout">
-
-            <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvItems"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:overScrollMode="never"
-                    android:scrollbars="vertical"
-                    app:layoutManager="LinearLayoutManager"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toStartOf="parent"
-                    android:paddingHorizontal="8dp"
-                    android:paddingBottom="8dp"
-                    android:paddingTop="8dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    android:nestedScrollingEnabled="true"
-                    android:scrollbarSize="0dp"
-                    android:clipToPadding="false" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                android:clipToPadding="false" />
     </androidx.core.widget.NestedScrollView>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
