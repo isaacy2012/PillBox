@@ -1,5 +1,6 @@
 package com.innerCat.pillBox.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -10,13 +11,15 @@ import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.switchmaterial.SwitchMaterial;
-import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.room.Converters;
 
 import static android.view.View.GONE;
@@ -49,6 +52,7 @@ public class FormActivity extends AppCompatActivity {
 
         //Add offset listener for when the view is collapsing or expanded
         AppBarLayout appBarLayout = findViewById(R.id.app_bar);
+        Context context = this;
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
             public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
@@ -58,11 +62,16 @@ public class FormActivity extends AppCompatActivity {
                     //  Collapsing
                     nameEdit.setFocusableInTouchMode(false);
                     nameEdit.setFocusable(false);
-                    nameEdit.setVisibility(GONE);
+                    nameEdit.setTextColor(ContextCompat.getColor(context, R.color.transparent));
+                    //nameEdit.setVisibility(GONE);
                     stockEdit.requestFocus();
                 } else {
                     //Expanded
-                    nameEdit.setVisibility(VISIBLE);
+                    //nameEdit.setVisibility(VISIBLE);
+                    //get the default color
+                    int color = ColorFactory.getDefaultTextColor(context);
+                    nameEdit.setTextColor(color);
+
                     nameEdit.setFocusableInTouchMode(true);
                     nameEdit.setFocusable(true);
                 }
@@ -111,8 +120,10 @@ public class FormActivity extends AppCompatActivity {
         boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
 
         Item item = new Item(name, stock, showInWidget);
+        //get the pos from the original incoming intent
+        int pos = getIntent().getIntExtra("position", -1);
 
-        intent.putExtras(Converters.getBundleFromItem(item));
+        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, pos));
         setResult(RESULT_OK, intent);
         finish();
     }

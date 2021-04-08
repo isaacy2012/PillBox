@@ -66,7 +66,8 @@ public class TextWatcherFactory {
     }
 
     /**
-     * Gets text and image button TextWatcher.
+     * Gets text and image button TextWatcher. Used for the collapsingToolbarLayout in
+     * MainActivity and RefillActivity
      *
      * @param input    the input
      * @param okButton the ok button
