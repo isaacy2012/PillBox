@@ -140,16 +140,16 @@ public class RefillActivity extends AppCompatActivity {
         if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
             //  Collapsed
             coordinatorLayout.setClipChildren(true);
-            subtitle.setAlpha(1);
-
         } else if (Math.abs(verticalOffset) > 0) {
             //  In the middle
-            float percentage = (float) (Math.abs(verticalOffset)/(appBarLayout.getTotalScrollRange()*0.15));
+            float percentage = (float) (Math.abs(verticalOffset)/(appBarLayout.getTotalScrollRange()*0.2));
             if (percentage > 1) { percentage = 1; }
             subtitle.setAlpha(1-percentage);
         } else {
             //Expanded
             coordinatorLayout.setClipChildren(false);
+            subtitle.setAlpha(1);
+
         }
     }
 
