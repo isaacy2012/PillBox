@@ -35,6 +35,7 @@ Reorder items however you want.
 - Homescreen widget with 1-tap decrement of stock
 - Choose which items are displayed on the homescreen widget
 - Clean and modern UI
+- Dark mode
 - Record expiry date of individual refills of items
 
 <b>Coming Soon</b> 
