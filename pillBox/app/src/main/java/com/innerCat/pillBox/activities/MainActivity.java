@@ -38,6 +38,7 @@ import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
+import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.recyclerViews.ItemAdapter;
@@ -594,10 +595,12 @@ public class MainActivity extends AppCompatActivity {
     private void injectDataToItem(Item item, Intent data) {
         String name = data.getStringExtra("name");
         int stock = data.getIntExtra("stock", 0);
+        int color = data.getIntExtra("color", ColorItem.NO_COLOR);
         boolean showInWidget = data.getBooleanExtra("showInWidget", false);
         item.setName(name);
         item.setStock(stock);
         item.setShowInWidget(showInWidget);
+        item.setColor(color);
     }
 
     /**

@@ -21,6 +21,7 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
+import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.recyclerViews.ColorAdapter;
 import com.innerCat.pillBox.room.Converters;
@@ -92,6 +93,7 @@ public class FormActivity extends AppCompatActivity {
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             String name = intent.getStringExtra("name");
             int stock = intent.getIntExtra("stock", 0);
+            color = intent.getIntExtra("color", ColorItem.NO_COLOR);
             boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
             nameEdit.setText(name);
             stockEdit.setText(String.valueOf(stock));
@@ -106,6 +108,7 @@ public class FormActivity extends AppCompatActivity {
         adapter = new ColorAdapter();
         rvColors.setAdapter(adapter);
         rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        adapter.setSelectedColor(color);
     }
 
     public void deleteButton( View view ) {

@@ -1,5 +1,6 @@
 package com.innerCat.pillBox.recyclerViews;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ public class ColorAdapter extends
 
     private final List<ColorItem> colors;
     private final Set<ViewHolder> mBoundViewHolders = new HashSet<>();
+    private int selectedColor = ColorItem.NO_COLOR;
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
@@ -63,13 +65,28 @@ public class ColorAdapter extends
     }
 
     /**
+     * Animate color button.
+     *
+     * @param fromAlpha the from alpha
+     * @param toAlpha   the to alpha
+     */
+    public void animateColorButton(float fromAlpha, float toAlpha, Button colorButton) {
+        ValueAnimator va = ValueAnimator.ofFloat(fromAlpha, toAlpha);
+        va.addUpdateListener(valueAnimator -> colorButton.setAlpha((Float) valueAnimator.getAnimatedValue()));
+        va.setDuration(200);
+        va.start();
+    }
+
+    /**
      * Deselect all except.
      */
     public void deselectAllExcept(ColorItem exceptColorItem) {
         for (ViewHolder viewHolder : mBoundViewHolders) {
             if (viewHolder.colorItem.equals(exceptColorItem) == false) {
+                //viewHolder.colorButton.setAlpha(0.5f);
                 viewHolder.colorItem.setSelected(false);
-                viewHolder.colorButton.setAlpha(0.5f);
+                float currentAlpha = viewHolder.colorButton.getAlpha();
+                animateColorButton(currentAlpha, 0.5f, viewHolder.colorButton);
             }
         }
     }
@@ -80,8 +97,18 @@ public class ColorAdapter extends
     public void deselectAll() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
             viewHolder.colorItem.setSelected(false);
-            viewHolder.colorButton.setAlpha(1f);
+            float currentAlpha = viewHolder.colorButton.getAlpha();
+            animateColorButton(currentAlpha, 1f, viewHolder.colorButton);
         }
+    }
+
+    /**
+     * Select color.
+     *
+     * @param selectedColor the selected color
+     */
+    public void setSelectedColor(int selectedColor) {
+        this.selectedColor = selectedColor;
     }
 
     /**
@@ -126,6 +153,12 @@ public class ColorAdapter extends
 
         // Set item views based on your views and data model
         colorButton.setBackgroundColor(holder.colorItem.getColor());
+        if (holder.colorItem.getColor() == selectedColor) {
+            holder.colorItem.setSelected(true);
+            holder.colorButton.setAlpha(1f);
+        } else if (selectedColor != ColorItem.NO_COLOR) {
+            holder.colorButton.setAlpha(0.5f);
+        }
 
         mBoundViewHolders.add(holder);
     }

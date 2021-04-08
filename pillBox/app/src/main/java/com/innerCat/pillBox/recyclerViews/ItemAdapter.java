@@ -271,7 +271,6 @@ public class ItemAdapter extends
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
                 expiryTV.setVisibility(View.VISIBLE);
-                System.out.println("WINNOW set " + holder.item.getName() + " to YES");
                 //Set the text of the stockTV
                 expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
                 //Set the color of the text if it is close
@@ -287,11 +286,9 @@ public class ItemAdapter extends
                     expiryTV.setTextColor(color);
                 }
             } else {
-                System.out.println("WINNOW set " + holder.item.getName() + " to far away");
                expiryTV.setVisibility(GONE);
             }
         } else {
-            System.out.println("WINNOW set " + holder.item.getName() + " to none");
             expiryTV.setVisibility(GONE);
         }
 

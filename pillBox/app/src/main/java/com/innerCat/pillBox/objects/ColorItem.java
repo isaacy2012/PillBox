@@ -4,6 +4,8 @@ import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
 
+import java.util.Objects;
+
 /**
  * The type Color item.
  */
@@ -60,5 +62,18 @@ public class ColorItem {
      */
     public void toggleSelected() {
         this.selected = !this.selected;
+    }
+
+    @Override
+    public boolean equals( Object o ) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ColorItem colorItem = (ColorItem) o;
+        return color == colorItem.color;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(color);
     }
 }
