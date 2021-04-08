@@ -39,11 +39,10 @@ Reorder items however you want.
 - Choose which items are displayed on the homescreen widget
 - Clean and modern UI
 - Dark mode
+- Color code items to quickly find the ones you need 
 - Record expiry date of individual refills of items
 
-<b>Coming Soon</b> 
 
-- Color code items to quickly get to the ones you need. 
 
 For Harley
 
