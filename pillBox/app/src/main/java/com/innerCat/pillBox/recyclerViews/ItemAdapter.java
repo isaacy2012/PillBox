@@ -36,8 +36,11 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class ItemAdapter extends
         RecyclerView.Adapter<ItemAdapter.ViewHolder> {
 
-    private List<Item> items;
+    private List<Item> visibleItems;
+    private List<Item> allItems;
+    private List<Item> hiddenItems;
     private Set<ViewHolder> mBoundViewHolders = new HashSet<>();
+    private int focusColor = ColorItem.NO_COLOR;
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
@@ -73,6 +76,10 @@ public class ItemAdapter extends
                 ((MainActivity) context).refillItem(item, getAdapterPosition());
             });
 
+            colorDot.setOnClickListener(v -> {
+                ((MainActivity) context).focusOnColor(item.getColor());
+            });
+
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
         }
@@ -86,13 +93,13 @@ public class ItemAdapter extends
             if (((MainActivity) context).getEditMode() == false) {
                 int position = getAdapterPosition(); // gets item position
                 if (position != RecyclerView.NO_POSITION) { // Check if an item was deleted, but the user clicked it before the UI removed it
-                    Item item = items.get(position);
+                    Item item = visibleItems.get(position);
                     item.decrementStock();
                     ((MainActivity) context).updateItem(item, position);
                 }
             } else {
                 int position = getAdapterPosition(); // gets item position
-                Item item = items.get(position);
+                Item item = visibleItems.get(position);
                 ((MainActivity) context).toFormUpdate(item, position);
             }
         }
@@ -106,7 +113,7 @@ public class ItemAdapter extends
         public boolean onLongClick(View view) {
             int position = getAdapterPosition(); // gets item position
             if (((MainActivity) context).getEditMode() == false) {
-                Item item = items.get(position);
+                Item item = visibleItems.get(position);
                 ((MainActivity) context).toRefill(item, position);
             }
             return true;
@@ -117,12 +124,70 @@ public class ItemAdapter extends
     /**
      * Pass in the tasks array into the Adapter
      *
-     * @param items the list of Tasks
+     * @param items the items
      */
     public ItemAdapter( List<Item> items ) {
-        this.items = items;
+        this.allItems = new ArrayList<>(items);
+        this.visibleItems = new ArrayList<>(items);
     }
 
+
+    /**
+     * Focus on color.
+     */
+    public void focusOnColor() {
+        if (focusColor == ColorItem.NO_COLOR) {
+            return;
+        }
+        for (int i = 0; i < visibleItems.size(); i++) {
+            notifyItemRemoved(0);
+        }
+        visibleItems.clear();
+        for (Item item : allItems) {
+            if (item.getColor() == focusColor) {
+                visibleItems.add(0, item);
+                notifyItemInserted(0);
+            }
+        }
+    }
+
+    /**
+     * Sets focus color.
+     *
+     * @param color the color
+     */
+    public void setFocusColor(int color) {
+        this.focusColor = color;
+        focusOnColor();
+    }
+
+    /**
+     * Reset.
+     */
+    public void reset() {
+        focusColor = ColorItem.NO_COLOR;
+        List<Item> addBackItems = new ArrayList<>(allItems);
+        visibleItems = new ArrayList<>(allItems);
+        for (Item removeItem : visibleItems) {
+            notifyItemRemoved(0);
+            addBackItems.remove(removeItem);
+        }
+        for (int i = 0; i < addBackItems.size(); i++) {
+            notifyItemInserted(0);
+        }
+    }
+
+    /**
+     * Sets item.
+     *
+     * @param item     the item
+     * @param position the position
+     */
+    @NoColorFocus
+    public void setItem( Item item, int position) {
+        allItems.set(position, item);
+        focusOnColor();
+    }
 
     /**
      * Add a item
@@ -132,8 +197,25 @@ public class ItemAdapter extends
      * @param position the position of the new Item in the List
      */
     public void addItem( Context context, Item item, int position) {
-        items.add(position, item);
-        notifyInserted(context, position);
+        allItems.add(position, item);
+        //if it's color selection mode AND its the same color
+        if (focusColor != ColorItem.NO_COLOR && item.getColor() == focusColor) {
+                visibleItems.add(0, item);
+                notifyItemInserted(0);
+                updateIndexesInRange(context, position);
+        } else { //otherwise, reset
+            ((MainActivity)context).resetColorFocus();
+            notifyInserted(context, position);
+        }
+    }
+
+    /**
+     * Gets focus color.
+     *
+     * @return the focus color
+     */
+    public int getFocusColor() {
+        return focusColor;
     }
 
     /**
@@ -143,8 +225,10 @@ public class ItemAdapter extends
      * @param item     the item to remove
      * @param position the position of the Item in the List
      */
+    @NoColorFocus
     public void removeItem( Context context, Item item, int position) {
-        items.remove(item);
+        allItems.remove(item);
+        visibleItems.remove(item);
         notifyRemoved( context, position );
     }
 
@@ -156,9 +240,9 @@ public class ItemAdapter extends
      */
     public void updateIndexesInRange( Context context, int fromIndex ) {
         List<Item> updated = new ArrayList<>();
-        for (int i = fromIndex; i < items.size(); i++) {
-            Item thisItem = items.get(i);
-            thisItem.setViewHolderPosition(items.indexOf(thisItem));
+        for (int i = fromIndex; i < allItems.size(); i++) {
+            Item thisItem = allItems.get(i);
+            thisItem.setViewHolderPosition(allItems.indexOf(thisItem));
             updated.add(thisItem);
         }
         ((MainActivity)context).updateMultipleInBackground(updated);
@@ -171,6 +255,7 @@ public class ItemAdapter extends
      * @param fromPosition the from position
      * @param toPosition   the to position
      */
+    @NoColorFocus
     public void notifyMoved( Context context, int fromPosition, int toPosition) {
         super.notifyItemMoved(fromPosition, toPosition);
         if (fromPosition != toPosition) {
@@ -184,6 +269,7 @@ public class ItemAdapter extends
      * @param context  the context
      * @param position the position
      */
+    @NoColorFocus
     public void notifyChanged( Context context, int position ) {
         super.notifyItemChanged( position );
     }
@@ -197,6 +283,7 @@ public class ItemAdapter extends
     public void notifyInserted( Context context, int position ) {
         super.notifyItemInserted(position);
         updateIndexesInRange(context, position);
+        focusOnColor();
     }
 
     /**
@@ -208,6 +295,7 @@ public class ItemAdapter extends
     public void notifyRemoved( Context context, int position ) {
         super.notifyItemRemoved(position);
         updateIndexesInRange(context, position);
+        focusOnColor();
     }
 
     // Usually involves inflating a layout from XML and returning the holder
@@ -229,7 +317,7 @@ public class ItemAdapter extends
     @Override
     public void onBindViewHolder( ItemAdapter.ViewHolder holder, int position ) {
         // Get the data model based on position
-        holder.item = items.get(position);
+        holder.item = visibleItems.get(position);
 
         // Set item views based on your views and data model
         Button colorDot = holder.colorDot;
@@ -241,13 +329,11 @@ public class ItemAdapter extends
 
         nameTV.setText(holder.item.getName());
 
-        if (holder.item.getColor() == ColorItem.NO_COLOR) {
-            System.out.println("WINNOW NO COLOR FOR : " + holder.item.getName());
-            //colorDot.setVisibility(GONE);
-        } else {
-            System.out.println("WINNOW YESA COLOR FOR : " + holder.item.getName());
+        if (holder.item.getColor() != ColorItem.NO_COLOR) {
             colorDot.setVisibility(VISIBLE);
             colorDot.setBackgroundColor(holder.item.getColor());
+        } else {
+            colorDot.setVisibility(GONE);
         }
 
         //Set the text of the stockTV
@@ -313,7 +399,7 @@ public class ItemAdapter extends
     // Returns the total count of items in the list
     @Override
     public int getItemCount() {
-        return items.size();
+        return visibleItems.size();
     }
 
     /**
@@ -322,7 +408,7 @@ public class ItemAdapter extends
      * @return the items
      */
     public List<Item> getItems() {
-        return this.items;
+        return this.visibleItems;
     }
 
     /**
@@ -331,6 +417,7 @@ public class ItemAdapter extends
      * @param items the items
      */
     public void setItems( List<Item> items ) {
-        this.items = items;
+        this.allItems = items;
+        focusOnColor();
     }
 }

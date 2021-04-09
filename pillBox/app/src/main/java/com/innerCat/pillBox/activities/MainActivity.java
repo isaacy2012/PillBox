@@ -248,6 +248,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Focus on color.
+     *
+     * @param color the color
+     */
+    public void focusOnColor( int color ) {
+        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
+        appBarLayout.setExpanded(true, true);
+        ImageButton editButton = findViewById(R.id.editButton);
+        if (editMode == false) {
+            editButton.setEnabled(false);
+            adapter.setFocusColor(color);
+        }
+    }
+
+    /**
+     * Reset color focus.
+     */
+    public void resetColorFocus() {
+        ImageButton editButton = findViewById(R.id.editButton);
+        adapter.reset();
+        editButton.setEnabled(true);
+    }
+
+    /**
      * Update home widget.
      */
     private void updateHomeWidget() {
@@ -578,7 +602,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * To refill.
      *
-     * @param itemId the item id
+     * @param item     the item
+     * @param position the position
      */
     public void toRefill( Item item, int position ) {
         Intent intent = new Intent(this, RefillActivity.class);
@@ -651,7 +676,7 @@ public class MainActivity extends AppCompatActivity {
                     Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId(),
                             Converters.todayString());
                     replaceItem.setExpiringRefill(expiringRefill);
-                    adapter.getItems().set(pos, replaceItem);
+                    adapter.setItem(replaceItem, pos);
                     handler.post(() -> {
                         //UI Thread work here
                         // Add a new item
@@ -662,6 +687,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        ImageButton editButton = findViewById(R.id.editButton);
+        if (editButton.isEnabled() == false) {
+            resetColorFocus();
+        } else {
+            super.onBackPressed();
+        }
     }
 
 }

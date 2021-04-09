@@ -32,6 +32,7 @@ import static android.view.View.VISIBLE;
 public class FormActivity extends AppCompatActivity {
 
     int requestCode;
+    CollapsingToolbarLayout collapsingToolbarLayout;
     RecyclerView rvColors;
     ColorAdapter adapter;
     int selectedColor = ColorItem.NO_COLOR;
@@ -45,7 +46,7 @@ public class FormActivity extends AppCompatActivity {
 
 
         //Adding textChangedListener for nameEdit
-        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
+        collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
         ImageButton okButton = findViewById(R.id.okButton);
         EditText nameEdit = findViewById(R.id.editName);
         EditText stockEdit = findViewById(R.id.editStock);
@@ -170,7 +171,12 @@ public class FormActivity extends AppCompatActivity {
         cancel();
     }
 
-    public void setChosenColor( Integer color ) {
+    /**
+     * Sets chosen color.
+     *
+     * @param color the color
+     */
+    public void setSelectedColor( Integer color ) {
         this.selectedColor = color;
     }
 }
