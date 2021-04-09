@@ -242,10 +242,8 @@ public class ItemAdapter extends
         nameTV.setText(holder.item.getName());
 
         if (holder.item.getColor() == ColorItem.NO_COLOR) {
-            System.out.println("WINNOW NO COLOR FOR : " + holder.item.getName());
-            //colorDot.setVisibility(GONE);
+            colorDot.setVisibility(GONE);
         } else {
-            System.out.println("WINNOW YESA COLOR FOR : " + holder.item.getName());
             colorDot.setVisibility(VISIBLE);
             colorDot.setBackgroundColor(holder.item.getColor());
         }

@@ -116,7 +116,7 @@ public class ColorAdapter extends
      */
     public ColorAdapter() {
         colors = new ArrayList<>();
-        colors.add(new ColorItem("#e53935")); //red
+        colors.add(new ColorItem("#b71c1c")); //red
         colors.add(new ColorItem("#d81b60")); //pink
         colors.add(new ColorItem("#1e88e5")); //blue
         colors.add(new ColorItem("#00acc1")); //turquoise
