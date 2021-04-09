@@ -34,7 +34,7 @@ public class FormActivity extends AppCompatActivity {
     int requestCode;
     RecyclerView rvColors;
     ColorAdapter adapter;
-    int color;
+    int selectedColor = ColorItem.NO_COLOR;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -93,7 +93,7 @@ public class FormActivity extends AppCompatActivity {
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             String name = intent.getStringExtra("name");
             int stock = intent.getIntExtra("stock", 0);
-            color = intent.getIntExtra("color", ColorItem.NO_COLOR);
+            selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
             boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
             nameEdit.setText(name);
             stockEdit.setText(String.valueOf(stock));
@@ -108,7 +108,7 @@ public class FormActivity extends AppCompatActivity {
         adapter = new ColorAdapter();
         rvColors.setAdapter(adapter);
         rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        adapter.setSelectedColor(color);
+        adapter.setSelectedColor(selectedColor);
     }
 
     public void deleteButton( View view ) {
@@ -135,7 +135,7 @@ public class FormActivity extends AppCompatActivity {
         }
         boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
 
-        Item item = new Item(name, stock, color, showInWidget);
+        Item item = new Item(name, stock, selectedColor, showInWidget);
         //get the pos from the original incoming intent
         int pos = getIntent().getIntExtra("position", -1);
 
@@ -171,6 +171,6 @@ public class FormActivity extends AppCompatActivity {
     }
 
     public void setChosenColor( Integer color ) {
-        this.color = color;
+        this.selectedColor = color;
     }
 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
@@ -239,13 +240,14 @@ public class ItemAdapter extends
         int stock = holder.item.getStock();
 
         nameTV.setText(holder.item.getName());
+
         if (holder.item.getColor() == ColorItem.NO_COLOR) {
-            holder.colorDot.setVisibility(GONE);
-            int currentRightPadding = holder.nameTV.getPaddingRight();
-            holder.nameTV.setPadding(0, 0, currentRightPadding, 0);
+            System.out.println("WINNOW NO COLOR FOR : " + holder.item.getName());
+            //colorDot.setVisibility(GONE);
         } else {
-            holder.colorDot.setVisibility(View.VISIBLE);
-            holder.colorDot.setBackgroundColor(holder.item.getColor());
+            System.out.println("WINNOW YESA COLOR FOR : " + holder.item.getName());
+            colorDot.setVisibility(VISIBLE);
+            colorDot.setBackgroundColor(holder.item.getColor());
         }
 
         //Set the text of the stockTV
@@ -270,7 +272,7 @@ public class ItemAdapter extends
                     .getInt("warningDayThreshold", 28);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
-                expiryTV.setVisibility(View.VISIBLE);
+                expiryTV.setVisibility(VISIBLE);
                 //Set the text of the stockTV
                 expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
                 //Set the color of the text if it is close
