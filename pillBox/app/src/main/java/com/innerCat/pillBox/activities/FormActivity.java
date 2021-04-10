@@ -10,7 +10,6 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -32,7 +31,6 @@ public class FormActivity extends AppCompatActivity {
 
     int requestCode;
     CollapsingToolbarLayout collapsingToolbarLayout;
-    RecyclerView rvColors;
     ColorAdapter adapter;
     int selectedColor = ColorItem.NO_COLOR;
 
@@ -101,8 +99,8 @@ public class FormActivity extends AppCompatActivity {
         }
 
         adapter = new ColorAdapter();
-        rvColors.setAdapter(adapter);
-        rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        g.rvColors.setAdapter(adapter);
+        g.rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter.setSelectedColor(selectedColor);
     }
 

@@ -18,6 +18,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.databinding.RefillActivityBinding;
+import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
@@ -64,6 +65,10 @@ public class RefillActivity extends AppCompatActivity {
         g.appBar.addOnOffsetChangedListener(this::updateScroll);
 
         g.toolbarLayout.setTitle(name);
+
+        //initialise the database
+        database = DatabaseFactory.create(this);
+        dao = database.getDao();
 
 
         //ROOM Threads
