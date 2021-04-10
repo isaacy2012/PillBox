@@ -5,20 +5,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.databinding.FormActivityBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.objects.ColorItem;
@@ -31,6 +28,8 @@ import static android.view.View.VISIBLE;
 
 public class FormActivity extends AppCompatActivity {
 
+    private FormActivityBinding g;
+
     int requestCode;
     CollapsingToolbarLayout collapsingToolbarLayout;
     RecyclerView rvColors;
@@ -40,24 +39,19 @@ public class FormActivity extends AppCompatActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.form_activity);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        g = FormActivityBinding.inflate(getLayoutInflater());
+        View view = g.getRoot();
+        setContentView(view);
+
+        setSupportActionBar(g.toolbar);
 
 
-        //Adding textChangedListener for nameEdit
-        collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
-        ImageButton okButton = findViewById(R.id.okButton);
-        EditText nameEdit = findViewById(R.id.editName);
-        EditText stockEdit = findViewById(R.id.editStock);
-        SwitchMaterial widgetSwitch = findViewById(R.id.widgetSwitch);
-        Button deleteButton = findViewById(R.id.deleteButton);
-        RecyclerView rvColors = findViewById(R.id.rvColors);
+        //Adding textChangedListener for g.editName
 
-        nameEdit.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
-                nameEdit,
+        g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
+                g.editName,
                 collapsingToolbarLayout,
-                okButton));
+                g.okButton));
 
         //Add offset listener for when the view is collapsing or expanded
         AppBarLayout appBarLayout = findViewById(R.id.app_bar);
@@ -69,22 +63,22 @@ public class FormActivity extends AppCompatActivity {
                 //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
                 if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
                     //  Collapsing
-                    nameEdit.setFocusableInTouchMode(false);
-                    nameEdit.setFocusable(false);
-                    nameEdit.setTextColor(ContextCompat.getColor(context, R.color.transparent));
-                    nameEdit.setHint("");
-                    //nameEdit.setVisibility(GONE);
-                    stockEdit.requestFocus();
+                    g.editName.setFocusableInTouchMode(false);
+                    g.editName.setFocusable(false);
+                    g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
+                    g.editName.setHint("");
+                    //g.editName.setVisibility(GONE);
+                    g.editStock.requestFocus();
                 } else {
                     //Expanded
-                    //nameEdit.setVisibility(VISIBLE);
+                    //g.editName.setVisibility(VISIBLE);
                     //get the default color
                     int color = ColorFactory.getDefaultTextColor(context);
-                    nameEdit.setTextColor(color);
-                    nameEdit.setHint("Title");
+                    g.editName.setTextColor(color);
+                    g.editName.setHint("Title");
 
-                    nameEdit.setFocusableInTouchMode(true);
-                    nameEdit.setFocusable(true);
+                    g.editName.setFocusableInTouchMode(true);
+                    g.editName.setFocusable(true);
                 }
             }
         });
@@ -96,13 +90,13 @@ public class FormActivity extends AppCompatActivity {
             int stock = intent.getIntExtra("stock", 0);
             selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
             boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
-            nameEdit.setText(name);
-            stockEdit.setText(String.valueOf(stock));
-            widgetSwitch.setChecked(showInWidget);
-            deleteButton.setVisibility(VISIBLE);
+            g.editName.setText(name);
+            g.editStock.setText(String.valueOf(stock));
+            g.widgetSwitch.setChecked(showInWidget);
+            g.deleteButton.setVisibility(VISIBLE);
         } else {
-            deleteButton.setVisibility(GONE);
-            nameEdit.requestFocus();
+            g.deleteButton.setVisibility(GONE);
+            g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
 
@@ -134,7 +128,7 @@ public class FormActivity extends AppCompatActivity {
             } catch (NumberFormatException ignored) {
             }
         }
-        boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
+        boolean showInWidget = g.widgetSwitch.isChecked();
 
         Item item = new Item(name, stock, selectedColor, showInWidget);
         //get the pos from the original incoming intent

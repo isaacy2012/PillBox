@@ -9,12 +9,9 @@ import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -24,15 +21,14 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.databinding.MainActivityBinding;
+import com.innerCat.pillBox.databinding.RefillInputBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
@@ -66,10 +62,11 @@ public class MainActivity extends AppCompatActivity {
 
     int ANIMATION_DURATION = 0;
 
+    private MainActivityBinding g;
+
     //private fields for the Dao and the Database
     public Database database;
     DataDao dao;
-    RecyclerView rvItems;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
     Item itemToUpdate = null;
@@ -85,7 +82,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main_activity);
+        g = MainActivityBinding.inflate(getLayoutInflater());
+        View view = g.getRoot();
+        setContentView(view);
 
         //constants
         ANIMATION_DURATION = getResources().getInteger(R.integer.animation_duration);
@@ -94,8 +93,7 @@ public class MainActivity extends AppCompatActivity {
         sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE);
 
         //Add offset listener for when the view is collapsing or expanded
-        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
-        appBarLayout.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
+        g.appBar.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
         //setUpdateUnseen("update_1_dot_1");
 
@@ -108,8 +106,6 @@ public class MainActivity extends AppCompatActivity {
         database = DatabaseFactory.create(this);
         dao = database.getDao();
 
-        //get the recyclerview in activity layout
-        rvItems = findViewById(R.id.rvItems);
 
         // Extend the Callback class
         Context context = this;
@@ -173,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create an `ItemTouchHelper` and attach it to the `RecyclerView`
         ItemTouchHelper ith = new ItemTouchHelper(callback);
-        ith.attachToRecyclerView(rvItems);
+        ith.attachToRecyclerView(g.rvItems);
 
 
         //ROOM Threads
@@ -194,10 +190,10 @@ public class MainActivity extends AppCompatActivity {
                 // Create adapter passing in the sample user data
                 adapter = new ItemAdapter(items);
                 // Attach the adapter to the recyclerview to populate items
-                rvItems.setAdapter(adapter);
+                g.rvItems.setAdapter(adapter);
                 // Set layout manager to position the items
-                //rvItems.setLayoutManager(new GridLayoutManager(this, 2));
-                rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
+                //g.rvItems.setLayoutManager(new GridLayoutManager(this, 2));
+                g.rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
                 // Set the initial padding
                 updateRVPadding();
             });
@@ -253,11 +249,9 @@ public class MainActivity extends AppCompatActivity {
      * @param color the color
      */
     public void focusOnColor( int color ) {
-        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
-        appBarLayout.setExpanded(true, true);
-        ImageButton editButton = findViewById(R.id.editButton);
+        g.appBar.setExpanded(true, true);
         if (editMode == false) {
-            editButton.setEnabled(false);
+            g.editButton.setEnabled(false);
             adapter.setFocusColor(color);
         }
     }
@@ -266,9 +260,8 @@ public class MainActivity extends AppCompatActivity {
      * Reset color focus.
      */
     public void resetColorFocus() {
-        ImageButton editButton = findViewById(R.id.editButton);
         adapter.reset();
-        editButton.setEnabled(true);
+        g.editButton.setEnabled(true);
     }
 
     /**
@@ -387,9 +380,9 @@ public class MainActivity extends AppCompatActivity {
         int normal = Converters.fromDpToPixels(8, getResources());
         if (adapter.getItemCount()%2 == 0) { //if even
             int bottom = Converters.fromDpToPixels(80, getResources());
-            rvItems.setPadding(normal, normal, normal, bottom);
+            g.rvItems.setPadding(normal, normal, normal, bottom);
         } else {
-            rvItems.setPadding(normal, normal, normal, normal);
+            g.rvItems.setPadding(normal, normal, normal, normal);
         }
     }
 
@@ -402,17 +395,14 @@ public class MainActivity extends AppCompatActivity {
      */
     public void refillItem( Item item, int position) {
         //get the UI elements
-        ExtendedFloatingActionButton fab = findViewById(R.id.floatingActionButton);
-        fab.setVisibility(View.INVISIBLE);
-        View refillInput = LayoutInflater.from(this).inflate(R.layout.refill_input, null);
-        EditText refillTV = refillInput.findViewById(R.id.editRefill);
-        Button expiryButton = refillInput.findViewById(R.id.expiryButton);
+        g.fab.setVisibility(View.INVISIBLE);
+        RefillInputBinding refillG = RefillInputBinding.inflate(getLayoutInflater());
         final LocalDate[] date = new LocalDate[1];
 
-        refillTV.requestFocus();
+        refillG.editRefill.requestFocus();
 
         //Set the behaviour of the expiry button
-        expiryButton.setOnClickListener(new View.OnClickListener() {
+        refillG.expiryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick( View v ) {
                 CalendarConstraints.Builder constraintsBuilder = new CalendarConstraints.Builder()
@@ -426,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
                 datePicker.show(getSupportFragmentManager(), "tag");
                 datePicker.addOnPositiveButtonClickListener(selection -> { //long selection
                     date[0] = LocalDate.from(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()));
-                    expiryButton.setText(StringFormatter.dateToString(date[0]));
+                    refillG.expiryButton.setText(StringFormatter.dateToString(date[0]));
                 });
             }
         });
@@ -434,11 +424,11 @@ public class MainActivity extends AppCompatActivity {
         // Use the Builder class for convenient dialog construction
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
         builder.setMessage("Refill Amount")
-                .setView(refillInput)
+                .setView(refillG.getRoot())
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         //get the name of the Item to add
-                        int refillAmount = Integer.parseInt(refillTV.getText().toString().trim());
+                        int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
                         Refill refill;
                         if (date[0] != null) {
                             refill = new Refill( item.getId(), refillAmount, date[0] );
@@ -459,26 +449,26 @@ public class MainActivity extends AppCompatActivity {
                         updateItem(item, position);
 
                         //set the visibility of the fab
-                        fab.setVisibility(View.VISIBLE);
+                        g.fab.setVisibility(View.VISIBLE);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
-                        fab.setVisibility(View.VISIBLE);
+                        g.fab.setVisibility(View.VISIBLE);
                     }
                 });
         AlertDialog dialog = builder.create();
         dialog.setOnCancelListener(dialog1 -> {
             // dialog dismisses
-            fab.setVisibility(View.VISIBLE);
+            g.fab.setVisibility(View.VISIBLE);
         });
         dialog.getWindow().setDimAmount(0.0f);
         dialog.show();
         dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         okButton.setEnabled(false);
-        refillTV.addTextChangedListener(TextWatcherFactory.getRefill(refillTV, okButton));
+        refillG.editRefill.addTextChangedListener(TextWatcherFactory.getRefill(refillG.editRefill, okButton));
     }
 
     /**
@@ -544,9 +534,9 @@ public class MainActivity extends AppCompatActivity {
                 //UI Thread work here
                 // Add a new item
                 adapter.addItem(this, item, 0);
-                //rvItems.scheduleLayoutAnimation();
-                rvItems.scrollToPosition(0);
-                //rvItems.scheduleLayoutAnimation();
+                //g.rvItems.scheduleLayoutAnimation();
+                g.rvItems.scrollToPosition(0);
+                //g.rvItems.scheduleLayoutAnimation();
                 updateHomeWidget();
                 updateRVPadding();
             });
@@ -569,10 +559,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void editButton( View view ) {
         editMode = !editMode;
-        ImageButton editButton = findViewById(R.id.editButton);
-        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
         ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
-                editButton, toolbarLayout);
+                g.editButton, g.toolbarLayout);
         colorAnimator.start();
     }
 
@@ -692,8 +680,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        ImageButton editButton = findViewById(R.id.editButton);
-        if (editButton.isEnabled() == false) {
+        if (g.editButton.isEnabled() == false) {
             resetColorFocus();
         } else {
             super.onBackPressed();
