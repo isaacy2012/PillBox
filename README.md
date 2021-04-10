@@ -5,12 +5,12 @@
 
 <p float="left">
   <img src="readMeImages/home_screen_light.png"  width="216" height="432">
-  <img src="readMeImages/rearrange_light.png"  width="216" height="432">
-  <img src="readMeImages/refill_light.png"  width="216" height="432">
-  <img src="readMeImages/edit_light.png"  width="216" height="432">
   <img src="readMeImages/home_screen_dark.png"  width="216" height="432">
+  <img src="readMeImages/rearrange_light.png"  width="216" height="432">
   <img src="readMeImages/rearrange_dark.png"  width="216" height="432">
+  <img src="readMeImages/refill_light.png"  width="216" height="432">
   <img src="readMeImages/refill_dark.png"  width="216" height="432">
+  <img src="readMeImages/edit_light.png"  width="216" height="432">
   <img src="readMeImages/edit_dark.png"  width="216" height="432">
   <img src="readMeImages/widget.png"  width="216" height="432">
  </p>
