@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.databinding.FormActivityBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
@@ -30,7 +29,6 @@ public class FormActivity extends AppCompatActivity {
     private FormActivityBinding g;
 
     int requestCode;
-    CollapsingToolbarLayout collapsingToolbarLayout;
     ColorAdapter adapter;
     int selectedColor = ColorItem.NO_COLOR;
 
@@ -48,7 +46,7 @@ public class FormActivity extends AppCompatActivity {
 
         g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
                 g.editName,
-                collapsingToolbarLayout,
+                g.toolbarLayout,
                 g.okButton));
 
         //Add offset listener for when the view is collapsing or expanded
