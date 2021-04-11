@@ -71,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     SharedPreferences sharedPreferences;
     Item itemToUpdate = null;
 
+    //modes
     boolean editMode = false;
 
     public static final int ADD_ITEM_REQUEST = 1;
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int RESULT_OK_CHANGED = 124;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
         g = MainActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
@@ -115,9 +116,9 @@ public class MainActivity extends AppCompatActivity {
              * @param recyclerView  the recyclerView
              * @param viewHolder    the viewholder
              * @param target        the target viewHolder
-             * @return              whether the move was handled
+             * @return whether the move was handled
              */
-            public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target ) {
                 // get the viewHolder's and target's positions in your adapter data, swap them
                 int fromPosition = viewHolder.getAdapterPosition();
                 int toPosition = target.getAdapterPosition();
@@ -136,26 +137,26 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onSwiped( @NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            public void onSwiped( @NonNull RecyclerView.ViewHolder viewHolder, int direction ) {
             }
 
             //defines the enabled move directions in each state (idle, swiping, dragging).
             @Override
-            public int getMovementFlags( @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            public int getMovementFlags( @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder ) {
                 return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
                         ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
             }
 
             @Override
             public boolean isLongPressDragEnabled() {
-                return getEditMode();
+                return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
                 //return true;
             }
 
             @Override
             public void onChildDraw( @NonNull Canvas c, @NonNull RecyclerView recyclerView,
                                      @NonNull RecyclerView.ViewHolder viewHolder,
-                                     float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                                     float dX, float dY, int actionState, boolean isCurrentlyActive ) {
                 CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
                 float end = Converters.fromDpToPixels(0, getResources());
                 if (isCurrentlyActive) {
@@ -250,18 +251,14 @@ public class MainActivity extends AppCompatActivity {
      */
     public void focusOnColor( int color ) {
         g.appBar.setExpanded(true, true);
-        if (editMode == false) {
-            g.editButton.setEnabled(false);
-            adapter.setFocusColor(color);
-        }
+        adapter.setFocusColor(color);
     }
 
     /**
-     * Reset color focus.
+     * Reset color focus, resetting the adapter's focus color to ColorItem.NO_COLOR
      */
     public void resetColorFocus() {
         adapter.reset();
-        g.editButton.setEnabled(true);
     }
 
     /**
@@ -295,9 +292,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Set a particular update as seen
+     *
      * @param updateString the update string
      */
-    private void setUpdateSeen(String updateString) {
+    private void setUpdateSeen( String updateString ) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(updateString, true);
         editor.apply();
@@ -305,9 +303,10 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Set a particular update as unseen
+     *
      * @param updateString the update string
      */
-    private void setUpdateUnseen(String updateString) {
+    private void setUpdateUnseen( String updateString ) {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putBoolean(updateString, false);
         editor.apply();
@@ -315,7 +314,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Update an existing item in the database
-     * @param item the item to change
+     *
+     * @param item     the item to change
      * @param position its position in the RecyclerView
      */
     public void updateItem( Item item, int position ) {
@@ -352,7 +352,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Remove an existing item in the database
-     * @param item the item to remove
+     *
+     * @param item     the item to remove
      * @param position its position in the RecyclerView
      */
     public void removeItem( Item item, int position ) {
@@ -378,7 +379,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void updateRVPadding() {
         int normal = Converters.fromDpToPixels(8, getResources());
-        if (adapter.getItemCount()%2 == 0) { //if even
+        if (adapter.getItemCount() % 2 == 0) { //if even
             int bottom = Converters.fromDpToPixels(80, getResources());
             g.rvItems.setPadding(normal, normal, normal, bottom);
         } else {
@@ -393,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item
      * @param position the position
      */
-    public void refillItem( Item item, int position) {
+    public void refillItem( Item item, int position ) {
         //get the UI elements
         g.fab.setVisibility(View.INVISIBLE);
         RefillInputBinding refillG = RefillInputBinding.inflate(getLayoutInflater());
@@ -426,12 +427,12 @@ public class MainActivity extends AppCompatActivity {
         builder.setMessage("Refill Amount")
                 .setView(refillG.getRoot())
                 .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
+                    public void onClick( DialogInterface dialog, int id ) {
                         //get the name of the Item to add
                         int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
                         Refill refill;
                         if (date[0] != null) {
-                            refill = new Refill( item.getId(), refillAmount, date[0] );
+                            refill = new Refill(item.getId(), refillAmount, date[0]);
                             Refill itemRefill = item.getExpiringRefill();
                             if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
                                 item.setExpiringRefill(refill);
@@ -445,7 +446,7 @@ public class MainActivity extends AppCompatActivity {
                                 addRefillInBackground(refill);
                             }
                         }
-                        item.refillByAmount( refillAmount );
+                        item.refillByAmount(refillAmount);
                         updateItem(item, position);
 
                         //set the visibility of the fab
@@ -453,7 +454,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
+                    public void onClick( DialogInterface dialog, int id ) {
                         // User cancelled the dialog
                         g.fab.setVisibility(View.VISIBLE);
                     }
@@ -521,7 +522,7 @@ public class MainActivity extends AppCompatActivity {
      * @param name  the name of the item
      * @param stock the stock
      */
-    private void addItem( String name, int stock, int color, boolean showInWidget) {
+    private void addItem( String name, int stock, int color, boolean showInWidget ) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -564,11 +565,14 @@ public class MainActivity extends AppCompatActivity {
         colorAnimator.start();
     }
 
-    /** Called when the user taps the FAB button */
-    public void fabButton(View view) {
+    /**
+     * Called when the user taps the FAB button
+     */
+    public void fabButton( View view ) {
         Intent intent = new Intent(this, FormActivity.class);
         int requestCode = ADD_ITEM_REQUEST;
         intent.putExtra("requestCode", requestCode);
+        intent.putExtra("color", adapter.getFocusColor());
         startActivityForResult(intent, requestCode);
     }
 
@@ -578,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item
      * @param position the position
      */
-    public void toFormUpdate(Item item, int position) {
+    public void toFormUpdate( Item item, int position ) {
         itemToUpdate = item;
         Intent intent = new Intent(this, FormActivity.class);
         intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
@@ -605,7 +609,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item the item
      * @param data the data
      */
-    private void injectDataToItem(Item item, Intent data) {
+    private void injectDataToItem( Item item, Intent data ) {
         String name = data.getStringExtra("name");
         int stock = data.getIntExtra("stock", 0);
         int color = data.getIntExtra("color", ColorItem.NO_COLOR);
@@ -618,18 +622,22 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * When there is a result from an activity
+     *
      * @param requestCode the requestCode
-     * @param resultCode the resultCode
-     * @param data the data from the activity
+     * @param resultCode  the resultCode
+     * @param data        the data from the activity
      */
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(resultCode == RESULT_OK) {
+    public void onActivityResult( int requestCode, int resultCode, Intent data ) {
+        if (resultCode == RESULT_OK) {
             int pos = data.getIntExtra("position", -1);
+            int color = data.getIntExtra("color", ColorItem.NO_COLOR);
+            if (color != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
+                resetColorFocus();
+            }
             switch (requestCode) {
                 case ADD_ITEM_REQUEST:
                     String name = data.getStringExtra("name");
                     int stock = data.getIntExtra("stock", 0);
-                    int color = data.getIntExtra("color", 0);
                     boolean showInWidget = data.getBooleanExtra("showInWidget", false);
                     addItem(name, stock, color, showInWidget);
                     break;
@@ -680,7 +688,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (g.editButton.isEnabled() == false) {
+        if (adapter.getFocusColor() != ColorItem.NO_COLOR) {
             resetColorFocus();
         } else {
             super.onBackPressed();

@@ -54,7 +54,7 @@ public class FormActivity extends AppCompatActivity {
         Context context = this;
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+            public void onOffsetChanged( AppBarLayout appBarLayout, int verticalOffset ) {
 
                 //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
                 if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
@@ -84,7 +84,6 @@ public class FormActivity extends AppCompatActivity {
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             String name = intent.getStringExtra("name");
             int stock = intent.getIntExtra("stock", 0);
-            selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
             boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
             g.editName.setText(name);
             g.editStock.setText(String.valueOf(stock));
@@ -95,6 +94,8 @@ public class FormActivity extends AppCompatActivity {
             g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+        //gets the color from intent for adding, or from item intent for editing
+        selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
 
         adapter = new ColorAdapter();
         g.rvColors.setAdapter(adapter);
@@ -115,7 +116,7 @@ public class FormActivity extends AppCompatActivity {
      */
     public void okButton( View view ) {
         Intent intent = new Intent();
-        String name = ((EditText)findViewById(R.id.editName)).getText().toString();
+        String name = ((EditText) findViewById(R.id.editName)).getText().toString();
         int stock = 0;
         String stockString = ((EditText) findViewById(R.id.editStock)).getText().toString();
         if (stockString.isEmpty() == false) {

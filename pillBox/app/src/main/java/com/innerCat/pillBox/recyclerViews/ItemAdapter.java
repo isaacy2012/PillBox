@@ -50,7 +50,7 @@ public class ItemAdapter extends
         public Item item;
         public Context context;
 
-        public ViewHolder(Context context, MainRvItemBinding g) {
+        public ViewHolder( Context context, MainRvItemBinding g ) {
             super(g.getRoot());
             this.g = g;
             this.context = context;
@@ -60,7 +60,11 @@ public class ItemAdapter extends
             });
 
             g.colorDot.setOnClickListener(v -> {
-                ((MainActivity) context).focusOnColor(item.getColor());
+                if (focusColor != item.getColor()) {
+                    ((MainActivity) context).focusOnColor(item.getColor());
+                } else {
+                    ((MainActivity) context).resetColorFocus();
+                }
             });
 
             g.getRoot().setOnClickListener(this);
@@ -70,6 +74,7 @@ public class ItemAdapter extends
 
         /**
          * Handles the row being clicked
+         *
          * @param view the itemView
          */
         @Override
@@ -90,11 +95,12 @@ public class ItemAdapter extends
 
         /**
          * To ensure that onClick is not activated at the same time
+         *
          * @param view
          * @return
          */
         @Override
-        public boolean onLongClick(View view) {
+        public boolean onLongClick( View view ) {
             int position = getAdapterPosition(); // gets item position
             if (((MainActivity) context).getEditMode() == false) {
                 Item item = visibleItems.get(position);
@@ -140,7 +146,7 @@ public class ItemAdapter extends
      *
      * @param color the color
      */
-    public void setFocusColor(int color) {
+    public void setFocusColor( int color ) {
         this.focusColor = color;
         focusOnColor();
     }
@@ -168,7 +174,7 @@ public class ItemAdapter extends
      * @param position the position
      */
     @NoColorFocus
-    public void setItem( Item item, int position) {
+    public void setItem( Item item, int position ) {
         allItems.set(position, item);
         focusOnColor();
     }
@@ -180,7 +186,7 @@ public class ItemAdapter extends
      * @param item     the Item to add
      * @param position the position of the new Item in the List
      */
-    public void addItem( Context context, Item item, int position) {
+    public void addItem( Context context, Item item, int position ) {
         allItems.add(position, item);
         //if it's color selection mode AND its the same color
         if (focusColor != ColorItem.NO_COLOR && item.getColor() == focusColor) {
@@ -188,7 +194,7 @@ public class ItemAdapter extends
             notifyItemInserted(0);
             updateIndexesInRange(context, position);
         } else { //otherwise, reset
-            ((MainActivity)context).resetColorFocus();
+            ((MainActivity) context).resetColorFocus();
             notifyInserted(context, position);
         }
     }
@@ -210,10 +216,10 @@ public class ItemAdapter extends
      * @param position the position of the Item in the List
      */
     @NoColorFocus
-    public void removeItem( Context context, Item item, int position) {
+    public void removeItem( Context context, Item item, int position ) {
         allItems.remove(item);
         visibleItems.remove(item);
-        notifyRemoved( context, position );
+        notifyRemoved(context, position);
     }
 
     /**
@@ -229,7 +235,7 @@ public class ItemAdapter extends
             thisItem.setViewHolderPosition(allItems.indexOf(thisItem));
             updated.add(thisItem);
         }
-        ((MainActivity)context).updateMultipleInBackground(updated);
+        ((MainActivity) context).updateMultipleInBackground(updated);
     }
 
     /**
@@ -240,7 +246,7 @@ public class ItemAdapter extends
      * @param toPosition   the to position
      */
     @NoColorFocus
-    public void notifyMoved( Context context, int fromPosition, int toPosition) {
+    public void notifyMoved( Context context, int fromPosition, int toPosition ) {
         super.notifyItemMoved(fromPosition, toPosition);
         if (fromPosition != toPosition) {
             updateIndexesInRange(context, Math.min(fromPosition, toPosition));
@@ -255,7 +261,7 @@ public class ItemAdapter extends
      */
     @NoColorFocus
     public void notifyChanged( Context context, int position ) {
-        super.notifyItemChanged( position );
+        super.notifyItemChanged(position);
     }
 
     /**
@@ -303,18 +309,21 @@ public class ItemAdapter extends
 
         g.nameTV.setText(holder.item.getName());
 
+        //Getting the margin on the NameTV
+        ConstraintLayout.LayoutParams params = ((ConstraintLayout.LayoutParams) g.nameTV.getLayoutParams());
+        int defMargin = params.topMargin;
+        int rightMargin = params.rightMargin;
+
         if (holder.item.getColor() != ColorItem.NO_COLOR) {
             g.colorDot.setVisibility(VISIBLE);
             g.colorDot.setBackgroundColor(holder.item.getColor());
 
+            params.setMargins(0, defMargin, rightMargin, 0);
+            g.nameTV.setLayoutParams(params);
         } else {
             g.colorDot.setVisibility(GONE);
 
-            //Setting the margin on the NameTV
-            ConstraintLayout.LayoutParams params = ((ConstraintLayout.LayoutParams)g.nameTV.getLayoutParams());
-            int defMargin = params.topMargin;
-            int rightMargin = params.rightMargin;
-            params.setMargins(defMargin,defMargin,rightMargin,0);
+            params.setMargins(defMargin, defMargin, rightMargin, 0);
             g.nameTV.setLayoutParams(params);
         }
 
@@ -327,7 +336,7 @@ public class ItemAdapter extends
             g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
         } else {
             //get the default color
-            int[] attribute = new int[] { android.R.attr.textColor };
+            int[] attribute = new int[]{ android.R.attr.textColor };
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
             g.stockTV.setTextColor(color);
