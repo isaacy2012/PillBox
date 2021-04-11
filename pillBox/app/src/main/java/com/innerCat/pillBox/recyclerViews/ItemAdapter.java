@@ -6,17 +6,16 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
+import com.innerCat.pillBox.databinding.MainRvItemBinding;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
@@ -38,7 +37,6 @@ public class ItemAdapter extends
 
     private List<Item> visibleItems;
     private List<Item> allItems;
-    private List<Item> hiddenItems;
     private Set<ViewHolder> mBoundViewHolders = new HashSet<>();
     private int focusColor = ColorItem.NO_COLOR;
 
@@ -47,42 +45,28 @@ public class ItemAdapter extends
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
-        public Button colorDot;
-        public TextView nameTV;
-        public TextView expiryTV;
-        public TextView stockTV;
-        public TextView lastTakenTV;
-        public ImageButton refillButton;
+        MainRvItemBinding g;
+
         public Item item;
         public Context context;
 
-        // We also create a constructor that accepts the entire item row
-        // and does the view lookups to find each subview
-        public ViewHolder( View itemView, Context context ) {
-            // Stores the itemView in a public final member variable that can be used
-            // to access the context from any ViewHolder instance.
-            super(itemView);
+        public ViewHolder(Context context, MainRvItemBinding g) {
+            super(g.getRoot());
+            this.g = g;
             this.context = context;
 
-
-            colorDot = itemView.findViewById(R.id.colorDot);
-            nameTV = itemView.findViewById(R.id.nameTV);
-            expiryTV = itemView.findViewById(R.id.expiryTV);
-            stockTV = itemView.findViewById(R.id.stockTV);
-            lastTakenTV = itemView.findViewById(R.id.lastTakenTV);
-
-            refillButton = itemView.findViewById(R.id.refillButton);
-            refillButton.setOnClickListener(v -> {
+            g.refillButton.setOnClickListener(v -> {
                 ((MainActivity) context).refillItem(item, getAdapterPosition());
             });
 
-            colorDot.setOnClickListener(v -> {
+            g.colorDot.setOnClickListener(v -> {
                 ((MainActivity) context).focusOnColor(item.getColor());
             });
 
-            itemView.setOnClickListener(this);
-            itemView.setOnLongClickListener(this);
+            g.getRoot().setOnClickListener(this);
+            g.getRoot().setOnLongClickListener(this);
         }
+
 
         /**
          * Handles the row being clicked
@@ -200,9 +184,9 @@ public class ItemAdapter extends
         allItems.add(position, item);
         //if it's color selection mode AND its the same color
         if (focusColor != ColorItem.NO_COLOR && item.getColor() == focusColor) {
-                visibleItems.add(0, item);
-                notifyItemInserted(0);
-                updateIndexesInRange(context, position);
+            visibleItems.add(0, item);
+            notifyItemInserted(0);
+            updateIndexesInRange(context, position);
         } else { //otherwise, reset
             ((MainActivity)context).resetColorFocus();
             notifyInserted(context, position);
@@ -303,52 +287,50 @@ public class ItemAdapter extends
     @Override
     public ItemAdapter.ViewHolder onCreateViewHolder( ViewGroup parent, int viewType ) {
         Context context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-
-        // Inflate the custom layout
-        View itemView = inflater.inflate(R.layout.main_rv_item, parent, false);
-
-        // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(itemView, context);
-        return viewHolder;
+        return new ViewHolder(context,
+                MainRvItemBinding.inflate(LayoutInflater.from(context), parent, false));
     }
 
     // Involves populating data into the item through holder
     @Override
-    public void onBindViewHolder( ItemAdapter.ViewHolder holder, int position ) {
+    public void onBindViewHolder( ViewHolder holder, int position ) {
         // Get the data model based on position
         holder.item = visibleItems.get(position);
+        MainRvItemBinding g = holder.g;
 
-        // Set item views based on your views and data model
-        Button colorDot = holder.colorDot;
-        TextView nameTV = holder.nameTV;
-        TextView expiryTV = holder.expiryTV;
-        TextView stockTV = holder.stockTV;
-        TextView lastTakenTV = holder.lastTakenTV;
+
         int stock = holder.item.getStock();
 
-        nameTV.setText(holder.item.getName());
+        g.nameTV.setText(holder.item.getName());
 
         if (holder.item.getColor() != ColorItem.NO_COLOR) {
-            colorDot.setVisibility(VISIBLE);
-            colorDot.setBackgroundColor(holder.item.getColor());
+            g.colorDot.setVisibility(VISIBLE);
+            g.colorDot.setBackgroundColor(holder.item.getColor());
+
         } else {
-            colorDot.setVisibility(GONE);
+            g.colorDot.setVisibility(GONE);
+
+            //Setting the margin on the NameTV
+            ConstraintLayout.LayoutParams params = ((ConstraintLayout.LayoutParams)g.nameTV.getLayoutParams());
+            int defMargin = params.topMargin;
+            int rightMargin = params.rightMargin;
+            params.setMargins(defMargin,defMargin,rightMargin,0);
+            g.nameTV.setLayoutParams(params);
         }
 
         //Set the text of the stockTV
-        stockTV.setText(String.valueOf(stock));
+        g.stockTV.setText(String.valueOf(stock));
         //Set the color if the stock is low
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
                 .getInt("stockThreshold", 10);
         if (stock <= stockThreshold) {
-            stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+            g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
         } else {
             //get the default color
             int[] attribute = new int[] { android.R.attr.textColor };
             TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
             int color = array.getColor(0, Color.TRANSPARENT);
-            stockTV.setTextColor(color);
+            g.stockTV.setTextColor(color);
         }
 
         if (holder.item.getExpiringRefill() != null) {
@@ -358,30 +340,30 @@ public class ItemAdapter extends
                     .getInt("warningDayThreshold", 28);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
-                expiryTV.setVisibility(VISIBLE);
+                g.expiryTV.setVisibility(VISIBLE);
                 //Set the text of the stockTV
-                expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
+                g.expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
                 //Set the color of the text if it is close
                 int redDayThreshold = SharedPreferencesFactory.getSP(holder.context)
                         .getInt("redDayThreshold", 7);
                 if (daysTillExpiry <= redDayThreshold) {
-                    expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+                    g.expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
                 } else {
                     //get the default color
                     int[] attribute = new int[]{ android.R.attr.textColor };
                     TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
                     int color = array.getColor(0, Color.TRANSPARENT);
-                    expiryTV.setTextColor(color);
+                    g.expiryTV.setTextColor(color);
                 }
             } else {
-               expiryTV.setVisibility(GONE);
+                g.expiryTV.setVisibility(GONE);
             }
         } else {
-            expiryTV.setVisibility(GONE);
+            g.expiryTV.setVisibility(GONE);
         }
 
         //set the text of the last taken text view
-        lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
+        g.lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
 
         mBoundViewHolders.add(holder);
     }
@@ -392,7 +374,7 @@ public class ItemAdapter extends
      */
     public void checkLastTaken() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            viewHolder.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.item));
+            viewHolder.g.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.item));
         }
     }
 
