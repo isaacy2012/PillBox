@@ -59,8 +59,6 @@ public class RefillActivity extends AppCompatActivity {
         int itemId = intent.getIntExtra("id", -1);
         String name = intent.getStringExtra("name");
 
-        setContentView(R.layout.refill_activity);
-
 
         g.appBar.addOnOffsetChangedListener(this::updateScroll);
 

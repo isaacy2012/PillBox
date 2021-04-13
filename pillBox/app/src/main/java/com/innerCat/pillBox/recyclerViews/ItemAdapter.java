@@ -173,8 +173,9 @@ public class ItemAdapter extends
      * @param item     the item
      * @param position the position
      */
-    @NoColorFocus
     public void setItem( Item item, int position ) {
+        int visibleItemsPosition = visibleItems.indexOf(allItems.get(position));
+        visibleItems.set(visibleItemsPosition, item);
         allItems.set(position, item);
         focusOnColor();
     }
@@ -215,7 +216,6 @@ public class ItemAdapter extends
      * @param item     the item to remove
      * @param position the position of the Item in the List
      */
-    @NoColorFocus
     public void removeItem( Context context, Item item, int position ) {
         allItems.remove(item);
         visibleItems.remove(item);
@@ -245,7 +245,6 @@ public class ItemAdapter extends
      * @param fromPosition the from position
      * @param toPosition   the to position
      */
-    @NoColorFocus
     public void notifyMoved( Context context, int fromPosition, int toPosition ) {
         super.notifyItemMoved(fromPosition, toPosition);
         if (fromPosition != toPosition) {
@@ -259,7 +258,6 @@ public class ItemAdapter extends
      * @param context  the context
      * @param position the position
      */
-    @NoColorFocus
     public void notifyChanged( Context context, int position ) {
         super.notifyItemChanged(position);
     }
@@ -342,6 +340,7 @@ public class ItemAdapter extends
             g.stockTV.setTextColor(color);
         }
 
+        //set the text of the expiryTV
         if (holder.item.getExpiringRefill() != null) {
             //4 weeks show warning
             LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
