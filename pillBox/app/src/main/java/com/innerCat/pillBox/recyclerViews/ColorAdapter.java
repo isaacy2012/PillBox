@@ -24,6 +24,10 @@ import java.util.Set;
 public class ColorAdapter extends
         RecyclerView.Adapter<ColorAdapter.ViewHolder> {
 
+    private final float UNSELECTED_ALPHA = 0.3f;
+    private final float SELECTED_ALPHA = 1f;
+    private final int ANIMATION_LENGTH = 150;
+
     private final List<ColorItem> colors;
     private final Set<ViewHolder> mBoundViewHolders = new HashSet<>();
     private int selectedColor = ColorItem.NO_COLOR;
@@ -52,10 +56,10 @@ public class ColorAdapter extends
                 if (colorItem.isSelected()) {
                     deselectAllExcept(colorItem);
                     colorButton.setAlpha(1f);
-                    ((FormActivity) context).setChosenColor(colorItem.getColor());
+                    ((FormActivity) context).setSelectedColor(colorItem.getColor());
                 } else {
                     deselectAll();
-                    ((FormActivity) context).setChosenColor(ColorItem.NO_COLOR);
+                    ((FormActivity) context).setSelectedColor(ColorItem.NO_COLOR);
                 }
             });
 
@@ -73,7 +77,7 @@ public class ColorAdapter extends
     public void animateColorButton(float fromAlpha, float toAlpha, Button colorButton) {
         ValueAnimator va = ValueAnimator.ofFloat(fromAlpha, toAlpha);
         va.addUpdateListener(valueAnimator -> colorButton.setAlpha((Float) valueAnimator.getAnimatedValue()));
-        va.setDuration(200);
+        va.setDuration(ANIMATION_LENGTH);
         va.start();
     }
 
@@ -83,10 +87,9 @@ public class ColorAdapter extends
     public void deselectAllExcept(ColorItem exceptColorItem) {
         for (ViewHolder viewHolder : mBoundViewHolders) {
             if (viewHolder.colorItem.equals(exceptColorItem) == false) {
-                //viewHolder.colorButton.setAlpha(0.5f);
                 viewHolder.colorItem.setSelected(false);
                 float currentAlpha = viewHolder.colorButton.getAlpha();
-                animateColorButton(currentAlpha, 0.5f, viewHolder.colorButton);
+                animateColorButton(currentAlpha, UNSELECTED_ALPHA, viewHolder.colorButton);
             }
         }
     }
@@ -98,7 +101,7 @@ public class ColorAdapter extends
         for (ViewHolder viewHolder : mBoundViewHolders) {
             viewHolder.colorItem.setSelected(false);
             float currentAlpha = viewHolder.colorButton.getAlpha();
-            animateColorButton(currentAlpha, 1f, viewHolder.colorButton);
+            animateColorButton(currentAlpha, SELECTED_ALPHA, viewHolder.colorButton);
         }
     }
 
@@ -155,9 +158,9 @@ public class ColorAdapter extends
         colorButton.setBackgroundColor(holder.colorItem.getColor());
         if (holder.colorItem.getColor() == selectedColor) {
             holder.colorItem.setSelected(true);
-            holder.colorButton.setAlpha(1f);
+            holder.colorButton.setAlpha(SELECTED_ALPHA);
         } else if (selectedColor != ColorItem.NO_COLOR) {
-            holder.colorButton.setAlpha(0.5f);
+            holder.colorButton.setAlpha(UNSELECTED_ALPHA);
         }
 
         mBoundViewHolders.add(holder);

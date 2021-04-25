@@ -70,13 +70,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:overScrollMode="always"
+            android:overScrollMode="never"
             android:animateLayoutChanges="true"
             android:visibility="visible"
             tools:layout_editor_absoluteY="180dp"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:fillViewport="true">
+
 
         <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvItems"
@@ -91,7 +92,12 @@
                 android:nestedScrollingEnabled="true"
                 android:scrollbarSize="0dp"
                 android:clipToPadding="false" />
+
+
+
     </androidx.core.widget.NestedScrollView>
+
+
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 
@@ -99,7 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
-            android:id="@+id/floatingActionButton"
+            android:id="@+id/fab"
             android:onClick="fabButton"
             android:layout_marginEnd="16dp"
             android:text="Add Item"

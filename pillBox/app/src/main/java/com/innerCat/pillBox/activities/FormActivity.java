@@ -5,20 +5,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.databinding.FormActivityBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.objects.ColorItem;
@@ -31,59 +26,55 @@ import static android.view.View.VISIBLE;
 
 public class FormActivity extends AppCompatActivity {
 
+    private FormActivityBinding g;
+
     int requestCode;
-    RecyclerView rvColors;
     ColorAdapter adapter;
     int selectedColor = ColorItem.NO_COLOR;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.form_activity);
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        g = FormActivityBinding.inflate(getLayoutInflater());
+        View view = g.getRoot();
+        setContentView(view);
+
+        setSupportActionBar(g.toolbar);
 
 
-        //Adding textChangedListener for nameEdit
-        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
-        ImageButton okButton = findViewById(R.id.okButton);
-        EditText nameEdit = findViewById(R.id.editName);
-        EditText stockEdit = findViewById(R.id.editStock);
-        SwitchMaterial widgetSwitch = findViewById(R.id.widgetSwitch);
-        Button deleteButton = findViewById(R.id.deleteButton);
-        RecyclerView rvColors = findViewById(R.id.rvColors);
+        //Adding textChangedListener for g.editName
 
-        nameEdit.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
-                nameEdit,
-                collapsingToolbarLayout,
-                okButton));
+        g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
+                g.editName,
+                g.toolbarLayout,
+                g.okButton));
 
         //Add offset listener for when the view is collapsing or expanded
         AppBarLayout appBarLayout = findViewById(R.id.app_bar);
         Context context = this;
         appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+            public void onOffsetChanged( AppBarLayout appBarLayout, int verticalOffset ) {
 
                 //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
                 if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
                     //  Collapsing
-                    nameEdit.setFocusableInTouchMode(false);
-                    nameEdit.setFocusable(false);
-                    nameEdit.setTextColor(ContextCompat.getColor(context, R.color.transparent));
-                    nameEdit.setHint("");
-                    //nameEdit.setVisibility(GONE);
-                    stockEdit.requestFocus();
+                    g.editName.setFocusableInTouchMode(false);
+                    g.editName.setFocusable(false);
+                    g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
+                    g.editName.setHint("");
+                    //g.editName.setVisibility(GONE);
+                    g.editStock.requestFocus();
                 } else {
                     //Expanded
-                    //nameEdit.setVisibility(VISIBLE);
+                    //g.editName.setVisibility(VISIBLE);
                     //get the default color
                     int color = ColorFactory.getDefaultTextColor(context);
-                    nameEdit.setTextColor(color);
-                    nameEdit.setHint("Title");
+                    g.editName.setTextColor(color);
+                    g.editName.setHint("Title");
 
-                    nameEdit.setFocusableInTouchMode(true);
-                    nameEdit.setFocusable(true);
+                    g.editName.setFocusableInTouchMode(true);
+                    g.editName.setFocusable(true);
                 }
             }
         });
@@ -93,21 +84,22 @@ public class FormActivity extends AppCompatActivity {
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             String name = intent.getStringExtra("name");
             int stock = intent.getIntExtra("stock", 0);
-            selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
             boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
-            nameEdit.setText(name);
-            stockEdit.setText(String.valueOf(stock));
-            widgetSwitch.setChecked(showInWidget);
-            deleteButton.setVisibility(VISIBLE);
+            g.editName.setText(name);
+            g.editStock.setText(String.valueOf(stock));
+            g.widgetSwitch.setChecked(showInWidget);
+            g.deleteButton.setVisibility(VISIBLE);
         } else {
-            deleteButton.setVisibility(GONE);
-            nameEdit.requestFocus();
+            g.deleteButton.setVisibility(GONE);
+            g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+        //gets the color from intent for adding, or from item intent for editing
+        selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
 
         adapter = new ColorAdapter();
-        rvColors.setAdapter(adapter);
-        rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        g.rvColors.setAdapter(adapter);
+        g.rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         adapter.setSelectedColor(selectedColor);
     }
 
@@ -124,7 +116,7 @@ public class FormActivity extends AppCompatActivity {
      */
     public void okButton( View view ) {
         Intent intent = new Intent();
-        String name = ((EditText)findViewById(R.id.editName)).getText().toString();
+        String name = ((EditText) findViewById(R.id.editName)).getText().toString();
         int stock = 0;
         String stockString = ((EditText) findViewById(R.id.editStock)).getText().toString();
         if (stockString.isEmpty() == false) {
@@ -133,7 +125,7 @@ public class FormActivity extends AppCompatActivity {
             } catch (NumberFormatException ignored) {
             }
         }
-        boolean showInWidget = ((SwitchMaterial)findViewById(R.id.widgetSwitch)).isChecked();
+        boolean showInWidget = g.widgetSwitch.isChecked();
 
         Item item = new Item(name, stock, selectedColor, showInWidget);
         //get the pos from the original incoming intent
@@ -170,7 +162,12 @@ public class FormActivity extends AppCompatActivity {
         cancel();
     }
 
-    public void setChosenColor( Integer color ) {
+    /**
+     * Sets chosen color.
+     *
+     * @param color the color
+     */
+    public void setSelectedColor( Integer color ) {
         this.selectedColor = color;
     }
 }

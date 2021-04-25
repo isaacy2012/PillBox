@@ -8,22 +8,16 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.databinding.RefillActivityBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
@@ -43,60 +37,36 @@ import static java.util.Comparator.reverseOrder;
 
 public class RefillActivity extends AppCompatActivity {
 
+    private RefillActivityBinding g;
+
     Database database;
     DataDao dao;
-    RecyclerView rvRefills;
-    ExtendedFloatingActionButton deleteFAB;
-    ImageButton editButton;
-    TextView subtitle;
     RefillAdapter adapter;
     boolean editMode;
     boolean selectAllMode = false;
     boolean changed = false;
     ArrayList<Refill> deleteRefills = new ArrayList<>();
 
-    /**
-     * Bind and set views.
-     */
-    private void bindAndSetViews() {
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
-        //initialise the database
-        database = DatabaseFactory.create(this);
-        dao = database.getDao();
-
-        //get the recyclerview in activity layout
-        rvRefills = findViewById(R.id.rvRefills);
-
-        //get the FAB
-        deleteFAB = findViewById(R.id.deleteFAB);
-        editButton = findViewById(R.id.editButton);
-
-        //get the subtitle
-        subtitle = findViewById(R.id.subtitleTV);
-
-        //Add offset listener for when the view is collapsing or expanded
-        AppBarLayout appBarLayout = findViewById(R.id.app_bar);
-        System.out.println(appBarLayout);
-        appBarLayout.addOnOffsetChangedListener(this::updateScroll);
-    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
         super.onCreate(savedInstanceState);
+        g = RefillActivityBinding.inflate(getLayoutInflater());
+        View view = g.getRoot();
+        setContentView(view);
 
         Intent intent = getIntent();
         int itemId = intent.getIntExtra("id", -1);
         String name = intent.getStringExtra("name");
 
-        setContentView(R.layout.refill_activity);
 
-        bindAndSetViews();
+        g.appBar.addOnOffsetChangedListener(this::updateScroll);
 
-        CollapsingToolbarLayout collapsingToolbarLayout = findViewById(R.id.toolbar_layout);
-        collapsingToolbarLayout.setTitle(name);
+        g.toolbarLayout.setTitle(name);
+
+        //initialise the database
+        database = DatabaseFactory.create(this);
+        dao = database.getDao();
 
 
         //ROOM Threads
@@ -117,9 +87,9 @@ public class RefillActivity extends AppCompatActivity {
                 // Create adapter passing in the sample user data
                 adapter = new RefillAdapter(expiredRefills, futureRefills);
                 // Attach the adapter to the recyclerview to populate items
-                rvRefills.setAdapter(adapter);
+                g.rvRefills.setAdapter(adapter);
                 // Set layout manager to position the items
-                rvRefills.setLayoutManager(new LinearLayoutManager(this));
+                g.rvRefills.setLayoutManager(new LinearLayoutManager(this));
                 updateRVVisibility();
             });
         });
@@ -133,19 +103,18 @@ public class RefillActivity extends AppCompatActivity {
      */
     private void updateScroll(AppBarLayout appBarLayout, int verticalOffset) {
         //set the behaviour for the coordinatorLayout
-        CoordinatorLayout coordinatorLayout = findViewById(R.id.coordinatorLayout);
         if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
             //  Collapsed
-            coordinatorLayout.setClipChildren(true);
+            g.coordinatorLayout.setClipChildren(true);
         } else if (Math.abs(verticalOffset) > 0) {
             //  In the middle
             float percentage = (float) (Math.abs(verticalOffset)/(appBarLayout.getTotalScrollRange()*0.2));
             if (percentage > 1) { percentage = 1; }
-            subtitle.setAlpha(1-percentage);
+            g.subtitleTV.setAlpha(1-percentage);
         } else {
             //Expanded
-            coordinatorLayout.setClipChildren(false);
-            subtitle.setAlpha(1);
+            g.coordinatorLayout.setClipChildren(false);
+            g.subtitleTV.setAlpha(1);
 
         }
     }
@@ -154,13 +123,12 @@ public class RefillActivity extends AppCompatActivity {
      * Update rv visibility.
      */
     private void updateRVVisibility() {
-        TextView emptyView = findViewById(R.id.emptyRefillRVView);
         if (adapter.getItemCount() == 0) {
-            rvRefills.setVisibility(View.GONE);
-            emptyView.setVisibility(View.VISIBLE);
+            g.rvRefills.setVisibility(View.GONE);
+            g.emptyRefillRVView.setVisibility(View.VISIBLE);
         } else {
-            rvRefills.setVisibility(View.VISIBLE);
-            emptyView.setVisibility(View.GONE);
+            g.rvRefills.setVisibility(View.VISIBLE);
+            g.emptyRefillRVView.setVisibility(View.GONE);
         }
     }
 
@@ -171,9 +139,8 @@ public class RefillActivity extends AppCompatActivity {
      */
     public void editButton( View view ) {
         editMode = !editMode;
-        CollapsingToolbarLayout toolbarLayout = findViewById(R.id.toolbar_layout);
         ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
-                editButton, toolbarLayout);
+                g.editButton, g.toolbarLayout);
         colorAnimator.start();
 
         deleteRefills = new ArrayList<>();
@@ -203,8 +170,8 @@ public class RefillActivity extends AppCompatActivity {
                             selectAllMode = false;
                             int defHorizPadding = Converters.fromDpToPixels(16, getResources());
                             int defTopPadding = Converters.fromDpToPixels(10, getResources());
-                            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
-                            deleteFAB.setVisibility(View.INVISIBLE);
+                            g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
+                            g.deleteFAB.setVisibility(View.INVISIBLE);
                             checkDelete();
 
                             //ROOM Threads
@@ -249,16 +216,16 @@ public class RefillActivity extends AppCompatActivity {
         int defHorizPadding = Converters.fromDpToPixels(16, getResources());
         int defTopPadding = Converters.fromDpToPixels(10, getResources());
         if (editMode == true) {
-            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, Converters.fromDpToPixels(68, getResources()));
-            deleteFAB.setVisibility(View.VISIBLE);
-            deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_check_24));
-            deleteFAB.setText("SELECT ALL");
-            editButton.setImageResource(R.drawable.ic_baseline_close_24);
+            g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, Converters.fromDpToPixels(68, getResources()));
+            g.deleteFAB.setVisibility(View.VISIBLE);
+            g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_check_24));
+            g.deleteFAB.setText("SELECT ALL");
+            g.editButton.setImageResource(R.drawable.ic_baseline_close_24);
         } else {
-            rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
-            deleteFAB.setVisibility(View.INVISIBLE);
+            g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
+            g.deleteFAB.setVisibility(View.INVISIBLE);
             selectAllMode = false;
-            editButton.setImageResource(R.drawable.ic_baseline_edit_24);
+            g.editButton.setImageResource(R.drawable.ic_baseline_edit_24);
         }
     }
 
@@ -267,15 +234,15 @@ public class RefillActivity extends AppCompatActivity {
      */
     public void checkFAB( boolean back ) {
         if (deleteRefills.size() != 0) {
-            if (deleteFAB.getText().equals("DELETE") == false) {
-                deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_edit_24));
-                deleteFAB.setText("DELETE");
+            if (g.deleteFAB.getText().equals("DELETE") == false) {
+                g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_edit_24));
+                g.deleteFAB.setText("DELETE");
             }
         } else {
             if (back == true) {
-                if (deleteFAB.getText().equals("SELECT ALL") == false) {
-                    deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_edit_24));
-                    deleteFAB.setText("SELECT ALL");
+                if (g.deleteFAB.getText().equals("SELECT ALL") == false) {
+                    g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_edit_24));
+                    g.deleteFAB.setText("SELECT ALL");
                 }
             }
         }

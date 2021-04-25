@@ -31,7 +31,7 @@ public class ToolbarAnimatorFactory {
         colorAnimator.setEvaluator(new ArgbEvaluator());
         colorAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
-            public void onAnimationUpdate(ValueAnimator animation) {
+            public void onAnimationUpdate( ValueAnimator animation ) {
                 int animatedValue = (int) animation.getAnimatedValue();
                 toolbarLayout.setContentScrimColor(animatedValue);
             }
