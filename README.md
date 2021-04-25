@@ -25,11 +25,15 @@ Everything you do most often is right at your fingertips, so nothing is more tha
 
 <b>Homescreen Widget</b> 
 
-A handy homescreen widget allows you to check off an item right from the homescreen. You can choose which items are displayed on the homescreen for privacy. 
+A handy homescreen widget allows you to check off an item with one click, right from the homescreen. You can choose which items are displayed on the homescreen for privacy. 
+
+<b>Track your refills</b>
+
+Track when you refill your pills, along with the expiry date, so PillBox can warn you when they're about to expire.
 
 <b>Personalizable</b>
 
-Reorder items however you want. 
+Categorize your pills by color, or reorder them.
 
 <b>Features</b>
 
