@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -154,14 +153,16 @@ public class DatabaseTests {
     }
 
     @Test
-    public void check_delete_before_today() {
-        makeAndAddRefill(1, 1, LocalDate.now().plusDays(-3));
-        makeAndAddRefill(1, 2, LocalDate.now().plusDays(-1));
-        makeAndAddRefill(1, 3, LocalDate.now().plusDays(1));
-        database.getDao().deleteRefillsOlderThanToday(Converters.todayString());
-        List<Refill> refills = database.getDao().getRefillsOfItemId(1);
-        System.out.println(refills);
-        assertEquals(1, refills.size());
+    public void soonest_expiring_refill() {
+        Item item = makeAndAddItem("Test", 1, false);
+        LocalDate earlier = LocalDate.now().plusDays(360);
+        LocalDate later = LocalDate.now().plusDays(370);
+        makeAndAddRefill(item.getId(), 15, earlier);
+        makeAndAddRefill(item.getId(), 15, later);
+        assertEquals(earlier, database.getDao()
+                .getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString())
+                .getExpiryDate());
+
     }
 
 }

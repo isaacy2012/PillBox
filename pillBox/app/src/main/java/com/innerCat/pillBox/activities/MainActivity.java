@@ -2,7 +2,6 @@ package com.innerCat.pillBox.activities;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -403,61 +402,54 @@ public class MainActivity extends AppCompatActivity {
         refillG.editRefill.requestFocus();
 
         //Set the behaviour of the expiry button
-        refillG.expiryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick( View v ) {
-                CalendarConstraints.Builder constraintsBuilder = new CalendarConstraints.Builder()
-                        .setValidator(DateValidatorPointForward.now());
+        refillG.expiryButton.setOnClickListener(v -> {
+            CalendarConstraints.Builder constraintsBuilder = new CalendarConstraints.Builder()
+                    .setValidator(DateValidatorPointForward.now());
 
-                MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                        .setTitleText("Select date")
-                        .setCalendarConstraints(constraintsBuilder.build())
-                        .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
-                        .build();
-                datePicker.show(getSupportFragmentManager(), "tag");
-                datePicker.addOnPositiveButtonClickListener(selection -> { //long selection
-                    date[0] = LocalDate.from(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()));
-                    refillG.expiryButton.setText(StringFormatter.dateToString(date[0]));
-                });
-            }
+            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select date")
+                    .setCalendarConstraints(constraintsBuilder.build())
+                    .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                    .build();
+            datePicker.show(getSupportFragmentManager(), "tag");
+            datePicker.addOnPositiveButtonClickListener(selection -> { //long selection
+                date[0] = LocalDate.from(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()));
+                refillG.expiryButton.setText(StringFormatter.dateToString(date[0]));
+            });
         });
 
         // Use the Builder class for convenient dialog construction
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
         builder.setMessage("Refill Amount")
                 .setView(refillG.getRoot())
-                .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, int id ) {
-                        //get the name of the Item to add
-                        int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
-                        Refill refill;
-                        if (date[0] != null) {
-                            refill = new Refill(item.getId(), refillAmount, date[0]);
-                            Refill itemRefill = item.getExpiringRefill();
-                            if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
-                                item.setExpiringRefill(refill);
-                            }
-                            if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
-                                itemRefill.mergeWith(refill);
-                                updateRefillInBackground(itemRefill);
-                                adapter.notifyItemChanged(position);
-                            } else {
-                                //add the refill
-                                addRefillInBackground(refill);
-                            }
+                .setPositiveButton("Ok", ( dialog, id ) -> {
+                    //get the name of the Item to add
+                    int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
+                    Refill refill;
+                    if (date[0] != null) {
+                        refill = new Refill(item.getId(), refillAmount, date[0]);
+                        Refill itemRefill = item.getExpiringRefill();
+                        if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
+                            item.setExpiringRefill(refill);
                         }
-                        item.refillByAmount(refillAmount);
-                        updateItem(item, position);
+                        if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
+                            itemRefill.mergeWith(refill);
+                            updateRefillInBackground(itemRefill);
+                            adapter.notifyItemChanged(position);
+                        } else {
+                            //add the refill
+                            addRefillInBackground(refill);
+                        }
+                    }
+                    item.refillByAmount(refillAmount);
+                    updateItem(item, position);
 
-                        //set the visibility of the fab
-                        g.fab.setVisibility(View.VISIBLE);
-                    }
+                    //set the visibility of the fab
+                    g.fab.setVisibility(View.VISIBLE);
                 })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dialog, int id ) {
-                        // User cancelled the dialog
-                        g.fab.setVisibility(View.VISIBLE);
-                    }
+                .setNegativeButton("Cancel", ( dialog, id ) -> {
+                    // User cancelled the dialog
+                    g.fab.setVisibility(View.VISIBLE);
                 });
         AlertDialog dialog = builder.create();
         dialog.setOnCancelListener(dialog1 -> {
