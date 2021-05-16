@@ -3,6 +3,7 @@ package com.innerCat.pillBox.recyclerViews;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,7 @@ import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.databinding.MainRvItemBinding;
+import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
@@ -118,7 +120,8 @@ public class ItemAdapter extends
      */
     public ItemAdapter( List<Item> items ) {
         this.allItems = new ArrayList<>(items);
-        this.visibleItems = new ArrayList<>(items);
+        //weak link because no color focus
+        this.visibleItems = allItems;
     }
 
 
@@ -127,12 +130,15 @@ public class ItemAdapter extends
      */
     public void focusOnColor() {
         if (focusColor == ColorItem.NO_COLOR) {
+            visibleItems = allItems;
             return;
         }
+        //clearing
         for (int i = 0; i < visibleItems.size(); i++) {
             notifyItemRemoved(0);
         }
-        visibleItems.clear();
+
+        visibleItems = new ArrayList<>();
         for (Item item : allItems) {
             if (item.getColor() == focusColor) {
                 visibleItems.add(0, item);
@@ -156,15 +162,9 @@ public class ItemAdapter extends
      */
     public void reset() {
         focusColor = ColorItem.NO_COLOR;
-        List<Item> addBackItems = new ArrayList<>(allItems);
-        visibleItems = new ArrayList<>(allItems);
-        for (Item removeItem : visibleItems) {
-            notifyItemRemoved(0);
-            addBackItems.remove(removeItem);
-        }
-        for (int i = 0; i < addBackItems.size(); i++) {
-            notifyItemInserted(0);
-        }
+        visibleItems.forEach(x -> notifyItemRemoved(0));
+        visibleItems = allItems;
+        allItems.forEach(x -> notifyItemInserted(0));
     }
 
     /**
@@ -187,16 +187,16 @@ public class ItemAdapter extends
      * @param item     the Item to add
      * @param position the position of the new Item in the List
      */
-    public void addItem( Context context, Item item, int position ) {
-        allItems.add(position, item);
-        //if it's color selection mode AND its the same color
-        if (focusColor != ColorItem.NO_COLOR && item.getColor() == focusColor) {
+    public void addItem( Context context, Item item ) {
+        allItems.add(0, item);
+        //if it's color selection mode and we're focused on the wrong color
+        if (focusColor != ColorItem.NO_COLOR && item.getColor() != focusColor) {
+            ((MainActivity) context).resetColorFocus();
+            notifyInserted(context, 0);
+        } else { //otherwise just ad as normal
             visibleItems.add(0, item);
             notifyItemInserted(0);
-            updateIndexesInRange(context, position);
-        } else { //otherwise, reset
-            ((MainActivity) context).resetColorFocus();
-            notifyInserted(context, position);
+            updateIndexesInRange(context, 0);
         }
     }
 
@@ -233,6 +233,7 @@ public class ItemAdapter extends
         for (int i = fromIndex; i < allItems.size(); i++) {
             Item thisItem = allItems.get(i);
             thisItem.setViewHolderPosition(allItems.indexOf(thisItem));
+            System.out.println("TRIED TO SET IN UPDATE: " + thisItem.getName() + " to " + thisItem.getViewHolderPosition());
             updated.add(thisItem);
         }
         ((MainActivity) context).updateMultipleInBackground(updated);
@@ -332,12 +333,11 @@ public class ItemAdapter extends
                 .getInt("stockThreshold", 10);
         if (stock <= stockThreshold) {
             g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
+            g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.BOLD);
         } else {
             //get the default color
-            int[] attribute = new int[]{ android.R.attr.textColor };
-            TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
-            int color = array.getColor(0, Color.TRANSPARENT);
-            g.stockTV.setTextColor(color);
+            g.stockTV.setTextColor(ColorFactory.getDefaultTextColor(holder.context));
+            g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.NORMAL);
         }
 
         //set the text of the expiryTV

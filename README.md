@@ -46,6 +46,10 @@ Categorize your pills by color, or reorder them.
 - Color code items to quickly find the ones you need 
 - Record expiry date of individual refills of items
 
+<b>Technologies Used</b>
+- SQLite with Android ROOM
+- JUnit Tests
+
 
 
 For Harley

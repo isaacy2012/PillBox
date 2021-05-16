@@ -343,6 +343,7 @@ public class MainActivity extends AppCompatActivity {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
             //Background work here
+            System.out.println("UPDATED IN DAO");
             for (Item item : updated) {
                 dao.update(item);
             }
@@ -526,10 +527,8 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Add a new item
-                adapter.addItem(this, item, 0);
-                //g.rvItems.scheduleLayoutAnimation();
+                adapter.addItem(this, item);
                 g.rvItems.scrollToPosition(0);
-                //g.rvItems.scheduleLayoutAnimation();
                 updateHomeWidget();
                 updateRVPadding();
             });
