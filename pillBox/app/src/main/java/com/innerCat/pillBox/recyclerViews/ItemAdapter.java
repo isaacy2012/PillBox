@@ -193,8 +193,7 @@ public class ItemAdapter extends
         if (focusColor != ColorItem.NO_COLOR && item.getColor() != focusColor) {
             ((MainActivity) context).resetColorFocus();
             notifyInserted(context, 0);
-        } else { //otherwise just ad as normal
-            visibleItems.add(0, item);
+        } else { //otherwise just add as normal
             notifyItemInserted(0);
             updateIndexesInRange(context, 0);
         }
