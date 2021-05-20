@@ -185,16 +185,19 @@ public class ItemAdapter extends
      *
      * @param context  the context
      * @param item     the Item to add
-     * @param position the position of the new Item in the List
      */
     public void addItem( Context context, Item item ) {
         allItems.add(0, item);
         //if it's color selection mode and we're focused on the wrong color
         if (focusColor != ColorItem.NO_COLOR && item.getColor() != focusColor) {
+            //reset the color focus
             ((MainActivity) context).resetColorFocus();
             notifyInserted(context, 0);
-        } else { //otherwise just ad as normal
-            visibleItems.add(0, item);
+        } else { //otherwise just add as normal
+            //if allItems isn't the same as visibleItems (because in focus color)
+            if (allItems != visibleItems) {
+                visibleItems.add(0, item);
+            }
             notifyItemInserted(0);
             updateIndexesInRange(context, 0);
         }
