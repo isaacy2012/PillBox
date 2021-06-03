@@ -8,6 +8,8 @@ import androidx.room.PrimaryKey;
 import java.time.LocalDate;
 import java.util.Objects;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 /**
  * The type Item.
  */
@@ -15,17 +17,54 @@ import java.util.Objects;
 @Entity(tableName = "items")
 public class Item  {
 
-    //set the primary key to auto generate and increment
+    /**
+     * The Id.
+     */
+//set the primary key to auto generate and increment
     @PrimaryKey(autoGenerate = true)
     //placeholder id
     private int id = 0;
+    /**
+     * The Name.
+     */
     private String name;
+    /**
+     * The Last used.
+     */
     private LocalDate lastUsed;
+    /**
+     * The Stock.
+     */
     @ColumnInfo(defaultValue = "0")
     private int stock = 0;
+    /**
+     * The View holder position.
+     */
     private int viewHolderPosition;
+    /**
+     * The Show in widget.
+     */
     private boolean showInWidget = false;
+    /**
+     * The Color.
+     */
     private int color = ColorItem.NO_COLOR;
+    /**
+     * The Auto dec start date.
+     */
+//auto-decrement
+    private LocalDate autoDecStartDate;
+    /**
+     * The Auto dec per day.
+     */
+    private int autoDecPerDay = 0;
+    /**
+     * The Auto dec n days.
+     */
+    private int autoDecNDays = 0;
+    /**
+     * The Expiring refill.
+     */
     @Ignore
     private Refill expiringRefill = null;
 
@@ -41,8 +80,9 @@ public class Item  {
     /**
      * Instantiates a new Item.
      *
-     * @param name  the name
-     * @param stock the stock
+     * @param name         the name
+     * @param stock        the stock
+     * @param showInWidget the show in widget
      */
     @Ignore
     public Item(String name, int stock, boolean showInWidget) {
@@ -56,6 +96,7 @@ public class Item  {
      *
      * @param name         the name
      * @param stock        the stock
+     * @param color        the color
      * @param showInWidget the show in widget
      */
     @Ignore
@@ -143,6 +184,17 @@ public class Item  {
      */
     public int getStock() {
         return stock;
+    }
+
+    /**
+     * Gets calculated stock.
+     *
+     * @return the calculated stock
+     */
+    public int getCalculatedStock() {
+        long diff = stock-DAYS.between(autoDecStartDate, LocalDate.now());
+        long times = (diff/autoDecPerDay);
+        return (int)(stock-times);
     }
 
     /**
@@ -237,6 +289,60 @@ public class Item  {
      */
     public void setColor( int color ) {
         this.color = color;
+    }
+
+    /**
+     * Gets auto dec n days.
+     *
+     * @return the auto dec n days
+     */
+    public int getAutoDecNDays() {
+        return autoDecNDays;
+    }
+
+    /**
+     * Sets auto dec n days.
+     *
+     * @param autoDecNDays the auto dec n days
+     */
+    public void setAutoDecNDays( int autoDecNDays ) {
+        this.autoDecNDays = autoDecNDays;
+    }
+
+    /**
+     * Gets auto dec start date.
+     *
+     * @return the auto dec start date
+     */
+    public LocalDate getAutoDecStartDate() {
+        return autoDecStartDate;
+    }
+
+    /**
+     * Gets auto dec per day.
+     *
+     * @return the auto dec per day
+     */
+    public int getAutoDecPerDay() {
+        return autoDecPerDay;
+    }
+
+    /**
+     * Sets auto dec per day.
+     *
+     * @param autoDecPerDay the auto dec per day
+     */
+    public void setAutoDecPerDay( int autoDecPerDay ) {
+        this.autoDecPerDay = autoDecPerDay;
+    }
+
+    /**
+     * Sets auto dec start date.
+     *
+     * @param autoDecStartDate the auto dec start date
+     */
+    public void setAutoDecStartDate( LocalDate autoDecStartDate ) {
+        this.autoDecStartDate = autoDecStartDate;
     }
 
     /**

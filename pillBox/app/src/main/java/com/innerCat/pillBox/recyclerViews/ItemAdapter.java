@@ -21,6 +21,7 @@ import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.room.Converters;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -307,7 +308,7 @@ public class ItemAdapter extends
         MainRvItemBinding g = holder.g;
 
 
-        int stock = holder.item.getStock();
+        int stock = holder.item.getCalculatedStock();
 
         g.nameTV.setText(holder.item.getName());
 
@@ -316,17 +317,23 @@ public class ItemAdapter extends
         int defMargin = params.topMargin;
         int rightMargin = params.rightMargin;
 
+        //set the colorDot and NameTV margin parameters
         if (holder.item.getColor() != ColorItem.NO_COLOR) {
             g.colorDot.setVisibility(VISIBLE);
             g.colorDot.setBackgroundColor(holder.item.getColor());
 
             params.setMargins(0, defMargin, rightMargin, 0);
-            g.nameTV.setLayoutParams(params);
         } else {
             g.colorDot.setVisibility(GONE);
 
             params.setMargins(defMargin, defMargin, rightMargin, 0);
-            g.nameTV.setLayoutParams(params);
+        }
+        g.nameTV.setLayoutParams(params);
+
+        if (holder.item.getName().equals("Aspirin")) {
+            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBgColor));
+            g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBorderColor));
+            g.cardView.setStrokeWidth(Converters.fromDpToPixels(2, holder.context.getResources()));
         }
 
         //Set the text of the stockTV

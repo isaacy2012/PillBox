@@ -4,6 +4,7 @@
     <string name="add_widget">Add widget</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="show_in_widget">Show in widget</string>
+    <string name="auto_decrement">Take Automatically</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_refill">Refill</string>
     <string name="title_activity_form"> </string>

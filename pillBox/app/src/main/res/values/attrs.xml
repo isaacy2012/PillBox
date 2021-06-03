@@ -3,4 +3,6 @@
         <attr name="appWidgetBackgroundColor" format="color" />
         <attr name="appWidgetTextColor" format="color" />
     </declare-styleable>
+    <attr name="autoDecrementBgColor" format="color" />
+    <attr name="autoDecrementBorderColor" format="color" />
 </resources>

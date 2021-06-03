@@ -94,6 +94,10 @@ public class FormActivity extends AppCompatActivity {
             g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
+        g.autoDecSwitch.setOnCheckedChangeListener(( buttonView, isChecked ) -> {
+            int state = isChecked ? VISIBLE : GONE;
+            g.autoDecLinearLayout.setVisibility(state);
+        });
         //gets the color from intent for adding, or from item intent for editing
         selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
 
