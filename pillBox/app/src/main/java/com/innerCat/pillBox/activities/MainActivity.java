@@ -592,23 +592,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Inject data into an item.
-     *
-     * @param item the item
-     * @param data the data
-     */
-    private void injectDataToItem( Item item, Intent data ) {
-        String name = data.getStringExtra("name");
-        int stock = data.getIntExtra("stock", 0);
-        int color = data.getIntExtra("color", ColorItem.NO_COLOR);
-        boolean showInWidget = data.getBooleanExtra("showInWidget", false);
-        item.setName(name);
-        item.setRawStock(stock);
-        item.setShowInWidget(showInWidget);
-        item.setColor(color);
-    }
-
-    /**
      * When there is a result from an activity
      *
      * @param requestCode the requestCode
