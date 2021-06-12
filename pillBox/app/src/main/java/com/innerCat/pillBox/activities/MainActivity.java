@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     DataDao dao;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
-    Item itemToUpdate = null;
 
     //modes
     boolean editMode = false;
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int EDIT_ITEM_REQUEST = 2;
     public static final int REFILL_EDIT_REQUEST = 3;
     public static final int RESULT_DELETE = 123;
-    public static final int RESULT_OK_CHANGED = 124;
+    public static final int RESULT_REFILL_CHANGED = 124;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -510,18 +509,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Add a item to the database
+     * Add an item to the database
      *
-     * @param name  the name of the item
-     * @param stock the stock
+     * @param item the item
      */
-    private void addItem( String name, int stock, int color, boolean showInWidget ) {
+    private void addItem( Item item ) {
+        System.out.println("WINNOW: " + "ADDED ITEM: " + item);
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            Item item = new Item(name, stock, color, showInWidget);
             long id = dao.insert(item);
             item.setId((int) id);
             handler.post(() -> {
@@ -574,9 +572,8 @@ public class MainActivity extends AppCompatActivity {
      * @param position the position
      */
     public void toFormUpdate( Item item, int position ) {
-        itemToUpdate = item;
         Intent intent = new Intent(this, FormActivity.class);
-        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         int requestCode = EDIT_ITEM_REQUEST;
         intent.putExtra("requestCode", requestCode);
         startActivityForResult(intent, requestCode);
@@ -590,7 +587,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void toRefill( Item item, int position ) {
         Intent intent = new Intent(this, RefillActivity.class);
-        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         startActivityForResult(intent, REFILL_EDIT_REQUEST);
     }
 
@@ -606,7 +603,7 @@ public class MainActivity extends AppCompatActivity {
         int color = data.getIntExtra("color", ColorItem.NO_COLOR);
         boolean showInWidget = data.getBooleanExtra("showInWidget", false);
         item.setName(name);
-        item.setStock(stock);
+        item.setRawStock(stock);
         item.setShowInWidget(showInWidget);
         item.setColor(color);
     }
@@ -619,59 +616,55 @@ public class MainActivity extends AppCompatActivity {
      * @param data        the data from the activity
      */
     public void onActivityResult( int requestCode, int resultCode, Intent data ) {
-        if (resultCode == RESULT_OK) {
-            int pos = data.getIntExtra("position", -1);
-            int color = data.getIntExtra("color", ColorItem.NO_COLOR);
-            if (color != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
-                resetColorFocus();
-            }
-            switch (requestCode) {
-                case ADD_ITEM_REQUEST:
-                    String name = data.getStringExtra("name");
-                    int stock = data.getIntExtra("stock", 0);
-                    boolean showInWidget = data.getBooleanExtra("showInWidget", false);
-                    addItem(name, stock, color, showInWidget);
-                    break;
-                case EDIT_ITEM_REQUEST:
-                    if (itemToUpdate == null) {
-                        return;
-                    }
-                    injectDataToItem(itemToUpdate, data);
-                    updateItem(itemToUpdate, pos);
-                    itemToUpdate = null;
-                    break;
-            }
-        } else if (resultCode == RESULT_DELETE) {
-            if (itemToUpdate == null) {
-                return;
-            }
-            int pos = itemToUpdate.getViewHolderPosition();
-            removeItem(itemToUpdate, pos);
-        } else if (resultCode == RESULT_OK_CHANGED) {
-            if (requestCode == REFILL_EDIT_REQUEST) {
+        switch (resultCode) {
+            case RESULT_OK: {
+                System.out.println("WINNOW: " + "me");
+                Item item = (Item)data.getSerializableExtra("item");
                 int pos = data.getIntExtra("position", -1);
-                //ROOM Threads
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-                executor.execute(() -> {
-                    //Background work here
-                    int id = data.getIntExtra("id", -1);
-                    if (id == -1 || pos == -1) {
-                        return;
-                    }
-                    Item replaceItem = dao.getItem(id);
-                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId(),
-                            Converters.todayString());
-                    replaceItem.setExpiringRefill(expiringRefill);
-                    adapter.setItem(replaceItem, pos);
-                    handler.post(() -> {
-                        //UI Thread work here
-                        // Add a new item
-                        adapter.notifyItemChanged(pos);
-                        updateHomeWidget();
-                    });
-                });
+                if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
+                    resetColorFocus();
+                }
+                switch (requestCode) {
+                    case ADD_ITEM_REQUEST:
+                        addItem(item);
+                        break;
+                    case EDIT_ITEM_REQUEST:
+                        updateItem(item, pos);
+                        break;
+                }
+                break;
             }
+            case RESULT_DELETE: {
+                Item item = (Item)data.getSerializableExtra("item");
+                int pos = item.getViewHolderPosition();
+                removeItem(item, pos);
+                break;
+            }
+            case RESULT_REFILL_CHANGED:
+                if (requestCode == REFILL_EDIT_REQUEST) {
+                    Item item = (Item)data.getSerializableExtra("item");
+                    int pos = data.getIntExtra("position", -1);
+                    //ROOM Threads
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    executor.execute(() -> {
+                        //Background work here
+                        if (item.getId() == -1 || pos == -1) {
+                            return;
+                        }
+                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(),
+                                Converters.todayString());
+                        item.setExpiringRefill(expiringRefill);
+                        adapter.setItem(item, pos);
+                        handler.post(() -> {
+                            //UI Thread work here
+                            // Add a new item
+                            adapter.notifyItemChanged(pos);
+                            updateHomeWidget();
+                        });
+                    });
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }

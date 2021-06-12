@@ -59,13 +59,13 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
                 R.layout.widget_grid_item);
         Item thisItem = items.get(position);
         widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
-        int stock = thisItem.getStock();
+        int stock = thisItem.getRawStock();
         if (stock < 10) {
-            SpannableString redStockText = new SpannableString(String.valueOf(thisItem.getStock()));
+            SpannableString redStockText = new SpannableString(String.valueOf(thisItem.getRawStock()));
             redStockText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.primaryColor)), 0, redStockText.length(), 0);
             widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, redStockText);
         } else {
-            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getStock()));
+            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getRawStock()));
         }
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
 

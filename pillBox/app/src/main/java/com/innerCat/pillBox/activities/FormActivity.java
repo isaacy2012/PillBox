@@ -19,7 +19,8 @@ import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.recyclerViews.ColorAdapter;
-import com.innerCat.pillBox.room.Converters;
+
+import java.time.LocalDate;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
@@ -27,6 +28,8 @@ import static android.view.View.VISIBLE;
 public class FormActivity extends AppCompatActivity {
 
     private FormActivityBinding g;
+
+    private Item itemToEdit = null;
 
     int requestCode;
     ColorAdapter adapter;
@@ -82,12 +85,20 @@ public class FormActivity extends AppCompatActivity {
         Intent intent = getIntent();
         requestCode = intent.getIntExtra("requestCode", -1);
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
-            String name = intent.getStringExtra("name");
-            int stock = intent.getIntExtra("stock", 0);
-            boolean showInWidget = intent.getBooleanExtra("showInWidget", false);
-            g.editName.setText(name);
-            g.editStock.setText(String.valueOf(stock));
-            g.widgetSwitch.setChecked(showInWidget);
+            itemToEdit = (Item) intent.getSerializableExtra("item");
+            g.editName.setText(itemToEdit.getName());
+            g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
+            g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
+            if (itemToEdit.getAutoDecStartDate() != null) {
+                g.autoDecLinearLayout.setVisibility(VISIBLE);
+                g.autoDecSwitch.setChecked(true);
+                g.autoDecNDaysPicker.setValue(itemToEdit.getAutoDecNDays());
+                g.autoDecPerDayPicker.setValue(itemToEdit.getAutoDecPerDay());
+            }
+            //gets the color from intent for adding, or from item intent for editing
+            selectedColor = itemToEdit.getColor();
+
+            //because EDIT
             g.deleteButton.setVisibility(VISIBLE);
         } else {
             g.deleteButton.setVisibility(GONE);
@@ -98,8 +109,6 @@ public class FormActivity extends AppCompatActivity {
             int state = isChecked ? VISIBLE : GONE;
             g.autoDecLinearLayout.setVisibility(state);
         });
-        //gets the color from intent for adding, or from item intent for editing
-        selectedColor = intent.getIntExtra("color", ColorItem.NO_COLOR);
 
         adapter = new ColorAdapter();
         g.rvColors.setAdapter(adapter);
@@ -119,24 +128,48 @@ public class FormActivity extends AppCompatActivity {
      * @param view the view
      */
     public void okButton( View view ) {
-        Intent intent = new Intent();
+        Intent returnIntent = new Intent();
         String name = ((EditText) findViewById(R.id.editName)).getText().toString();
-        int stock = 0;
         String stockString = ((EditText) findViewById(R.id.editStock)).getText().toString();
+        boolean showInWidget = g.widgetSwitch.isChecked();
+        boolean autodec = g.autoDecSwitch.isChecked();
+        int stock = 0;
         if (stockString.isEmpty() == false) {
             try {
                 stock = Integer.parseInt(stockString);
             } catch (NumberFormatException ignored) {
+                //leave the stock
             }
         }
-        boolean showInWidget = g.widgetSwitch.isChecked();
+        if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
+            itemToEdit.setName(name);
+            itemToEdit.setRawStock(stock);
+            itemToEdit.setShowInWidget(showInWidget);
+            itemToEdit.setAutoDecStartDate(autodec ? LocalDate.now() : null);
+            if (autodec) {
+                itemToEdit.setAutoDecNDays(g.autoDecNDaysPicker.getValue());
+                itemToEdit.setAutoDecPerDay(g.autoDecPerDayPicker.getValue());
+            }
 
-        Item item = new Item(name, stock, selectedColor, showInWidget);
-        //get the pos from the original incoming intent
-        int pos = getIntent().getIntExtra("position", -1);
-
-        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, pos));
-        setResult(RESULT_OK, intent);
+            returnIntent.putExtra("item", itemToEdit);
+        } else {
+            Item item;
+            if (autodec) {
+                item = new Item(name,
+                        stock,
+                        selectedColor,
+                        showInWidget,
+                        LocalDate.now(),
+                        g.autoDecNDaysPicker.getValue(),
+                        g.autoDecPerDayPicker.getValue());
+            } else {
+                item = new Item(name, stock, selectedColor, showInWidget);
+            }
+            returnIntent.putExtra("item", item);
+        }
+        returnIntent.putExtra("position", getIntent().getIntExtra("position", -1));
+        setResult(RESULT_OK, returnIntent);
+        System.out.println("FINISHED");
         finish();
     }
 

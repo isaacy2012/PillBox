@@ -99,31 +99,15 @@ public class Converters {
     }
 
     /**
-     * Gets bundle from item for adding.
-     *
-     * @param item the item
-     * @return the bundle from item
-     */
-    public static Bundle getBundleFromItem( Item item ) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("id", item.getId());
-        bundle.putString("name", item.getName());
-        bundle.putInt("stock", item.getStock());
-        bundle.putInt("color", item.getColor());
-        bundle.putBoolean("showInWidget", item.getShowInWidget());
-        return bundle;
-    }
-
-    /**
      * Gets edit bundle from item and position for editing.
      *
      * @param item     the item
      * @param position the position
      * @return the edit bundle from item and position
      */
-    public static Bundle getEditBundleFromItemAndPosition( Item item, int position ) {
-        Bundle bundle = getBundleFromItem(item);
-
+    public static Bundle getExtrasFromItemAndPosition( Item item, int position ) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("item", item);
         bundle.putInt("position", position);
         return bundle;
     }

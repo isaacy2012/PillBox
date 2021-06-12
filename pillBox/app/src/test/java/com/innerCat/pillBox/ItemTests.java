@@ -24,7 +24,7 @@ public class ItemTests {
         for (int i = 0; i < 100; i++) {
             item.decrementStock();
         }
-        assertEquals(0, item.getStock());
+        assertEquals(0, item.getRawStock());
     }
 
 

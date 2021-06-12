@@ -39,6 +39,8 @@ public class RefillActivity extends AppCompatActivity {
 
     private RefillActivityBinding g;
 
+    private Item refillItem = null;
+
     Database database;
     DataDao dao;
     RefillAdapter adapter;
@@ -56,8 +58,9 @@ public class RefillActivity extends AppCompatActivity {
         setContentView(view);
 
         Intent intent = getIntent();
-        int itemId = intent.getIntExtra("id", -1);
-        String name = intent.getStringExtra("name");
+        refillItem = (Item)intent.getSerializableExtra("item");
+        int itemId = refillItem.getId();
+        String name = refillItem.getName();
 
 
         g.appBar.addOnOffsetChangedListener(this::updateScroll);
@@ -289,10 +292,10 @@ public class RefillActivity extends AppCompatActivity {
     @Override
     public void finish() {
         Intent intent = new Intent();
-        intent.putExtra("position", getIntent().getIntExtra("position", -1));
-        intent.putExtra("id", getIntent().getIntExtra("id", -1));
+        int position = getIntent().getIntExtra("position", -1);
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(refillItem, position));
         if (changed == true) {
-            setResult(MainActivity.RESULT_OK_CHANGED, intent);
+            setResult(MainActivity.RESULT_REFILL_CHANGED, intent);
         } else {
             setResult(RESULT_OK, intent);
         }

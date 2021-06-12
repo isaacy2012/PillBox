@@ -330,7 +330,8 @@ public class ItemAdapter extends
         }
         g.nameTV.setLayoutParams(params);
 
-        if (holder.item.getName().equals("Aspirin")) {
+        //If autodec
+        if (holder.item.getAutoDecStartDate() != null) {
             g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBgColor));
             g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBorderColor));
             g.cardView.setStrokeWidth(Converters.fromDpToPixels(2, holder.context.getResources()));

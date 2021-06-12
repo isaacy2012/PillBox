@@ -5,6 +5,7 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
  */
 //table name is 'items'
 @Entity(tableName = "items")
-public class Item  {
+public class Item implements Serializable {
 
     /**
      * The Id.
@@ -36,7 +37,7 @@ public class Item  {
      * The Stock.
      */
     @ColumnInfo(defaultValue = "0")
-    private int stock = 0;
+    private int rawStock = 0;
     /**
      * The View holder position.
      */
@@ -53,7 +54,7 @@ public class Item  {
      * The Auto dec start date.
      */
 //auto-decrement
-    private LocalDate autoDecStartDate;
+    private LocalDate autoDecStartDate = null;
     /**
      * The Auto dec per day.
      */
@@ -73,7 +74,7 @@ public class Item  {
      *
      * @param name the name
      */
-    public Item(String name) {
+    public Item( String name ) {
         this.name = name;
     }
 
@@ -81,45 +82,82 @@ public class Item  {
      * Instantiates a new Item.
      *
      * @param name         the name
-     * @param stock        the stock
+     * @param rawStock        the stock
      * @param showInWidget the show in widget
      */
     @Ignore
-    public Item(String name, int stock, boolean showInWidget) {
+    public Item( String name, int rawStock, boolean showInWidget ) {
         this.name = name;
-        this.stock = stock;
+        this.rawStock = rawStock;
         this.showInWidget = showInWidget;
     }
 
     /**
      * Instantiates a new Item.
      *
+     * @param id                 the id
+     * @param name               the name
+     * @param lastUsed           the last used
+     * @param rawStock              the stock
+     * @param viewHolderPosition the view holder position
+     * @param showInWidget       the show in widget
+     * @param color              the color
+     * @param autoDecStartDate   the auto dec start date
+     * @param autoDecPerDay      the auto dec per day
+     * @param autoDecNDays       the auto dec n days
+     * @param expiringRefill     the expiring refill
+     */
+    @Ignore
+    public Item( String name,
+                 int rawStock,
+                 int color,
+                 boolean showInWidget,
+                 LocalDate autoDecStartDate,
+                 int autoDecPerDay,
+                 int autoDecNDays ) {
+        this.name = name;
+        this.lastUsed = lastUsed;
+        this.rawStock = rawStock;
+        this.viewHolderPosition = viewHolderPosition;
+        this.showInWidget = showInWidget;
+        this.color = color;
+        this.autoDecStartDate = autoDecStartDate;
+        this.autoDecPerDay = autoDecPerDay;
+        this.autoDecNDays = autoDecNDays;
+        this.expiringRefill = expiringRefill;
+    }
+
+
+    /**
+     * Instantiates a new Item.
+     *
      * @param name         the name
-     * @param stock        the stock
+     * @param rawStock        the stock
      * @param color        the color
      * @param showInWidget the show in widget
      */
     @Ignore
-    public Item(String name, int stock, int color, boolean showInWidget) {
+    public Item( String name, int rawStock, int color, boolean showInWidget ) {
         this.name = name;
-        this.stock = stock;
-        this.color = color;
+        this.rawStock = rawStock;
         this.showInWidget = showInWidget;
+        this.color = color;
     }
+
 
     /**
      * Instantiates a new Item.
      *
      * @param id           the id
      * @param name         the name
-     * @param stock        the stock
+     * @param rawStock        the stock
      * @param showInWidget the show in widget
      */
     @Ignore
-    public Item(int id, String name, int stock, boolean showInWidget) {
+    public Item( int id, String name, int rawStock, boolean showInWidget ) {
         this.id = id;
         this.name = name;
-        this.stock = stock;
+        this.rawStock = rawStock;
         this.showInWidget = showInWidget;
     }
 
@@ -182,8 +220,8 @@ public class Item  {
      *
      * @return the stock
      */
-    public int getStock() {
-        return stock;
+    public int getRawStock() {
+        return rawStock;
     }
 
     /**
@@ -192,27 +230,35 @@ public class Item  {
      * @return the calculated stock
      */
     public int getCalculatedStock() {
-        long diff = stock-DAYS.between(autoDecStartDate, LocalDate.now());
-        long times = (diff/autoDecPerDay);
-        return (int)(stock-times);
+        if (autoDecStartDate == null) {
+            return rawStock;
+        } else {
+            long diff = DAYS.between(autoDecStartDate, LocalDate.now());
+            long times = (diff / autoDecPerDay);
+            System.out.println("WINNOW: " + "STARTDATE: " + autoDecStartDate);
+            System.out.println("WINNOW: " + "TODAY: " + LocalDate.now());
+            System.out.println("WINNOW: " + "TIMES: " + (times));
+            System.out.println("WINNOW: " + "RESULT: " + (rawStock-times));
+            return (int) (rawStock - times);
+        }
     }
 
     /**
      * Sets stock.
      *
-     * @param stock the stock
+     * @param rawStock the stock
      */
-    public void setStock( int stock ) {
-        this.stock = stock;
+    public void setRawStock( int rawStock ) {
+        this.rawStock = rawStock;
     }
 
     /**
      * Decrements the stock and sets the last used to now
      */
     public void decrementStock() {
-        if (this.stock > 0) {
+        if (this.rawStock > 0) {
             setLastUsed(LocalDate.now());
-            this.stock = this.stock - 1;
+            this.rawStock = this.rawStock - 1;
         }
     }
 
@@ -221,10 +267,10 @@ public class Item  {
      *
      * @param num the num
      */
-    public void decrementStockBy(int num) {
-        this.stock = this.stock-num;
-        if (this.stock < 0) {
-            this.stock = 0;
+    public void decrementStockBy( int num ) {
+        this.rawStock = this.rawStock - num;
+        if (this.rawStock < 0) {
+            this.rawStock = 0;
         }
     }
 
@@ -269,8 +315,8 @@ public class Item  {
      *
      * @param refillAmount the refill amount
      */
-    public void refillByAmount( int refillAmount) {
-        this.stock = this.stock+refillAmount;
+    public void refillByAmount( int refillAmount ) {
+        this.rawStock = this.rawStock + refillAmount;
     }
 
     /**
@@ -369,14 +415,14 @@ public class Item  {
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
         return id == item.id &&
-                stock == item.stock &&
+                rawStock == item.rawStock &&
                 Objects.equals(name, item.name) &&
                 Objects.equals(lastUsed, item.lastUsed);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, lastUsed, stock);
+        return Objects.hash(id, name, lastUsed, rawStock);
     }
 
     @Override
@@ -385,7 +431,8 @@ public class Item  {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", lastUpdated=" + lastUsed +
-                ", stock=" + stock +
+                ", rawStock=" + rawStock +
+                ", calculatedStock=" + getCalculatedStock() +
                 '}';
     }
 }

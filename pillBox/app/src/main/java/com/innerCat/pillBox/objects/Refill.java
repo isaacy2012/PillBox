@@ -3,6 +3,7 @@ package com.innerCat.pillBox.objects;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -12,7 +13,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
  */
 //table name is 'refills'
 @Entity(tableName = "refills")
-public class Refill extends RefillListObject implements Comparable<Refill> {
+public class Refill extends RefillListObject implements Comparable<Refill>, Serializable {
     //set the primary key to auto generate and increment
     @PrimaryKey(autoGenerate = true)
     //placeholder id
