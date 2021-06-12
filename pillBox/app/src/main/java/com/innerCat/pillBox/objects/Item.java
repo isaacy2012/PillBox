@@ -82,7 +82,7 @@ public class Item implements Serializable {
      * Instantiates a new Item.
      *
      * @param name         the name
-     * @param rawStock        the stock
+     * @param rawStock     the stock
      * @param showInWidget the show in widget
      */
     @Ignore
@@ -98,7 +98,7 @@ public class Item implements Serializable {
      * @param id                 the id
      * @param name               the name
      * @param lastUsed           the last used
-     * @param rawStock              the stock
+     * @param rawStock           the stock
      * @param viewHolderPosition the view holder position
      * @param showInWidget       the show in widget
      * @param color              the color
@@ -116,15 +116,12 @@ public class Item implements Serializable {
                  int autoDecPerDay,
                  int autoDecNDays ) {
         this.name = name;
-        this.lastUsed = lastUsed;
         this.rawStock = rawStock;
-        this.viewHolderPosition = viewHolderPosition;
         this.showInWidget = showInWidget;
         this.color = color;
         this.autoDecStartDate = autoDecStartDate;
         this.autoDecPerDay = autoDecPerDay;
         this.autoDecNDays = autoDecNDays;
-        this.expiringRefill = expiringRefill;
     }
 
 
@@ -132,7 +129,7 @@ public class Item implements Serializable {
      * Instantiates a new Item.
      *
      * @param name         the name
-     * @param rawStock        the stock
+     * @param rawStock     the stock
      * @param color        the color
      * @param showInWidget the show in widget
      */
@@ -150,7 +147,7 @@ public class Item implements Serializable {
      *
      * @param id           the id
      * @param name         the name
-     * @param rawStock        the stock
+     * @param rawStock     the stock
      * @param showInWidget the show in widget
      */
     @Ignore
@@ -234,11 +231,8 @@ public class Item implements Serializable {
             return rawStock;
         } else {
             long diff = DAYS.between(autoDecStartDate, LocalDate.now());
-            long times = (diff / autoDecPerDay);
-            System.out.println("WINNOW: " + "STARTDATE: " + autoDecStartDate);
-            System.out.println("WINNOW: " + "TODAY: " + LocalDate.now());
-            System.out.println("WINNOW: " + "TIMES: " + (times));
-            System.out.println("WINNOW: " + "RESULT: " + (rawStock-times));
+            long daysTaken = diff / autoDecNDays;
+            long times = (autoDecPerDay * daysTaken);
             return (int) (rawStock - times);
         }
     }
