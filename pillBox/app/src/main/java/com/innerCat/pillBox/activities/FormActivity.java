@@ -1,5 +1,6 @@
 package com.innerCat.pillBox.activities;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,11 +12,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.databinding.FormActivityBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
@@ -122,10 +125,23 @@ public class FormActivity extends AppCompatActivity {
     }
 
     public void deleteButton( View view ) {
-        Intent intent = new Intent();
-        intent.putExtra("item", itemToEdit);
-        setResult(MainActivity.RESULT_DELETE, intent);
-        finish();
+        System.out.println("WINNOW CREATED DELETE BUTTON DIALOG????");
+        // Use the Builder class for convenient dialog construction
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+
+        builder.setMessage("Are you sure you wish to delete " + itemToEdit.getName() + "?")
+                .setPositiveButton("Delete", ( dialog, id ) -> {
+                    Intent intent = new Intent();
+                    intent.putExtra("item", itemToEdit);
+                    setResult(MainActivity.RESULT_DELETE, intent);
+                    finish();
+                })
+                .setNegativeButton("Cancel", ( dialog, id ) -> {
+                    // cancelled
+                });
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setDimAmount(0.0f);
+        dialog.show();
     }
 
     /**
@@ -184,7 +200,8 @@ public class FormActivity extends AppCompatActivity {
      *
      * @param view the view
      */
-    public void setupUI(View view) {
+    @SuppressLint("ClickableViewAccessibility")
+    public void setupUI( View view) {
         // Set up touch listener for non-text box views to hide keyboard.
         if (view instanceof NumberPicker == false && view instanceof EditText == false) {
             view.setOnTouchListener(( v, event ) -> {
@@ -195,7 +212,7 @@ public class FormActivity extends AppCompatActivity {
                 g.deleteButton.setVisibility(VISIBLE);
                 g.HorizontalDivider.setVisibility(VISIBLE);
 
-                v.performClick();
+//                v.performClick(); //ClickableViewAccessibility - Makes everything be pressed 3 times
                 return false;
             });
         }
