@@ -12,10 +12,11 @@
         <activity
                 android:name=".activities.RefillActivity"
                 android:label="@string/title_activity_refill"
-                android:theme="@style/Theme.pillBox.NoActionBar"></activity>
+                android:theme="@style/Theme.pillBox.NoActionBar" />
         <activity
                 android:name=".activities.FormActivity"
                 android:label="@string/title_activity_form"
+                android:windowSoftInputMode="adjustNothing"
                 android:theme="@style/Theme.pillBox.NoActionBar" />
         <activity android:name=".activities.MainActivity">
             <intent-filter>

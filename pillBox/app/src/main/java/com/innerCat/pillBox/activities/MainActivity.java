@@ -326,6 +326,7 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
+                adapter.setItem(item, position);
                 adapter.notifyChanged(this, position);
                 updateHomeWidget();
             });
@@ -603,7 +604,7 @@ public class MainActivity extends AppCompatActivity {
             case RESULT_OK: {
                 System.out.println("WINNOW: " + "me");
                 Item item = (Item)data.getSerializableExtra("item");
-                int pos = data.getIntExtra("position", -1);
+                int position = data.getIntExtra("position", -1);
                 if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
                     resetColorFocus();
                 }
@@ -612,7 +613,7 @@ public class MainActivity extends AppCompatActivity {
                         addItem(item);
                         break;
                     case EDIT_ITEM_REQUEST:
-                        updateItem(item, pos);
+                        updateItem(item, position);
                         break;
                 }
                 break;

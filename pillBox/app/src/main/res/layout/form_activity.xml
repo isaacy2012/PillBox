@@ -8,8 +8,9 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            tools:context=".activities.FormActivity">
+            android:isScrollContainer="false"
+            tools:context=".activities.FormActivity"
+            >
 
         <com.google.android.material.appbar.AppBarLayout
                 android:id="@+id/app_bar"
@@ -234,7 +235,8 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_gravity="bottom"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:isScrollContainer="false">
 
             <View
                     android:layout_width="match_parent"
@@ -251,8 +253,8 @@
                     android:onClick="deleteButton"
                     android:stateListAnimator="@null"
                     android:elevation="0dp"
-                    android:background="@color/transparent"
-                    android:textColor="@color/primaryColor" />
+                    android:textColor="@color/primaryColor"
+                    android:background="@color/transparent" />
 
         </LinearLayout>
 

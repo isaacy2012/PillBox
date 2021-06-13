@@ -1,11 +1,15 @@
 package com.innerCat.pillBox.activities;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -41,6 +45,7 @@ public class FormActivity extends AppCompatActivity {
         g = FormActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
         setContentView(view);
+        setupUI(view);
 
         setSupportActionBar(g.toolbar);
 
@@ -118,6 +123,7 @@ public class FormActivity extends AppCompatActivity {
 
     public void deleteButton( View view ) {
         Intent intent = new Intent();
+        intent.putExtra("item", itemToEdit);
         setResult(MainActivity.RESULT_DELETE, intent);
         finish();
     }
@@ -171,6 +177,48 @@ public class FormActivity extends AppCompatActivity {
         setResult(RESULT_OK, returnIntent);
         System.out.println("FINISHED");
         finish();
+    }
+
+    /**
+     * Sets click listener so that the softKeyboard is auto hidden when clicking outside.
+     *
+     * @param view the view
+     */
+    public void setupUI(View view) {
+        // Set up touch listener for non-text box views to hide keyboard.
+        if (view instanceof NumberPicker == false && view instanceof EditText == false) {
+            view.setOnTouchListener(( v, event ) -> {
+                //hide keyboard
+                hideSoftKeyboard(FormActivity.this);
+
+                //set visibility of the delete button and divider
+                g.deleteButton.setVisibility(VISIBLE);
+                g.HorizontalDivider.setVisibility(VISIBLE);
+
+                v.performClick();
+                return false;
+            });
+        }
+
+        //If a layout container, iterate over children and seed recursion.
+        if (view instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+                View innerView = ((ViewGroup) view).getChildAt(i);
+                setupUI(innerView);
+            }
+        }
+    }
+
+    public static void hideSoftKeyboard( Activity activity) {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        if(inputMethodManager.isAcceptingText()){
+            inputMethodManager.hideSoftInputFromWindow(
+                    activity.getCurrentFocus().getWindowToken(),
+                    0
+            );
+        }
     }
 
     /**
