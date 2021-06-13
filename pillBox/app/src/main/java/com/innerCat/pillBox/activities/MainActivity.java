@@ -602,7 +602,6 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult( int requestCode, int resultCode, Intent data ) {
         switch (resultCode) {
             case RESULT_OK: {
-                System.out.println("WINNOW: " + "me");
                 Item item = (Item)data.getSerializableExtra("item");
                 int position = data.getIntExtra("position", -1);
                 if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {

@@ -3,6 +3,7 @@ package com.innerCat.pillBox.objects;
 import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
+import androidx.core.graphics.ColorUtils;
 
 import java.util.Objects;
 
@@ -37,6 +38,15 @@ public class ColorItem {
      */
     public int getColor() {
         return color;
+    }
+
+    /**
+     * Gets outline color.
+     *
+     * @return the outline color
+     */
+    public int getOutlineColor() {
+        return ColorUtils.blendARGB(color, Color.BLACK, 0.2f);
     }
 
     /**

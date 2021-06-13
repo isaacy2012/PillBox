@@ -2,6 +2,7 @@ package com.innerCat.pillBox.recyclerViews;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,9 +11,10 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.activities.FormActivity;
 import com.innerCat.pillBox.objects.ColorItem;
+import com.innerCat.pillBox.room.Converters;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +39,7 @@ public class ColorAdapter extends
     public class ViewHolder extends RecyclerView.ViewHolder {
         // Your holder should contain a member variable
         // for any view that will be set as you render a row
-        public Button colorButton;
+        public MaterialButton colorButton;
         public Context context;
         public ColorItem colorItem;
 
@@ -56,10 +58,11 @@ public class ColorAdapter extends
                 if (colorItem.isSelected()) {
                     deselectAllExcept(colorItem);
                     colorButton.setAlpha(1f);
-                    ((FormActivity) context).setSelectedColor(colorItem.getColor());
+                    colorButton.setStrokeWidth(Converters.fromDpToPixels(3, context.getResources()));
+                    setSelectedColor(colorItem.getColor());
                 } else {
                     deselectAll();
-                    ((FormActivity) context).setSelectedColor(ColorItem.NO_COLOR);
+                    setSelectedColor(ColorItem.NO_COLOR);
                 }
             });
 
@@ -82,14 +85,24 @@ public class ColorAdapter extends
     }
 
     /**
+     * Deselect view holder.
+     *
+     * @param viewHolder the view holder
+     */
+    public void deselectViewHolder(ViewHolder viewHolder, float targetAlpha) {
+        viewHolder.colorItem.setSelected(false);
+        float currentAlpha = viewHolder.colorButton.getAlpha();
+        viewHolder.colorButton.setStrokeWidth(Converters.fromDpToPixels(0, viewHolder.context.getResources()));
+        animateColorButton(currentAlpha, targetAlpha, viewHolder.colorButton);
+    }
+
+    /**
      * Deselect all except.
      */
     public void deselectAllExcept(ColorItem exceptColorItem) {
         for (ViewHolder viewHolder : mBoundViewHolders) {
             if (viewHolder.colorItem.equals(exceptColorItem) == false) {
-                viewHolder.colorItem.setSelected(false);
-                float currentAlpha = viewHolder.colorButton.getAlpha();
-                animateColorButton(currentAlpha, UNSELECTED_ALPHA, viewHolder.colorButton);
+                deselectViewHolder(viewHolder, UNSELECTED_ALPHA);
             }
         }
     }
@@ -99,9 +112,7 @@ public class ColorAdapter extends
      */
     public void deselectAll() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            viewHolder.colorItem.setSelected(false);
-            float currentAlpha = viewHolder.colorButton.getAlpha();
-            animateColorButton(currentAlpha, SELECTED_ALPHA, viewHolder.colorButton);
+            deselectViewHolder(viewHolder, SELECTED_ALPHA);
         }
     }
 
@@ -112,6 +123,15 @@ public class ColorAdapter extends
      */
     public void setSelectedColor(int selectedColor) {
         this.selectedColor = selectedColor;
+    }
+
+    /**
+     * Gets selected color.
+     *
+     * @return the selected color
+     */
+    public int getSelectedColor() {
+        return selectedColor;
     }
 
     /**
@@ -152,10 +172,11 @@ public class ColorAdapter extends
     public void onBindViewHolder( ColorAdapter.ViewHolder holder, int position ) {
         // Get the data model based on position
         holder.colorItem = colors.get(position);
-        Button colorButton = holder.colorButton;
+        MaterialButton colorButton = holder.colorButton;
 
         // Set item views based on your views and data model
         colorButton.setBackgroundColor(holder.colorItem.getColor());
+        colorButton.setStrokeColor(ColorStateList.valueOf(holder.colorItem.getOutlineColor()));
         if (holder.colorItem.getColor() == selectedColor) {
             holder.colorItem.setSelected(true);
             holder.colorButton.setAlpha(SELECTED_ALPHA);

@@ -23,7 +23,6 @@ import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.databinding.FormActivityBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
-import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.recyclerViews.ColorAdapter;
 
@@ -39,8 +38,7 @@ public class FormActivity extends AppCompatActivity {
     private Item itemToEdit = null;
 
     int requestCode;
-    ColorAdapter adapter;
-    int selectedColor = ColorItem.NO_COLOR;
+    ColorAdapter colorAdapter;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -51,6 +49,10 @@ public class FormActivity extends AppCompatActivity {
         setupUI(view);
 
         setSupportActionBar(g.toolbar);
+
+        colorAdapter = new ColorAdapter();
+        g.rvColors.setAdapter(colorAdapter);
+        g.rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
 
         //Adding textChangedListener for g.editName
@@ -104,7 +106,7 @@ public class FormActivity extends AppCompatActivity {
                 g.autoDecPerDayPicker.setValue(itemToEdit.getAutoDecPerDay());
             }
             //gets the color from intent for adding, or from item intent for editing
-            selectedColor = itemToEdit.getColor();
+            colorAdapter.setSelectedColor(itemToEdit.getColor());
 
             //because EDIT
             g.deleteButton.setVisibility(VISIBLE);
@@ -118,10 +120,6 @@ public class FormActivity extends AppCompatActivity {
             g.autoDecLinearLayout.setVisibility(state);
         });
 
-        adapter = new ColorAdapter();
-        g.rvColors.setAdapter(adapter);
-        g.rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        adapter.setSelectedColor(selectedColor);
     }
 
     public void deleteButton( View view ) {
@@ -152,6 +150,7 @@ public class FormActivity extends AppCompatActivity {
     public void okButton( View view ) {
         Intent returnIntent = new Intent();
         String name = ((EditText) findViewById(R.id.editName)).getText().toString();
+        int color = colorAdapter.getSelectedColor();
         String stockString = ((EditText) findViewById(R.id.editStock)).getText().toString();
         boolean showInWidget = g.widgetSwitch.isChecked();
         boolean autodec = g.autoDecSwitch.isChecked();
@@ -165,6 +164,7 @@ public class FormActivity extends AppCompatActivity {
         }
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             itemToEdit.setName(name);
+            itemToEdit.setColor(color);
             itemToEdit.setRawStock(stock);
             itemToEdit.setShowInWidget(showInWidget);
             itemToEdit.setAutoDecStartDate(autodec ? LocalDate.now() : null);
@@ -179,13 +179,13 @@ public class FormActivity extends AppCompatActivity {
             if (autodec) {
                 item = new Item(name,
                         stock,
-                        selectedColor,
+                        color,
                         showInWidget,
                         LocalDate.now(),
                         g.autoDecNDaysPicker.getValue(),
                         g.autoDecPerDayPicker.getValue());
             } else {
-                item = new Item(name, stock, selectedColor, showInWidget);
+                item = new Item(name, stock, color, showInWidget);
             }
             returnIntent.putExtra("item", item);
         }
@@ -270,6 +270,6 @@ public class FormActivity extends AppCompatActivity {
      * @param color the color
      */
     public void setSelectedColor( Integer color ) {
-        this.selectedColor = color;
+        this.colorAdapter.setSelectedColor(color);
     }
 }
