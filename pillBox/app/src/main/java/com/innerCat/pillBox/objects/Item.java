@@ -222,6 +222,31 @@ public class Item implements Serializable {
     }
 
     /**
+     * Flatten auto dec if.
+     *  @param newAutoDec the new auto dec
+     * @param perDay     the per day
+     * @param nDays      the n days
+     */
+    public void flattenAndSetAutoDecIf( boolean newAutoDec, int perDay, int nDays) {
+        boolean diffAutoDec = newAutoDec != (this.autoDecStartDate != null);
+        boolean diffPerDay = perDay != this.autoDecPerDay;
+        boolean diffNDays = nDays != this.autoDecNDays;
+        //if there is a change
+        if (diffAutoDec || diffPerDay || diffNDays) {
+            this.rawStock = getCalculatedStock();
+            if (newAutoDec) {
+                this.autoDecStartDate = LocalDate.now();
+                this.autoDecPerDay = perDay;
+                this.autoDecNDays = nDays;
+            } else {
+                this.autoDecStartDate = null;
+                this.autoDecPerDay = 0;
+                this.autoDecNDays = 0;
+            }
+        }
+    }
+
+    /**
      * Gets calculated stock.
      *
      * @return the calculated stock

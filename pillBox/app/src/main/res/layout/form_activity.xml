@@ -182,14 +182,16 @@
                         android:layout_marginTop="5dp"
                         android:layout_weight="0"
                         android:id="@+id/autoDecLinearLayout"
-                        android:gravity="center"
-                        android:visibility="gone">
+                        android:gravity="center_vertical"
+                        android:visibility="gone"
+                        tools:visibility="visible">
 
                     <TextView
                             android:text="Take"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="0" />
+                            android:layout_weight="1"
+                            android:textAlignment="viewEnd" />
 
                     <NumberPicker
                             android:id="@+id/autoDecPerDayPicker"
@@ -201,10 +203,11 @@
                             android:layout_marginTop="8dp"
                             app:minValue="@{1}"
                             app:maxValue="@{24}"
-                            app:value="@{1}" />
+                            app:value="@{1}"
+                            android:layout_weight="0" />
 
                     <TextView
-                            android:text="Every"
+                            android:text="every"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="0" />
@@ -219,13 +222,16 @@
                             android:layout_marginTop="8dp"
                             app:minValue="@{1}"
                             app:maxValue="@{28}"
-                            app:value="@{1}" />
+                            app:value="@{1}"
+                            android:layout_weight="0" />
 
                     <TextView
-                            android:text="Day(s)"
+                            android:text="@string/days"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="0" />
+                            android:layout_weight="1"
+                            android:id="@+id/daysTV"
+                            android:textAlignment="viewStart" />
                 </LinearLayout>
 
             </LinearLayout>

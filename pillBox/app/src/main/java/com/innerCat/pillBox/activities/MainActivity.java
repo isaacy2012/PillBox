@@ -515,7 +515,6 @@ public class MainActivity extends AppCompatActivity {
      * @param item the item
      */
     private void addItem( Item item ) {
-        System.out.println("WINNOW: " + "ADDED ITEM: " + item);
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());

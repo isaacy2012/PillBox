@@ -102,7 +102,9 @@ public class FormActivity extends AppCompatActivity {
             if (itemToEdit.getAutoDecStartDate() != null) {
                 g.autoDecLinearLayout.setVisibility(VISIBLE);
                 g.autoDecSwitch.setChecked(true);
-                g.autoDecNDaysPicker.setValue(itemToEdit.getAutoDecNDays());
+                int nDays = itemToEdit.getAutoDecNDays();
+                g.autoDecNDaysPicker.setValue(nDays);
+                updateDaysTv(nDays);
                 g.autoDecPerDayPicker.setValue(itemToEdit.getAutoDecPerDay());
             }
             //gets the color from intent for adding, or from item intent for editing
@@ -119,11 +121,33 @@ public class FormActivity extends AppCompatActivity {
             int state = isChecked ? VISIBLE : GONE;
             g.autoDecLinearLayout.setVisibility(state);
         });
+        g.autoDecNDaysPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange( NumberPicker picker, int oldVal, int newVal ) {
+                updateDaysTv(newVal);
+            }
+        });
 
     }
 
+    /**
+     * Update Days TextView
+     * @param value the value of the numberpicker
+     */
+    private void updateDaysTv(int value) {
+        if (value == 1) {
+            g.daysTV.setText(R.string.day);
+        } else {
+            g.daysTV.setText(R.string.days);
+        }
+    }
+
+    /**
+     * Delete button.
+     *
+     * @param view the view
+     */
     public void deleteButton( View view ) {
-        System.out.println("WINNOW CREATED DELETE BUTTON DIALOG????");
         // Use the Builder class for convenient dialog construction
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
 
@@ -167,11 +191,8 @@ public class FormActivity extends AppCompatActivity {
             itemToEdit.setColor(color);
             itemToEdit.setRawStock(stock);
             itemToEdit.setShowInWidget(showInWidget);
-            itemToEdit.setAutoDecStartDate(autodec ? LocalDate.now() : null);
-            if (autodec) {
-                itemToEdit.setAutoDecNDays(g.autoDecNDaysPicker.getValue());
-                itemToEdit.setAutoDecPerDay(g.autoDecPerDayPicker.getValue());
-            }
+            //flatten if autodec has changed
+            itemToEdit.flattenAndSetAutoDecIf(autodec, g.autoDecPerDayPicker.getValue(), g.autoDecNDaysPicker.getValue());
 
             returnIntent.putExtra("item", itemToEdit);
         } else {

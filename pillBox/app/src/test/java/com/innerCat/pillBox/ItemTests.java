@@ -70,6 +70,32 @@ public class ItemTests {
         assertEquals(90, item.getCalculatedStock());
     }
 
+    @Test
+    public void flattening_set_to_no_autodec() {
+        //Yesterday
+        int minusDays = 7;
+        //2 a day for 7 days
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 1);
+        item.flattenAndSetAutoDecIf(false, 1, 1);
+        assertEquals(86, item.getCalculatedStock());
+        assertNull(item.getAutoDecStartDate());
+        assertEquals(0, item.getAutoDecPerDay());
+        assertEquals(0, item.getAutoDecNDays());
+    }
+
+    @Test
+    public void flattening_set_to_yes_autodec() {
+        //Yesterday
+        int minusDays = 7;
+        //2 a day for 7 days
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 1);
+        item.flattenAndSetAutoDecIf(true, 1, 1);
+        assertEquals(86, item.getCalculatedStock());
+        assertEquals(LocalDate.now(), item.getAutoDecStartDate());
+        assertEquals(1, item.getAutoDecPerDay());
+        assertEquals(1, item.getAutoDecNDays());
+    }
+
 
     @Test
     public void test_equals_true() {
