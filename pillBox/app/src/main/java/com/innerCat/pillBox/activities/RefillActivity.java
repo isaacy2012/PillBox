@@ -171,6 +171,7 @@ public class RefillActivity extends AppCompatActivity {
                             changed = true;
                             editMode = false;
                             selectAllMode = false;
+
                             int defHorizPadding = Converters.fromDpToPixels(16, getResources());
                             int defTopPadding = Converters.fromDpToPixels(10, getResources());
                             g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
@@ -183,9 +184,7 @@ public class RefillActivity extends AppCompatActivity {
                             executor.execute(() -> {
                                 //Background work here
                                 for (Refill refill : deleteRefills) {
-                                    Item refillItem = dao.getItem(refill.getItemId());
                                     refillItem.decrementStockBy(refill.getAmount());
-                                    dao.update(refillItem);
                                     dao.removeRefillById(refill.getId());
                                 }
                                 handler.post(() -> {

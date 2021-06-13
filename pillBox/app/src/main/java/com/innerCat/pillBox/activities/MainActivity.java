@@ -639,6 +639,8 @@ public class MainActivity extends AppCompatActivity {
                                 Converters.todayString());
                         item.setExpiringRefill(expiringRefill);
                         adapter.setItem(item, pos);
+                        //update the item in the database
+                        dao.update(item);
                         handler.post(() -> {
                             //UI Thread work here
                             // Add a new item
