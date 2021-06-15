@@ -5,6 +5,8 @@ import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.innerCat.pillBox.Assertions;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -53,14 +55,13 @@ public class Item implements Serializable {
     /**
      * The Auto dec start date.
      */
-//auto-decrement
     private LocalDate autoDecStartDate = null;
     /**
-     * The Auto dec per day.
+     * How many to decrement each day that it is decremented
      */
     private int autoDecPerDay = 0;
     /**
-     * The Auto dec n days.
+     * Decremented every n days
      */
     private int autoDecNDays = 0;
     /**
@@ -81,31 +82,13 @@ public class Item implements Serializable {
     /**
      * Instantiates a new Item.
      *
-     * @param name         the name
-     * @param rawStock     the stock
-     * @param showInWidget the show in widget
-     */
-    @Ignore
-    public Item( String name, int rawStock, boolean showInWidget ) {
-        this.name = name;
-        this.rawStock = rawStock;
-        this.showInWidget = showInWidget;
-    }
-
-    /**
-     * Instantiates a new Item.
-     *
-     * @param id                 the id
      * @param name               the name
-     * @param lastUsed           the last used
      * @param rawStock           the stock
-     * @param viewHolderPosition the view holder position
      * @param showInWidget       the show in widget
      * @param color              the color
      * @param autoDecStartDate   the auto dec start date
      * @param autoDecPerDay      the auto dec per day
      * @param autoDecNDays       the auto dec n days
-     * @param expiringRefill     the expiring refill
      */
     @Ignore
     public Item( String name,
@@ -126,7 +109,7 @@ public class Item implements Serializable {
 
 
     /**
-     * Instantiates a new Item.
+     * Instantiates a new Item when there is no autodecrement
      *
      * @param name         the name
      * @param rawStock     the stock
@@ -139,23 +122,6 @@ public class Item implements Serializable {
         this.rawStock = rawStock;
         this.showInWidget = showInWidget;
         this.color = color;
-    }
-
-
-    /**
-     * Instantiates a new Item.
-     *
-     * @param id           the id
-     * @param name         the name
-     * @param rawStock     the stock
-     * @param showInWidget the show in widget
-     */
-    @Ignore
-    public Item( int id, String name, int rawStock, boolean showInWidget ) {
-        this.id = id;
-        this.name = name;
-        this.rawStock = rawStock;
-        this.showInWidget = showInWidget;
     }
 
     /**
@@ -236,6 +202,8 @@ public class Item implements Serializable {
             this.rawStock = getCalculatedStock();
             if (newAutoDec) {
                 this.autoDecStartDate = LocalDate.now();
+                Assertions.assertTrue(perDay > 0);
+                Assertions.assertTrue(nDays > 0);
                 this.autoDecPerDay = perDay;
                 this.autoDecNDays = nDays;
             } else {

@@ -23,7 +23,7 @@ public class ItemTests {
 
     @Test
     public void stock_cant_go_below_zero() {
-        Item item = new Item("Test", 10, false);
+        Item item = new Item("Test", 10, ColorItem.NO_COLOR, false);
         for (int i = 0; i < 100; i++) {
             item.decrementStock();
         }
