@@ -10,10 +10,11 @@ import android.widget.RemoteViewsService;
 
 import androidx.core.content.ContextCompat;
 
-import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.factories.DatabaseFactory;
+import com.innerCat.pillBox.factories.SharedPreferencesFactory;
+import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.room.Database;
 
 import java.util.ArrayList;
@@ -59,15 +60,26 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
                 R.layout.widget_grid_item);
         Item thisItem = items.get(position);
         widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
-        int stock = thisItem.getRawStock();
-        if (stock < 10) {
-            SpannableString redStockText = new SpannableString(String.valueOf(thisItem.getRawStock()));
+
+        //set the stoc
+        int stock = thisItem.getCalculatedStock();
+        int stockThreshold = SharedPreferencesFactory.getSP(context)
+                .getInt("stockThreshold", 10);
+        if (stock < stockThreshold) {
+            SpannableString redStockText = new SpannableString(String.valueOf(stock));
             redStockText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.primaryColor)), 0, redStockText.length(), 0);
             widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, redStockText);
         } else {
-            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, Integer.toString(thisItem.getRawStock()));
+            widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, String.valueOf(stock));
         }
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
+
+        //if autodec
+        if (thisItem.getAutoDecStartDate() != null) {
+            widgetGridViewHolder.setInt(R.id.widgetRelativeLayout, "setBackgroundResource", R.drawable.autodec_rounded_corners);
+        } else {
+            widgetGridViewHolder.setInt(R.id.widgetRelativeLayout, "setBackgroundResource", R.drawable.rounded_corners);
+        }
 
         // Create an Intent to launch update the item by sending the id
         Bundle extras = new Bundle();

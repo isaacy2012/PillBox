@@ -1,8 +1,6 @@
 package com.innerCat.pillBox.recyclerViews;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -332,9 +330,15 @@ public class ItemAdapter extends
 
         //If autodec
         if (holder.item.getAutoDecStartDate() != null) {
-            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBgColor));
-            g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecrementBorderColor));
+            System.out.println("WINNOW SET: " + holder.item + " TO YES");
+            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBgColor));
+            g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBorderColor));
             g.cardView.setStrokeWidth(Converters.fromDpToPixels(2, holder.context.getResources()));
+        } else {
+            System.out.println("WINNOW SET: " + holder.item + " TO NO");
+            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.colorOnCard));
+            //no stroke width
+            g.cardView.setStrokeWidth(0);
         }
 
         //Set the text of the stockTV
@@ -353,7 +357,9 @@ public class ItemAdapter extends
 
         //set the text of the expiryTV
         if (holder.item.getExpiringRefill() != null) {
-            //4 weeks show warning
+            /*
+            At 4 weeks or 28 days, show warning
+             */
             LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
             int warningDayThreshold = SharedPreferencesFactory.getSP(holder.context)
                     .getInt("warningDayThreshold", 28);
@@ -362,18 +368,20 @@ public class ItemAdapter extends
                 g.expiryTV.setVisibility(VISIBLE);
                 //Set the text of the stockTV
                 g.expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
-                //Set the color of the text if it is close
+
+                /*
+                At red day threshold, make the text red
+                 */
                 int redDayThreshold = SharedPreferencesFactory.getSP(holder.context)
                         .getInt("redDayThreshold", 7);
                 if (daysTillExpiry <= redDayThreshold) {
                     g.expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
                 } else {
                     //get the default color
-                    int[] attribute = new int[]{ android.R.attr.textColor };
-                    TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
-                    int color = array.getColor(0, Color.TRANSPARENT);
+                    int color = ColorFactory.getAttrColor(holder.context, android.R.attr.textColor);
                     g.expiryTV.setTextColor(color);
                 }
+
             } else {
                 g.expiryTV.setVisibility(GONE);
             }

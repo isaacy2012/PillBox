@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+    AUTODEC color
+    -->
+    <color name="autoDecBgColorWidget">#daf1e2</color>
+    <color name="autoDecBorderColorWidget">#7fc79a</color>
 
     <!-- RED
     -->
