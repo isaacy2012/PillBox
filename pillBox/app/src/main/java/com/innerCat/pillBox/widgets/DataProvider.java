@@ -61,11 +61,13 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         Item thisItem = items.get(position);
         widgetGridViewHolder.setTextViewText(R.id.widgetNameTV, thisItem.getName());
 
-        //set the stoc
+        //set the stock
         int stock = thisItem.getCalculatedStock();
-        int stockThreshold = SharedPreferencesFactory.getSP(context)
-                .getInt("stockThreshold", 10);
-        if (stock < stockThreshold) {
+
+        int defaultRedStockThreshold = context.getResources().getInteger(R.integer.default_red_stock_threshold);
+        int redStockThreshold = SharedPreferencesFactory.getSP(context)
+                .getInt("redStockThreshold", defaultRedStockThreshold);
+        if (stock < redStockThreshold) {
             SpannableString redStockText = new SpannableString(String.valueOf(stock));
             redStockText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.primaryColor)), 0, redStockText.length(), 0);
             widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, redStockText);

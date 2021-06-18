@@ -19,7 +19,7 @@ public class ToolbarAnimatorFactory {
         int defaultColor = MaterialColors.getColor(context, R.attr.colorOnToolbar, Color.TRANSPARENT);
         int primaryColor = ContextCompat.getColor(context, R.color.primaryColor);
         ValueAnimator colorAnimator = new ValueAnimator();
-        if (editMode == true) {
+        if (editMode) {
             //set the toolbar to red
             colorAnimator.setIntValues(defaultColor, primaryColor);
             editButton.setImageResource(R.drawable.ic_baseline_close_24);

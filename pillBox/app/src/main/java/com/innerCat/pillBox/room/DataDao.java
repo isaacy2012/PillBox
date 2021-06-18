@@ -24,7 +24,7 @@ public interface DataDao {
      * @return the rowID (primary key) of the Item
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public long insert( Item item );
+    long insert( Item item );
 
     /**
      * Updates an task
@@ -32,7 +32,7 @@ public interface DataDao {
      * @param item the item
      */
     @Update
-    public void update( Item item );
+    void update( Item item );
 
     /**
      * Removes an Item by id
@@ -40,7 +40,7 @@ public interface DataDao {
      * @param id the id of the Item to remove
      */
     @Query("DELETE FROM items WHERE id = :id")
-    public void removeItemById( int id );
+    void removeItemById( int id );
 
     /**
      * Get a single Item from the id
@@ -49,7 +49,7 @@ public interface DataDao {
      * @return the task
      */
     @Query("SELECT * FROM items WHERE id = :id")
-    public Item getItem( int id );
+    Item getItem( int id );
 
     /**
      * Returns all Items as a List
@@ -57,7 +57,7 @@ public interface DataDao {
      * @return all the Items in the database as a List
      */
     @Query("SELECT * FROM items ORDER BY viewHolderPosition")
-    public List<Item> getAllItems();
+    List<Item> getAllItems();
 
     /**
      * Gets all widget items.
@@ -65,7 +65,7 @@ public interface DataDao {
      * @return all Items that should be shown in the widget as a List
      */
     @Query("SELECT * FROM items WHERE showInWidget is 1 ORDER BY viewHolderPosition")
-    public List<Item> getAllWidgetItems();
+    List<Item> getAllWidgetItems();
 
     /**
      * Gets refills of item itemId.
@@ -74,7 +74,16 @@ public interface DataDao {
      * @return the refills of item itemId
      */
     @Query("SELECT * FROM refills WHERE itemId = :itemId AND julianday(expiryDate) >= julianday(:today)")
-    public List<Refill> getFutureRefillsOfItemId( int itemId, String today);
+    List<Refill> getFutureRefillsOfItemId( int itemId, String today );
+
+    /**
+     * Gets non expiring refills of item id.
+     *
+     * @param itemId the item id
+     * @return the non expiring refills of item id
+     */
+    @Query("SELECT * FROM refills WHERE itemId = :itemId AND expires is 0")
+    List<Refill> getNonExpiringRefillsOfItemId( int itemId );
 
     /**
      * Gets expired refills of item id.
@@ -84,7 +93,7 @@ public interface DataDao {
      * @return the expired refills of item id
      */
     @Query("SELECT * FROM refills WHERE itemId = :itemId AND julianday(expiryDate) < julianday(:today)")
-    public List<Refill> getExpiredRefillsOfItemId( int itemId, String today);
+    List<Refill> getExpiredRefillsOfItemId( int itemId, String today );
 
     /**
      * Gets soonest expiring refill of item id.
@@ -95,10 +104,11 @@ public interface DataDao {
      */
     @Query( "SELECT * FROM refills " +
             "WHERE itemId = :itemId " +
+            "AND expires is 1 " +
             "AND julianday(expiryDate) >= julianday(:today) " +
             "ORDER BY julianday(expiryDate) " +
             "ASC LIMIT 1")
-    public Refill getSoonestExpiringRefillOfItemId(int itemId, String today);
+    Refill getSoonestExpiringRefillOfItemId( int itemId, String today );
 
 
     /**
@@ -115,7 +125,7 @@ public interface DataDao {
      * @return the id of the Refill in the database
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public long insert( Refill refill );
+    long insert( Refill refill );
 
     /**
      * Updates an refill
@@ -123,7 +133,7 @@ public interface DataDao {
      * @param refill the refill to update
      */
     @Update
-    public void update( Refill refill );
+    void update( Refill refill );
 
     /**
      * Returns all Refills as a List
@@ -131,7 +141,7 @@ public interface DataDao {
      * @return all the Refills in the database as a List
      */
     @Query("SELECT * FROM refills")
-    public List<Refill> getAllRefills();
+    List<Refill> getAllRefills();
 
 
     /**
@@ -140,6 +150,6 @@ public interface DataDao {
      * @param id the id
      */
     @Query("DELETE FROM refills WHERE id = :id")
-    public void removeRefillById( int id );
+    void removeRefillById( int id );
 
 }

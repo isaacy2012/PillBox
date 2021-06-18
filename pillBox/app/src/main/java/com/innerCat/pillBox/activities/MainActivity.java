@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
 
             //only update rv if widget asked for an update
             SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(this);
-            if (sharedPreferences.getBoolean("widgetUpdate", false) == true) {
+            if (sharedPreferences.getBoolean("widgetUpdate", false)) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("widgetUpdate", false);
                 editor.apply();
@@ -427,13 +427,16 @@ public class MainActivity extends AppCompatActivity {
                     //get the name of the Item to add
                     int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
                     Refill refill;
+                    refill = new Refill(item.getId(), refillAmount, date[0]);
+
+                    //if there is an expiry date
                     if (date[0] != null) {
-                        refill = new Refill(item.getId(), refillAmount, date[0]);
                         Refill itemRefill = item.getExpiringRefill();
                         if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
                             item.setExpiringRefill(refill);
                         }
                         if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
+                            //merge if it's the same date as another refill
                             itemRefill.mergeWith(refill);
                             updateRefillInBackground(itemRefill);
                             adapter.notifyItemChanged(position);
@@ -441,6 +444,9 @@ public class MainActivity extends AppCompatActivity {
                             //add the refill
                             addRefillInBackground(refill);
                         }
+                    } else {
+                        //add the refill
+                        addRefillInBackground(refill);
                     }
                     item.refillByAmount(refillAmount);
                     updateItem(item, position);

@@ -7,15 +7,21 @@ public class RefillListHeader extends RefillListObject {
     /**
      * The Title.
      */
-    private String title;
+    private final String title;
+    /**
+     * The Color.
+     */
+    private final int color;
 
     /**
      * Instantiates a new Refill list header.
      *
      * @param title the title
+     * @param color the color
      */
-    public RefillListHeader( String title ) {
+    public RefillListHeader( String title, int color ) {
         this.title = title;
+        this.color = color;
     }
 
     /**
@@ -25,5 +31,14 @@ public class RefillListHeader extends RefillListObject {
      */
     public String getTitle() {
         return title;
+    }
+
+    /**
+     * Gets color.
+     *
+     * @return the color
+     */
+    public int getColor() {
+        return color;
     }
 }

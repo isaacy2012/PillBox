@@ -344,8 +344,9 @@ public class ItemAdapter extends
         //Set the text of the stockTV
         g.stockTV.setText(String.valueOf(stock));
         //Set the color if the stock is low
+        int defaultRedThreshold = holder.context.getResources().getInteger(R.integer.default_red_stock_threshold);
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
-                .getInt("stockThreshold", 10);
+                .getInt("redStockThreshold", defaultRedThreshold);
         if (stock <= stockThreshold) {
             g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
             g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.BOLD);
@@ -361,8 +362,9 @@ public class ItemAdapter extends
             At 4 weeks or 28 days, show warning
              */
             LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
+            int defaultWarningDayThreshold = holder.context.getResources().getInteger(R.integer.default_warning_day_threshold);
             int warningDayThreshold = SharedPreferencesFactory.getSP(holder.context)
-                    .getInt("warningDayThreshold", 28);
+                    .getInt("warningDayThreshold", defaultRedThreshold);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
                 g.expiryTV.setVisibility(VISIBLE);

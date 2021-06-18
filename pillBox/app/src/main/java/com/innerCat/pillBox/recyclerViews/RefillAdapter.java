@@ -10,11 +10,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.activities.RefillActivity;
+import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.objects.RefillListHeader;
 import com.innerCat.pillBox.objects.RefillListObject;
@@ -45,6 +48,7 @@ public class RefillAdapter extends
         public TextView dateTV;
         public Context context;
         public CheckBox deleteCheckBox;
+        public CardView cardView;
 
         // We also create a constructor that accepts the entire refill row
         // and does the view lookups to find each subview
@@ -58,23 +62,32 @@ public class RefillAdapter extends
 
             amountTV = refillView.findViewById(R.id.amountTV);
             dateTV = refillView.findViewById(R.id.dateTV);
-            deleteCheckBox = itemView.findViewById(R.id.checkBox);
+            deleteCheckBox = refillView.findViewById(R.id.checkBox);
+            cardView = refillView.findViewById(R.id.refillItemCardView);
             deleteCheckBox.setOnClickListener(v -> {
-                if (deleteCheckBox.isChecked() == true) {
+                if (deleteCheckBox.isChecked()) {
                     ((RefillActivity) context).addDeleteRefill(refill);
                 } else {
                     ((RefillActivity) context).removeDeleteRefill(refill);
                 }
             });
+            cardView.setOnClickListener(v -> {
+                if (((RefillActivity) context).getEditMode()) {
+                    ((RefillActivity) context).editRefillItem(refill, refillListObjects.indexOf(refill));
+                }
+            });
+            updateState();
+
         }
+
 
         /**
          * Update the state of the checkboxes in the recyclerview wrt the modes in ArchiveActivity
          */
         public void updateState() {
-            if (((RefillActivity) context).getEditMode() == true) {
+            if (((RefillActivity) context).getEditMode()) {
                 deleteCheckBox.setVisibility(View.VISIBLE);
-                if (((RefillActivity) context).getSelectAllMode() == true) {
+                if (((RefillActivity) context).getSelectAllMode()) {
                     deleteCheckBox.setChecked(true);
                     ((RefillActivity) context).addDeleteRefill(refill);
                 }
@@ -82,14 +95,18 @@ public class RefillAdapter extends
                 deleteCheckBox.setVisibility(View.GONE);
             }
         }
+
     }
+
     public class ViewHolderHeader extends RecyclerView.ViewHolder {
         TextView titleTV;
+
         public ViewHolderHeader( View itemView ) {
             super(itemView);
             this.titleTV = itemView.findViewById(R.id.titleTV);
         }
     }
+
     /**
      * Enables deletion of all the tasks
      */
@@ -97,7 +114,7 @@ public class RefillAdapter extends
         for (ViewHolderItem viewHolderItem : mBoundItemViewHolders) {
             LinearLayout.MarginLayoutParams params = (LinearLayout.MarginLayoutParams)
                     viewHolderItem.dateTV.getLayoutParams();
-            if (deleteMode == true) {
+            if (deleteMode) {
                 int endMargin = Converters.fromDpToPixels(6, resources);
                 params.setMarginEnd(endMargin);
                 viewHolderItem.deleteCheckBox.setVisibility(View.VISIBLE);
@@ -117,10 +134,20 @@ public class RefillAdapter extends
      * @param expired the expired
      * @param future  the future
      */
-    public RefillAdapter( List<? extends RefillListObject> expired, List<? extends RefillListObject> future ) {
+    public RefillAdapter( Context context,
+                          List<? extends RefillListObject> expired,
+                          List<? extends RefillListObject> nonExpiring,
+                          List<? extends RefillListObject> future ) {
         refillListObjects.addAll(future);
+
+        if (nonExpiring.isEmpty() == false) {
+            refillListObjects.add(new RefillListHeader("Undated Refills", ColorFactory.getDefaultTextColor(context)));
+            refillListObjects.addAll(nonExpiring);
+        }
+
+
         if (expired.isEmpty() == false) {
-            refillListObjects.add(new RefillListHeader("Expired Refills"));
+            refillListObjects.add(new RefillListHeader("Expired Refills", ContextCompat.getColor(context, R.color.primaryDarkColor)));
             refillListObjects.addAll(expired);
         }
     }
@@ -137,7 +164,7 @@ public class RefillAdapter extends
         }
         for (RefillListObject refillObject : refillListObjects) {
             if (refillObject instanceof Refill) {
-                ((RefillActivity) context).addDeleteRefill((Refill)refillObject);
+                ((RefillActivity) context).addDeleteRefill((Refill) refillObject);
             }
         }
     }
@@ -146,24 +173,37 @@ public class RefillAdapter extends
      * Add a refill
      *
      * @param context  the context
-     * @param refill     the Refill to add
+     * @param refill   the Refill to add
      * @param position the position of the new Refill in the List
      */
-    public void addRefill( Context context, Refill refill, int position) {
+    public void addRefill( Context context, Refill refill, int position ) {
         refillListObjects.add(position, refill);
         notifyInserted(context, position);
+    }
+
+
+    /**
+     * Edit refill.
+     *
+     * @param context  the context
+     * @param refill   the refill
+     * @param position the position
+     */
+    public void editRefill( Context context, Refill refill, int position ) {
+        refillListObjects.set(position, refill);
+        notifyChanged(context, position);
     }
 
     /**
      * Remove an refill.
      *
      * @param context  the context
-     * @param refill     the refill to remove
+     * @param refill   the refill to remove
      * @param position the position of the Refill in the List
      */
-    public void removeRefill( Context context, Refill refill, int position) {
+    public void removeRefill( Context context, Refill refill, int position ) {
         refillListObjects.remove(refill);
-        notifyRemoved( context, position );
+        notifyRemoved(context, position);
     }
 
     /**
@@ -173,7 +213,7 @@ public class RefillAdapter extends
      * @param position the position
      */
     public void notifyChanged( Context context, int position ) {
-        super.notifyItemChanged( position );
+        super.notifyItemChanged(position);
     }
 
     /**
@@ -208,13 +248,11 @@ public class RefillAdapter extends
         if (viewType == TYPE_HEADER) {
             refillView = inflater.inflate(R.layout.refill_rv_header, parent, false);
             // Return a new holder instance
-            ViewHolderHeader viewHolderHeader = new ViewHolderHeader(refillView);
-            return viewHolderHeader;
+            return new ViewHolderHeader(refillView);
         } else {
             refillView = inflater.inflate(R.layout.refill_rv_item, parent, false);
             // Return a new holder instance
-            ViewHolderItem viewHolderItem = new ViewHolderItem(refillView, context);
-            return viewHolderItem;
+            return new ViewHolderItem(refillView, context);
         }
 
     }
@@ -223,22 +261,34 @@ public class RefillAdapter extends
     @Override
     public void onBindViewHolder( RecyclerView.ViewHolder holder, int position ) {
         if (holder instanceof ViewHolderHeader) {
-            //if it is a viewHolderHeader
-            //cast the object to a Header objects
+            // if it is a viewHolderHeader
             RefillListHeader header = (RefillListHeader) refillListObjects.get(position);
+            // cast the object to a Header object
             ViewHolderHeader headerViewHolder = (ViewHolderHeader) holder;
-            //set the title of the viewHolder to the title of the header object
+
+            // set the color of the titleTV
+            headerViewHolder.titleTV.setTextColor(header.getColor());
+
+            // set the title of the viewHolder to the title of the header object
             headerViewHolder.titleTV.setText(header.getTitle());
         } else if (holder instanceof ViewHolderItem) {
             // Get the data model based on position
             ViewHolderItem refillViewHolder = (ViewHolderItem) holder;
+            // cast the object to a Refill object
             refillViewHolder.refill = (Refill) refillListObjects.get(position);
 
             // Set refill views based on your views and data model
             TextView amountTV = refillViewHolder.amountTV;
             TextView dateTV = refillViewHolder.dateTV;
             amountTV.setText(String.valueOf(refillViewHolder.refill.getAmount()));
-            dateTV.setText(StringFormatter.dateToString(refillViewHolder.refill.getExpiryDate()));
+            if (refillViewHolder.refill.getExpires()) {
+                dateTV.setTextColor(ContextCompat.getColor(refillViewHolder.context, R.color.primaryColor));
+                dateTV.setVisibility(View.VISIBLE);
+                dateTV.setText(StringFormatter.dateToString(refillViewHolder.refill.getExpiryDate()));
+            } else {
+                dateTV.setTextColor(ColorFactory.getDefaultTextColor(refillViewHolder.context));
+                dateTV.setVisibility(View.INVISIBLE);
+            }
             mBoundItemViewHolders.add(refillViewHolder);
         }
     }
@@ -251,7 +301,7 @@ public class RefillAdapter extends
     }
 
     @Override
-    public int getItemViewType(int position) {
+    public int getItemViewType( int position ) {
         if (refillListObjects.get(position) instanceof RefillListHeader) {
             return TYPE_HEADER;
         }
