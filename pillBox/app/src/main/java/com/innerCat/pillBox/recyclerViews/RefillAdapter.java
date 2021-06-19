@@ -152,6 +152,18 @@ public class RefillAdapter extends
         }
     }
 
+    /**
+     * Empty refill adapter.
+     *
+     * @return the refill adapter
+     */
+    public static RefillAdapter empty() {
+        return new RefillAdapter( null,
+                new ArrayList<>(),
+                new ArrayList<>(),
+                new ArrayList<>());
+    }
+
 
     /**
      * Select all the refills in the RecyclerView

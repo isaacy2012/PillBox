@@ -77,7 +77,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
 
         //if autodec
-        if (thisItem.getAutoDecStartDate() != null) {
+        if (thisItem.isAutoDec()) {
             widgetGridViewHolder.setInt(R.id.widgetRelativeLayout, "setBackgroundResource", R.drawable.autodec_rounded_corners);
         } else {
             widgetGridViewHolder.setInt(R.id.widgetRelativeLayout, "setBackgroundResource", R.drawable.rounded_corners);

@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
 //            showUpdateDialog();
 //        }
 
+        //empty adapter
+        adapter = ItemAdapter.empty();
+        g.rvItems.setAdapter(adapter);
+
         //initialise the database
         database = DatabaseFactory.create(this);
         dao = database.getDao();
@@ -190,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter = new ItemAdapter(items);
                 // Attach the adapter to the recyclerview to populate items
                 g.rvItems.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
                 // Set layout manager to position the items
                 //g.rvItems.setLayoutManager(new GridLayoutManager(this, 2));
                 g.rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
@@ -206,6 +211,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Refresh rv items.
+     */
+    public void refreshRVItems() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            //Background work here
+            List<Item> items = dao.getAllItems();
+            for (Item item : items) {
+                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
+                item.setExpiringRefill(expiringRefill);
+            }
+            adapter.setItems(items);
+
+            handler.post(() -> {
+                adapter.notifyDataSetChanged();
+            });
+        });
+    }
+
+    /**
      * When the view is resumed
      */
     public void onResume() {
@@ -215,30 +240,20 @@ public class MainActivity extends AppCompatActivity {
             updateHomeWidget();
 
             //only update rv if widget asked for an update
-            SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(this);
-            if (sharedPreferences.getBoolean("widgetUpdate", false)) {
+            SharedPreferences sharedPrefereces = SharedPreferencesFactory.getSP(this);
+            boolean widgetUpdate = sharedPreferences.getBoolean("widgetUpdate", false);
+            long todayEpoch = LocalDate.now().toEpochDay();
+            boolean dateUpdate = todayEpoch != sharedPreferences.getLong("dateUpdate", todayEpoch);
+            if (widgetUpdate || dateUpdate) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("widgetUpdate", false);
                 editor.apply();
-
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-                executor.execute(() -> {
-                    //Background work here
-                    //NB: This is the new thread in which the database stuff happens
-                    //today rvItem
-                    List<Item> items = dao.getAllItems();
-                    for (Item item : items) {
-                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
-                        item.setExpiringRefill(expiringRefill);
-                    }
-                    adapter.setItems(items);
-
-                    handler.post(() -> {
-                        adapter.notifyDataSetChanged();
-                    });
-                });
+                refreshRVItems();
             }
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putLong("dateUpdate", LocalDate.now().toEpochDay());
+            editor.apply();
+
         }
     }
 
@@ -267,9 +282,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called at 00:00, updates the lastTakenTV for the widget
+     * Called at 00:00, updates the RVItems and updates the lastTakenTV for the widget
      */
     public void newDay() {
+        refreshRVItems();
         adapter.checkLastTaken();
     }
 

@@ -334,6 +334,15 @@ public class Item implements Serializable {
     }
 
     /**
+     * Is auto dec boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isAutoDec() {
+        return autoDecStartDate != null;
+    }
+
+    /**
      * Sets auto dec n days.
      *
      * @param autoDecNDays the auto dec n days

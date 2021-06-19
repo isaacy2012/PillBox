@@ -76,16 +76,13 @@ public class FormActivity extends AppCompatActivity {
                     g.editName.setFocusable(false);
                     g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
                     g.editName.setHint("");
-                    //g.editName.setVisibility(GONE);
                     g.editStock.requestFocus();
                 } else {
                     //Expanded
-                    //g.editName.setVisibility(VISIBLE);
                     //get the default color
                     int color = ColorFactory.getDefaultTextColor(context);
                     g.editName.setTextColor(color);
                     g.editName.setHint("Title");
-
                     g.editName.setFocusableInTouchMode(true);
                     g.editName.setFocusable(true);
                 }
@@ -99,7 +96,7 @@ public class FormActivity extends AppCompatActivity {
             g.editName.setText(itemToEdit.getName());
             g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
             g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
-            if (itemToEdit.getAutoDecStartDate() != null) {
+            if (itemToEdit.isAutoDec()) {
                 g.autoDecLinearLayout.setVisibility(VISIBLE);
                 g.autoDecSwitch.setChecked(true);
                 int nDays = itemToEdit.getAutoDecNDays();

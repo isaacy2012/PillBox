@@ -123,6 +123,15 @@ public class ItemAdapter extends
         this.visibleItems = allItems;
     }
 
+    /**
+     * Empty item adapter.
+     *
+     * @return the item adapter
+     */
+    public static ItemAdapter empty() {
+        return new ItemAdapter(new ArrayList<>());
+    }
+
 
     /**
      * Focus on color.
@@ -329,13 +338,11 @@ public class ItemAdapter extends
         g.nameTV.setLayoutParams(params);
 
         //If autodec
-        if (holder.item.getAutoDecStartDate() != null) {
-            System.out.println("WINNOW SET: " + holder.item + " TO YES");
+        if (holder.item.isAutoDec()) {
             g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBgColor));
             g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBorderColor));
             g.cardView.setStrokeWidth(Converters.fromDpToPixels(2, holder.context.getResources()));
         } else {
-            System.out.println("WINNOW SET: " + holder.item + " TO NO");
             g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.colorOnCard));
             //no stroke width
             g.cardView.setStrokeWidth(0);

@@ -8,7 +8,7 @@ import com.innerCat.pillBox.objects.Refill;
 
 @androidx.room.Database(
         entities = { Item.class, Refill.class },
-        version = 2
+        version = 3
 )
 @TypeConverters({ Converters.class })
 public abstract class Database extends RoomDatabase {

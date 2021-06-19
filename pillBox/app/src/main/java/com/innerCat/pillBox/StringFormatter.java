@@ -19,7 +19,11 @@ public class StringFormatter {
         if (lastUsed != null) {
             int daysBetween = (int) DAYS.between(lastUsed, LocalDate.now());
             StringBuilder sb = new StringBuilder();
-            sb.append("Last taken ");
+            if (item.isAutoDec()) {
+                sb.append("Last manually taken ");
+            } else {
+                sb.append("Last taken ");
+            }
             if (daysBetween == 0) {
                 sb.append("today");
             } else if (daysBetween == 1) {

@@ -79,6 +79,10 @@ public class RefillActivity extends AppCompatActivity {
 
         g.toolbarLayout.setTitle(name);
 
+        //empty adapter
+        adapter = RefillAdapter.empty();
+        g.rvRefills.setAdapter(adapter);
+
         //initialise the database
         database = DatabaseFactory.create(this);
         dao = database.getDao();
@@ -105,6 +109,7 @@ public class RefillActivity extends AppCompatActivity {
                 adapter = new RefillAdapter(this, expiredRefills, nonExpiringRefills, futureRefills);
                 // Attach the adapter to the recyclerview to populate items
                 g.rvRefills.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
                 // Set layout manager to position the items
                 g.rvRefills.setLayoutManager(new LinearLayoutManager(this));
                 updateRVVisibility();
@@ -224,31 +229,11 @@ public class RefillActivity extends AppCompatActivity {
                     refill.setAmount(refillAmount);
                     refill.setExpiryDate(date[0]);
 
-                    System.out.println("WINNOW: POS: " + position);
+//                    System.out.println("WINNOW: POS: " + position);
                     adapter.editRefill(this, refill, position);
 
                     updateRefillInBackground(refill, initialAmount);
 
-//                    //if there is an expiry date
-//                    if (date[0] != null) {
-//                        Refill itemRefill = item.getExpiringRefill();
-//                        if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
-//                            item.setExpiringRefill(refill);
-//                        }
-//                        if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
-//                            //merge if it's the same date as another refill
-//                            itemRefill.mergeWith(refill);
-//                            updateRefillInBackground(itemRefill);
-//                            adapter.notifyItemChanged(position);
-//                        } else {
-//                            //add the refill
-//                            addRefillInBackground(refill);
-//                        }
-//                    } else {
-//                        //add the refill
-//                        addRefillInBackground(refill);
-//                    }
-//                    item.refillByAmount(refillAmount);
                 });
         AlertDialog dialog = builder.create();
         dialog.getWindow().setDimAmount(0.0f);
