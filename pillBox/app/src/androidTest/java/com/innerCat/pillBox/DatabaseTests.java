@@ -8,6 +8,7 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.MediumTest;
 
+import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.room.Converters;
@@ -34,6 +35,7 @@ public class DatabaseTests {
 
     /**
      * Add a item into the database, setting its id in the process
+     *
      * @param item the item to add
      */
     public void addItem( Item item ) {
@@ -58,8 +60,8 @@ public class DatabaseTests {
      * @param initialStock the initial stock
      * @return the item
      */
-    public Item makeAndAddItem( String name, int initialStock, boolean showInWidget) {
-        Item newItem = new Item( name, initialStock, showInWidget);
+    public Item makeAndAddItem( String name, int initialStock, boolean showInWidget ) {
+        Item newItem = new Item(name, initialStock, ColorItem.NO_COLOR, showInWidget);
         addItem(newItem);
         return newItem;
     }
@@ -71,8 +73,8 @@ public class DatabaseTests {
      * @param initialStock the initial stock
      * @return the item
      */
-    public Item makeAndAddItem( String name, int initialStock) {
-        Item newItem = new Item( name, initialStock, false);
+    public Item makeAndAddItem( String name, int initialStock ) {
+        Item newItem = new Item(name, initialStock, ColorItem.NO_COLOR, false);
         addItem(newItem);
         return newItem;
     }
@@ -86,7 +88,7 @@ public class DatabaseTests {
      * @return the refill
      */
     public Refill makeAndAddRefill( int itemId, int amount, LocalDate expiryDate ) {
-        Refill newRefill = new Refill( itemId, amount, expiryDate);
+        Refill newRefill = new Refill(itemId, amount, expiryDate);
         addRefill(newRefill);
         return newRefill;
     }
@@ -94,12 +96,12 @@ public class DatabaseTests {
     /**
      * Make and add refill with itemId and amount.
      *
-     * @param itemId     the item id
-     * @param amount     the amount
+     * @param itemId the item id
+     * @param amount the amount
      * @return the refill
      */
     public Refill makeAndAddRefill( int itemId, int amount ) {
-        Refill newRefill = new Refill( itemId, amount, null);
+        Refill newRefill = new Refill(itemId, amount, null);
         addRefill(newRefill);
         return newRefill;
     }
@@ -116,6 +118,7 @@ public class DatabaseTests {
 
     /**
      * Get the test sharedPreferences
+     *
      * @return sharedPreferences
      */
     private SharedPreferences getPreferences() {

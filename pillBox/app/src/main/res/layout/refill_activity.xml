@@ -109,7 +109,7 @@
                 android:id="@+id/constraintLayout">
 
             <TextView
-                    android:text="No refills with expiry dates have been added."
+                    android:text="No refills have been added."
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"

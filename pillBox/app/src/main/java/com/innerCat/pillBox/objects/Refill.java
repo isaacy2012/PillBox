@@ -3,6 +3,9 @@ package com.innerCat.pillBox.objects;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import com.innerCat.pillBox.Assertions;
+
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -12,27 +15,44 @@ import static java.time.temporal.ChronoUnit.DAYS;
  */
 //table name is 'refills'
 @Entity(tableName = "refills")
-public class Refill extends RefillListObject implements Comparable<Refill> {
-    //set the primary key to auto generate and increment
+public class Refill extends RefillListObject implements Comparable<Refill>, Serializable {
+    /**
+     * The Id.
+     */
+//set the primary key to auto generate and increment
     @PrimaryKey(autoGenerate = true)
     //placeholder id
     private int id = 0;
 
+    /**
+     * The Item id.
+     */
     private int itemId;
+    /**
+     * The Amount.
+     */
     private int amount;
+    /**
+     * The Expiry date.
+     */
     private LocalDate expiryDate;
+    /**
+     * The Expires.
+     */
+    private boolean expires;
 
 
     /**
      * Instantiates a new Box.
      *
-     * @param expiryDate the expiry date
+     * @param itemId     the item id
      * @param amount     the amount
+     * @param expiryDate the expiry date
      */
     public Refill( int itemId, int amount, LocalDate expiryDate ) {
         this.itemId = itemId;
         this.amount = amount;
-        this.expiryDate = expiryDate;
+        setExpiryDate(expiryDate);
     }
 
     /**
@@ -86,7 +106,26 @@ public class Refill extends RefillListObject implements Comparable<Refill> {
      * @param expiryDate the expiry date
      */
     public void setExpiryDate( LocalDate expiryDate ) {
+        setExpires(expiryDate != null);
         this.expiryDate = expiryDate;
+    }
+
+    /**
+     * Is expires boolean.
+     *
+     * @return the boolean
+     */
+    public boolean getExpires() {
+        return expires;
+    }
+
+    /**
+     * Sets expires.
+     *
+     * @param expires the expires
+     */
+    public void setExpires( boolean expires ) {
+        this.expires = expires;
     }
 
     /**
@@ -126,6 +165,8 @@ public class Refill extends RefillListObject implements Comparable<Refill> {
 
     @Override
     public int compareTo( Refill o ) {
+        Assertions.assertNotNull(this.getExpiryDate());
+        Assertions.assertNotNull(o.getExpiryDate());
         return (int) DAYS.between(o.getExpiryDate(), this.getExpiryDate());
     }
 

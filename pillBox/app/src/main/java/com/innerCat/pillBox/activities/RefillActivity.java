@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,10 +17,16 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointForward;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
+import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.databinding.RefillActivityBinding;
+import com.innerCat.pillBox.databinding.RefillInputBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
+import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;
@@ -27,6 +35,10 @@ import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.DataDao;
 import com.innerCat.pillBox.room.Database;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -38,6 +50,8 @@ import static java.util.Comparator.reverseOrder;
 public class RefillActivity extends AppCompatActivity {
 
     private RefillActivityBinding g;
+
+    private Item refillItem = null;
 
     Database database;
     DataDao dao;
@@ -56,13 +70,18 @@ public class RefillActivity extends AppCompatActivity {
         setContentView(view);
 
         Intent intent = getIntent();
-        int itemId = intent.getIntExtra("id", -1);
-        String name = intent.getStringExtra("name");
+        refillItem = (Item)intent.getSerializableExtra("item");
+        int itemId = refillItem.getId();
+        String name = refillItem.getName();
 
 
         g.appBar.addOnOffsetChangedListener(this::updateScroll);
 
         g.toolbarLayout.setTitle(name);
+
+        //empty adapter
+        adapter = RefillAdapter.empty();
+        g.rvRefills.setAdapter(adapter);
 
         //initialise the database
         database = DatabaseFactory.create(this);
@@ -76,6 +95,8 @@ public class RefillActivity extends AppCompatActivity {
             //Background work here
             //NB: This is the new thread in which the database stuff happens
             //today rvItem
+            List<Refill> nonExpiringRefills = dao.getNonExpiringRefillsOfItemId(itemId);
+            nonExpiringRefills.sort(( a, b ) -> a.getAmount() - b.getAmount());
             List<Refill> futureRefills = dao.getFutureRefillsOfItemId(itemId, Converters.todayString());
             //soonest first
             Collections.sort(futureRefills);
@@ -85,9 +106,10 @@ public class RefillActivity extends AppCompatActivity {
 
             handler.post(() -> {
                 // Create adapter passing in the sample user data
-                adapter = new RefillAdapter(expiredRefills, futureRefills);
+                adapter = new RefillAdapter(this, expiredRefills, nonExpiringRefills, futureRefills);
                 // Attach the adapter to the recyclerview to populate items
                 g.rvRefills.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
                 // Set layout manager to position the items
                 g.rvRefills.setLayoutManager(new LinearLayoutManager(this));
                 updateRVVisibility();
@@ -149,6 +171,80 @@ public class RefillActivity extends AppCompatActivity {
     }
 
     /**
+     * Update refill in background.
+     *
+     * @param updateRefill  the update refill
+     * @param initialAmount the initial amount
+     */
+    private void updateRefillInBackground( Refill updateRefill, int initialAmount ) {
+        changed = true;
+        refillItem.decrementStockBy(initialAmount - updateRefill.getAmount());
+        //ROOM Threads
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            //Background work here
+
+            //If there is another refill of this item with the same expiry date, merge them together
+            //so that their amounts are added into a single refill
+            dao.update(updateRefill);
+        });
+    }
+
+    public void editRefillItem(Refill refill, int position) {
+        int initialAmount = refill.getAmount();
+        // Use the Builder class for convenient dialog construction
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+        RefillInputBinding refillG = RefillInputBinding.inflate(getLayoutInflater());
+        final LocalDate[] date = {refill.getExpiryDate()};
+
+        refillG.editRefill.setText(String.valueOf(refill.getAmount()));
+        refillG.editRefill.requestFocus();
+
+        //Set the behaviour of the expiry button
+        if (date[0] != null) {
+            refillG.expiryButton.setText(StringFormatter.dateToString(date[0]));
+        }
+        refillG.expiryButton.setOnClickListener(v -> {
+            CalendarConstraints.Builder constraintsBuilder = new CalendarConstraints.Builder()
+                    .setValidator(DateValidatorPointForward.now());
+
+            MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText("Select date")
+                    .setCalendarConstraints(constraintsBuilder.build())
+                    //set the selection to the day of the refill
+                    .setSelection(date[0] == null ? MaterialDatePicker.todayInUtcMilliseconds() : date[0].toEpochDay()*1000*60*60*24)
+                    .build();
+            datePicker.show(getSupportFragmentManager(), "tag");
+            datePicker.addOnPositiveButtonClickListener(selection -> { //long selection
+                date[0] = LocalDate.from(LocalDateTime.ofInstant(Instant.ofEpochMilli(selection), ZoneId.systemDefault()));
+                refillG.expiryButton.setText(StringFormatter.dateToString(date[0]));
+            });
+        });
+
+        builder.setMessage("Refill Amount")
+                .setView(refillG.getRoot())
+                .setPositiveButton("Ok", ( dialog, id ) -> {
+                    //get the name of the Item to add
+                    int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
+                    refill.setAmount(refillAmount);
+                    refill.setExpiryDate(date[0]);
+
+//                    System.out.println("WINNOW: POS: " + position);
+                    adapter.editRefill(this, refill, position);
+
+                    updateRefillInBackground(refill, initialAmount);
+
+                });
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setDimAmount(0.0f);
+        dialog.show();
+        dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        Button okButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+        okButton.setEnabled(true);
+        refillG.editRefill.addTextChangedListener(TextWatcherFactory.getRefill(refillG.editRefill, okButton));
+    }
+
+    /**
      * When the deleteFAB is pressed
      *
      * @param view
@@ -163,43 +259,38 @@ public class RefillActivity extends AppCompatActivity {
             LayoutInflater inflater = LayoutInflater.from(this);
 
             builder.setMessage("Are you sure you wish to delete " + deleteRefills.size() + " " + (deleteRefills.size() > 1 ? "refills" : "refill") + "?")
-                    .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dialog, int id ) {
-                            changed = true;
-                            editMode = false;
-                            selectAllMode = false;
-                            int defHorizPadding = Converters.fromDpToPixels(16, getResources());
-                            int defTopPadding = Converters.fromDpToPixels(10, getResources());
-                            g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
-                            g.deleteFAB.setVisibility(View.INVISIBLE);
-                            checkDelete();
+                    .setPositiveButton("Delete", ( DialogInterface dialog, int id ) -> {
+                        changed = true;
+                        editMode = false;
+                        selectAllMode = false;
 
-                            //ROOM Threads
-                            ExecutorService executor = Executors.newSingleThreadExecutor();
-                            Handler handler = new Handler(Looper.getMainLooper());
-                            executor.execute(() -> {
-                                //Background work here
+                        int defHorizPadding = Converters.fromDpToPixels(16, getResources());
+                        int defTopPadding = Converters.fromDpToPixels(10, getResources());
+                        g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
+                        g.deleteFAB.setVisibility(View.INVISIBLE);
+                        checkDelete();
+
+                        //ROOM Threads
+                        ExecutorService executor = Executors.newSingleThreadExecutor();
+                        Handler handler = new Handler(Looper.getMainLooper());
+                        executor.execute(() -> {
+                            //Background work here
+                            for (Refill refill : deleteRefills) {
+                                refillItem.decrementStockBy(refill.getAmount());
+                                dao.removeRefillById(refill.getId());
+                            }
+                            handler.post(() -> {
                                 for (Refill refill : deleteRefills) {
-                                    Item refillItem = dao.getItem(refill.getItemId());
-                                    refillItem.decrementStockBy(refill.getAmount());
-                                    dao.update(refillItem);
-                                    dao.removeRefillById(refill.getId());
+                                    adapter.notifyItemRemoved(adapter.getRefillListObjects().indexOf(refill));
+                                    adapter.getRefillListObjects().remove(refill);
                                 }
-                                handler.post(() -> {
-                                    for (Refill refill : deleteRefills) {
-                                        adapter.notifyItemRemoved(adapter.getRefillListObjects().indexOf(refill));
-                                        adapter.getRefillListObjects().remove(refill);
-                                    }
-                                    deleteRefills.clear();
-                                    updateRVVisibility();
-                                });
+                                deleteRefills.clear();
+                                updateRVVisibility();
                             });
-                        }
+                        });
                     })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dialog, int id ) {
-                            // cancelled
-                        }
+                    .setNegativeButton("Cancel", ( dialog, id ) -> {
+                        // cancelled
                     });
             AlertDialog dialog = builder.create();
             dialog.getWindow().setDimAmount(0.0f);
@@ -215,7 +306,7 @@ public class RefillActivity extends AppCompatActivity {
         adapter.checkDelete(getResources(), editMode);
         int defHorizPadding = Converters.fromDpToPixels(16, getResources());
         int defTopPadding = Converters.fromDpToPixels(10, getResources());
-        if (editMode == true) {
+        if (editMode) {
             g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, Converters.fromDpToPixels(68, getResources()));
             g.deleteFAB.setVisibility(View.VISIBLE);
             g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_check_24));
@@ -239,7 +330,7 @@ public class RefillActivity extends AppCompatActivity {
                 g.deleteFAB.setText("DELETE");
             }
         } else {
-            if (back == true) {
+            if (back) {
                 if (g.deleteFAB.getText().equals("SELECT ALL") == false) {
                     g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_edit_24));
                     g.deleteFAB.setText("SELECT ALL");
@@ -289,10 +380,10 @@ public class RefillActivity extends AppCompatActivity {
     @Override
     public void finish() {
         Intent intent = new Intent();
-        intent.putExtra("position", getIntent().getIntExtra("position", -1));
-        intent.putExtra("id", getIntent().getIntExtra("id", -1));
-        if (changed == true) {
-            setResult(MainActivity.RESULT_OK_CHANGED, intent);
+        int position = getIntent().getIntExtra("position", -1);
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(refillItem, position));
+        if (changed) {
+            setResult(MainActivity.RESULT_REFILL_CHANGED, intent);
         } else {
             setResult(RESULT_OK, intent);
         }

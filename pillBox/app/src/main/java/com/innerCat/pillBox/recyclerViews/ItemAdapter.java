@@ -1,8 +1,6 @@
 package com.innerCat.pillBox.recyclerViews;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +19,7 @@ import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
+import com.innerCat.pillBox.room.Converters;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -122,6 +121,15 @@ public class ItemAdapter extends
         this.allItems = new ArrayList<>(items);
         //weak link because no color focus
         this.visibleItems = allItems;
+    }
+
+    /**
+     * Empty item adapter.
+     *
+     * @return the item adapter
+     */
+    public static ItemAdapter empty() {
+        return new ItemAdapter(new ArrayList<>());
     }
 
 
@@ -307,7 +315,7 @@ public class ItemAdapter extends
         MainRvItemBinding g = holder.g;
 
 
-        int stock = holder.item.getStock();
+        int stock = holder.item.getCalculatedStock();
 
         g.nameTV.setText(holder.item.getName());
 
@@ -316,24 +324,36 @@ public class ItemAdapter extends
         int defMargin = params.topMargin;
         int rightMargin = params.rightMargin;
 
+        //set the colorDot and NameTV margin parameters
         if (holder.item.getColor() != ColorItem.NO_COLOR) {
             g.colorDot.setVisibility(VISIBLE);
             g.colorDot.setBackgroundColor(holder.item.getColor());
 
             params.setMargins(0, defMargin, rightMargin, 0);
-            g.nameTV.setLayoutParams(params);
         } else {
             g.colorDot.setVisibility(GONE);
 
             params.setMargins(defMargin, defMargin, rightMargin, 0);
-            g.nameTV.setLayoutParams(params);
+        }
+        g.nameTV.setLayoutParams(params);
+
+        //If autodec
+        if (holder.item.isAutoDec()) {
+            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBgColor));
+            g.cardView.setStrokeColor(ColorFactory.getAttrColor(holder.context, R.attr.autoDecBorderColor));
+            g.cardView.setStrokeWidth(Converters.fromDpToPixels(2, holder.context.getResources()));
+        } else {
+            g.cardView.setCardBackgroundColor(ColorFactory.getAttrColor(holder.context, R.attr.colorOnCard));
+            //no stroke width
+            g.cardView.setStrokeWidth(0);
         }
 
         //Set the text of the stockTV
         g.stockTV.setText(String.valueOf(stock));
         //Set the color if the stock is low
+        int defaultRedThreshold = holder.context.getResources().getInteger(R.integer.default_red_stock_threshold);
         int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
-                .getInt("stockThreshold", 10);
+                .getInt("redStockThreshold", defaultRedThreshold);
         if (stock <= stockThreshold) {
             g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
             g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.BOLD);
@@ -345,27 +365,32 @@ public class ItemAdapter extends
 
         //set the text of the expiryTV
         if (holder.item.getExpiringRefill() != null) {
-            //4 weeks show warning
+            /*
+            At 4 weeks or 28 days, show warning
+             */
             LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
+            int defaultWarningDayThreshold = holder.context.getResources().getInteger(R.integer.default_warning_day_threshold);
             int warningDayThreshold = SharedPreferencesFactory.getSP(holder.context)
-                    .getInt("warningDayThreshold", 28);
+                    .getInt("warningDayThreshold", defaultRedThreshold);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
             if (daysTillExpiry <= warningDayThreshold) {
                 g.expiryTV.setVisibility(VISIBLE);
                 //Set the text of the stockTV
                 g.expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
-                //Set the color of the text if it is close
+
+                /*
+                At red day threshold, make the text red
+                 */
                 int redDayThreshold = SharedPreferencesFactory.getSP(holder.context)
                         .getInt("redDayThreshold", 7);
                 if (daysTillExpiry <= redDayThreshold) {
                     g.expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
                 } else {
                     //get the default color
-                    int[] attribute = new int[]{ android.R.attr.textColor };
-                    TypedArray array = holder.context.getTheme().obtainStyledAttributes(attribute);
-                    int color = array.getColor(0, Color.TRANSPARENT);
+                    int color = ColorFactory.getAttrColor(holder.context, android.R.attr.textColor);
                     g.expiryTV.setTextColor(color);
                 }
+
             } else {
                 g.expiryTV.setVisibility(GONE);
             }

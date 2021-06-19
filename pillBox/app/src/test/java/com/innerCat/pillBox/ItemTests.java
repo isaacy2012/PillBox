@@ -1,8 +1,11 @@
 package com.innerCat.pillBox;
 
+import com.innerCat.pillBox.objects.ColorItem;
 import com.innerCat.pillBox.objects.Item;
 
 import org.junit.Test;
+
+import java.time.LocalDate;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -20,11 +23,77 @@ public class ItemTests {
 
     @Test
     public void stock_cant_go_below_zero() {
-        Item item = new Item("Test", 10, false);
+        Item item = new Item("Test", 10, ColorItem.NO_COLOR, false);
         for (int i = 0; i < 100; i++) {
             item.decrementStock();
         }
-        assertEquals(0, item.getStock());
+        assertEquals(0, item.getRawStock());
+    }
+
+    @Test
+    public void calculated_stock_1_1_1() {
+        //Yesterday
+        int minusDays = 1;
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 1, 1);
+        assertEquals(99, item.getCalculatedStock());
+    }
+
+    @Test
+    public void calculated_stock_5_1_1() {
+        //Yesterday
+        int minusDays = 5;
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 1, 1);
+        assertEquals(95, item.getCalculatedStock());
+    }
+
+    @Test
+    public void calculated_stock_5_2_1() {
+        //Yesterday
+        int minusDays = 5;
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 1);
+        assertEquals(90, item.getCalculatedStock());
+    }
+
+    @Test
+    public void calculated_stock_5_2_3() {
+        //Yesterday
+        int minusDays = 5;
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 3);
+        assertEquals(98, item.getCalculatedStock());
+    }
+
+    @Test
+    public void calculated_stock_10_5_7() {
+        //Yesterday
+        int minusDays = 20;
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 5, 7);
+        assertEquals(90, item.getCalculatedStock());
+    }
+
+    @Test
+    public void flattening_set_to_no_autodec() {
+        //Yesterday
+        int minusDays = 7;
+        //2 a day for 7 days
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 1);
+        item.flattenAndSetAutoDecIf(false, 1, 1);
+        assertEquals(86, item.getCalculatedStock());
+        assertNull(item.getAutoDecStartDate());
+        assertEquals(0, item.getAutoDecPerDay());
+        assertEquals(0, item.getAutoDecNDays());
+    }
+
+    @Test
+    public void flattening_set_to_yes_autodec() {
+        //Yesterday
+        int minusDays = 7;
+        //2 a day for 7 days
+        Item item = new Item("Test", 100, ColorItem.NO_COLOR, false, LocalDate.now().minusDays(minusDays), 2, 1);
+        item.flattenAndSetAutoDecIf(true, 1, 1);
+        assertEquals(86, item.getCalculatedStock());
+        assertEquals(LocalDate.now(), item.getAutoDecStartDate());
+        assertEquals(1, item.getAutoDecPerDay());
+        assertEquals(1, item.getAutoDecNDays());
     }
 
 

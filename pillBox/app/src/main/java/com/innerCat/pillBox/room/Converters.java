@@ -6,15 +6,10 @@ import android.util.TypedValue;
 
 import androidx.room.TypeConverter;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.innerCat.pillBox.objects.Refill;
 import com.innerCat.pillBox.objects.Item;
 
-import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 public class Converters {
     /**
@@ -67,81 +62,17 @@ public class Converters {
     }
 
     /**
-     * From box list string.
-     *
-     * @param refills the boxes
-     * @return the string
-     */
-    @TypeConverter
-    public String fromBoxList(List<Refill> refills ) {
-        if (refills == null) {
-            return (null);
-        }
-        Gson gson = new Gson();
-        Type type = new TypeToken<List<Refill>>() {}.getType();
-        return gson.toJson(refills, type);
-    }
-
-    /**
-     * To box list list.
-     *
-     * @param boxesString the boxes string
-     * @return the list
-     */
-    @TypeConverter
-    public List<Refill> toBoxList( String boxesString) {
-        if (boxesString == null) {
-            return (null);
-        }
-        Gson gson = new Gson();
-        Type type = new TypeToken<List<Refill>>() {}.getType();
-        return gson.fromJson(boxesString, type);
-    }
-
-    /**
-     * Gets bundle from item for adding.
-     *
-     * @param item the item
-     * @return the bundle from item
-     */
-    public static Bundle getBundleFromItem( Item item ) {
-        Bundle bundle = new Bundle();
-        bundle.putInt("id", item.getId());
-        bundle.putString("name", item.getName());
-        bundle.putInt("stock", item.getStock());
-        bundle.putInt("color", item.getColor());
-        bundle.putBoolean("showInWidget", item.getShowInWidget());
-        return bundle;
-    }
-
-    /**
      * Gets edit bundle from item and position for editing.
      *
      * @param item     the item
      * @param position the position
      * @return the edit bundle from item and position
      */
-    public static Bundle getEditBundleFromItemAndPosition( Item item, int position ) {
-        Bundle bundle = getBundleFromItem(item);
-
+    public static Bundle getExtrasFromItemAndPosition( Item item, int position ) {
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("item", item);
         bundle.putInt("position", position);
         return bundle;
-    }
-
-    /**
-     * Checks if a bundle contains all the keys required
-     *
-     * @param bundle the bundle
-     * @param keys   the keys
-     * @return the boolean
-     */
-    private static boolean bundleContainsAllKeys( Bundle bundle, List<String> keys ) {
-        for (String key : keys) {
-            if (bundle.containsKey(key) == false) {
-                return false;
-            }
-        }
-        return true;
     }
 
 }

@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     DataDao dao;
     ItemAdapter adapter;
     SharedPreferences sharedPreferences;
-    Item itemToUpdate = null;
 
     //modes
     boolean editMode = false;
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int EDIT_ITEM_REQUEST = 2;
     public static final int REFILL_EDIT_REQUEST = 3;
     public static final int RESULT_DELETE = 123;
-    public static final int RESULT_OK_CHANGED = 124;
+    public static final int RESULT_REFILL_CHANGED = 124;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) {
@@ -101,6 +100,10 @@ public class MainActivity extends AppCompatActivity {
 //        if (sharedPreferences.getBoolean("update_1_dot_0", false) == false) {
 //            showUpdateDialog();
 //        }
+
+        //empty adapter
+        adapter = ItemAdapter.empty();
+        g.rvItems.setAdapter(adapter);
 
         //initialise the database
         database = DatabaseFactory.create(this);
@@ -191,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
                 adapter = new ItemAdapter(items);
                 // Attach the adapter to the recyclerview to populate items
                 g.rvItems.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
                 // Set layout manager to position the items
                 //g.rvItems.setLayoutManager(new GridLayoutManager(this, 2));
                 g.rvItems.setLayoutManager(new StaggeredGridLayoutManager(2, VERTICAL));
@@ -207,6 +211,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Refresh rv items.
+     */
+    public void refreshRVItems() {
+        Handler handler = new Handler(Looper.getMainLooper());
+        Executors.newSingleThreadExecutor().execute(() -> {
+            //Background work here
+            List<Item> items = dao.getAllItems();
+            for (Item item : items) {
+                Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
+                item.setExpiringRefill(expiringRefill);
+            }
+            adapter.setItems(items);
+
+            handler.post(() -> {
+                adapter.notifyDataSetChanged();
+            });
+        });
+    }
+
+    /**
      * When the view is resumed
      */
     public void onResume() {
@@ -216,30 +240,20 @@ public class MainActivity extends AppCompatActivity {
             updateHomeWidget();
 
             //only update rv if widget asked for an update
-            SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(this);
-            if (sharedPreferences.getBoolean("widgetUpdate", false) == true) {
+            SharedPreferences sharedPrefereces = SharedPreferencesFactory.getSP(this);
+            boolean widgetUpdate = sharedPreferences.getBoolean("widgetUpdate", false);
+            long todayEpoch = LocalDate.now().toEpochDay();
+            boolean dateUpdate = todayEpoch != sharedPreferences.getLong("dateUpdate", todayEpoch);
+            if (widgetUpdate || dateUpdate) {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putBoolean("widgetUpdate", false);
                 editor.apply();
-
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-                executor.execute(() -> {
-                    //Background work here
-                    //NB: This is the new thread in which the database stuff happens
-                    //today rvItem
-                    List<Item> items = dao.getAllItems();
-                    for (Item item : items) {
-                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(), Converters.todayString());
-                        item.setExpiringRefill(expiringRefill);
-                    }
-                    adapter.setItems(items);
-
-                    handler.post(() -> {
-                        adapter.notifyDataSetChanged();
-                    });
-                });
+                refreshRVItems();
             }
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putLong("dateUpdate", LocalDate.now().toEpochDay());
+            editor.apply();
+
         }
     }
 
@@ -268,9 +282,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Called at 00:00, updates the lastTakenTV for the widget
+     * Called at 00:00, updates the RVItems and updates the lastTakenTV for the widget
      */
     public void newDay() {
+        refreshRVItems();
         adapter.checkLastTaken();
     }
 
@@ -327,6 +342,7 @@ public class MainActivity extends AppCompatActivity {
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was changed at position
+                adapter.setItem(item, position);
                 adapter.notifyChanged(this, position);
                 updateHomeWidget();
             });
@@ -427,13 +443,16 @@ public class MainActivity extends AppCompatActivity {
                     //get the name of the Item to add
                     int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
                     Refill refill;
+                    refill = new Refill(item.getId(), refillAmount, date[0]);
+
+                    //if there is an expiry date
                     if (date[0] != null) {
-                        refill = new Refill(item.getId(), refillAmount, date[0]);
                         Refill itemRefill = item.getExpiringRefill();
                         if (itemRefill == null || refill.getExpiryDate().isBefore(itemRefill.getExpiryDate())) {
                             item.setExpiringRefill(refill);
                         }
                         if (itemRefill != null && itemRefill.getExpiryDate().isEqual(refill.getExpiryDate())) {
+                            //merge if it's the same date as another refill
                             itemRefill.mergeWith(refill);
                             updateRefillInBackground(itemRefill);
                             adapter.notifyItemChanged(position);
@@ -441,6 +460,9 @@ public class MainActivity extends AppCompatActivity {
                             //add the refill
                             addRefillInBackground(refill);
                         }
+                    } else {
+                        //add the refill
+                        addRefillInBackground(refill);
                     }
                     item.refillByAmount(refillAmount);
                     updateItem(item, position);
@@ -510,18 +532,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Add a item to the database
+     * Add an item to the database
      *
-     * @param name  the name of the item
-     * @param stock the stock
+     * @param item the item
      */
-    private void addItem( String name, int stock, int color, boolean showInWidget ) {
+    private void addItem( Item item ) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
         executor.execute(() -> {
             //Background work here
-            Item item = new Item(name, stock, color, showInWidget);
             long id = dao.insert(item);
             item.setId((int) id);
             handler.post(() -> {
@@ -574,9 +594,8 @@ public class MainActivity extends AppCompatActivity {
      * @param position the position
      */
     public void toFormUpdate( Item item, int position ) {
-        itemToUpdate = item;
         Intent intent = new Intent(this, FormActivity.class);
-        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         int requestCode = EDIT_ITEM_REQUEST;
         intent.putExtra("requestCode", requestCode);
         startActivityForResult(intent, requestCode);
@@ -590,25 +609,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void toRefill( Item item, int position ) {
         Intent intent = new Intent(this, RefillActivity.class);
-        intent.putExtras(Converters.getEditBundleFromItemAndPosition(item, position));
+        intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         startActivityForResult(intent, REFILL_EDIT_REQUEST);
-    }
-
-    /**
-     * Inject data into an item.
-     *
-     * @param item the item
-     * @param data the data
-     */
-    private void injectDataToItem( Item item, Intent data ) {
-        String name = data.getStringExtra("name");
-        int stock = data.getIntExtra("stock", 0);
-        int color = data.getIntExtra("color", ColorItem.NO_COLOR);
-        boolean showInWidget = data.getBooleanExtra("showInWidget", false);
-        item.setName(name);
-        item.setStock(stock);
-        item.setShowInWidget(showInWidget);
-        item.setColor(color);
     }
 
     /**
@@ -619,59 +621,56 @@ public class MainActivity extends AppCompatActivity {
      * @param data        the data from the activity
      */
     public void onActivityResult( int requestCode, int resultCode, Intent data ) {
-        if (resultCode == RESULT_OK) {
-            int pos = data.getIntExtra("position", -1);
-            int color = data.getIntExtra("color", ColorItem.NO_COLOR);
-            if (color != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
-                resetColorFocus();
+        switch (resultCode) {
+            case RESULT_OK: {
+                Item item = (Item)data.getSerializableExtra("item");
+                int position = data.getIntExtra("position", -1);
+                if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
+                    resetColorFocus();
+                }
+                switch (requestCode) {
+                    case ADD_ITEM_REQUEST:
+                        addItem(item);
+                        break;
+                    case EDIT_ITEM_REQUEST:
+                        updateItem(item, position);
+                        break;
+                }
+                break;
             }
-            switch (requestCode) {
-                case ADD_ITEM_REQUEST:
-                    String name = data.getStringExtra("name");
-                    int stock = data.getIntExtra("stock", 0);
-                    boolean showInWidget = data.getBooleanExtra("showInWidget", false);
-                    addItem(name, stock, color, showInWidget);
-                    break;
-                case EDIT_ITEM_REQUEST:
-                    if (itemToUpdate == null) {
-                        return;
-                    }
-                    injectDataToItem(itemToUpdate, data);
-                    updateItem(itemToUpdate, pos);
-                    itemToUpdate = null;
-                    break;
+            case RESULT_DELETE: {
+                Item item = (Item)data.getSerializableExtra("item");
+                int pos = item.getViewHolderPosition();
+                removeItem(item, pos);
+                break;
             }
-        } else if (resultCode == RESULT_DELETE) {
-            if (itemToUpdate == null) {
-                return;
-            }
-            int pos = itemToUpdate.getViewHolderPosition();
-            removeItem(itemToUpdate, pos);
-        } else if (resultCode == RESULT_OK_CHANGED) {
-            if (requestCode == REFILL_EDIT_REQUEST) {
-                int pos = data.getIntExtra("position", -1);
-                //ROOM Threads
-                ExecutorService executor = Executors.newSingleThreadExecutor();
-                Handler handler = new Handler(Looper.getMainLooper());
-                executor.execute(() -> {
-                    //Background work here
-                    int id = data.getIntExtra("id", -1);
-                    if (id == -1 || pos == -1) {
-                        return;
-                    }
-                    Item replaceItem = dao.getItem(id);
-                    Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(replaceItem.getId(),
-                            Converters.todayString());
-                    replaceItem.setExpiringRefill(expiringRefill);
-                    adapter.setItem(replaceItem, pos);
-                    handler.post(() -> {
-                        //UI Thread work here
-                        // Add a new item
-                        adapter.notifyItemChanged(pos);
-                        updateHomeWidget();
+            case RESULT_REFILL_CHANGED:
+                if (requestCode == REFILL_EDIT_REQUEST) {
+                    Item item = (Item)data.getSerializableExtra("item");
+                    int pos = data.getIntExtra("position", -1);
+                    //ROOM Threads
+                    ExecutorService executor = Executors.newSingleThreadExecutor();
+                    Handler handler = new Handler(Looper.getMainLooper());
+                    executor.execute(() -> {
+                        //Background work here
+                        if (item.getId() == -1 || pos == -1) {
+                            return;
+                        }
+                        Refill expiringRefill = dao.getSoonestExpiringRefillOfItemId(item.getId(),
+                                Converters.todayString());
+                        item.setExpiringRefill(expiringRefill);
+                        adapter.setItem(item, pos);
+                        //update the item in the database
+                        dao.update(item);
+                        handler.post(() -> {
+                            //UI Thread work here
+                            // Add a new item
+                            adapter.notifyItemChanged(pos);
+                            updateHomeWidget();
+                        });
                     });
-                });
-            }
+                }
+                break;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
