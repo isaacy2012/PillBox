@@ -303,6 +303,10 @@ public class Item implements Serializable {
      * @param refillAmount the refill amount
      */
     public void refillByAmount( int refillAmount ) {
+        //reset stock to 0 first by incrementing rawStock by the calculatedStock amount
+        if (getCalculatedStock() < 0) {
+            this.rawStock -= getCalculatedStock();
+        }
         this.rawStock = this.rawStock + refillAmount;
     }
 
