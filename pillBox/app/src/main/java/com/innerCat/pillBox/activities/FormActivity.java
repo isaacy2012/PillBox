@@ -51,7 +51,7 @@ public class FormActivity extends AppCompatActivity {
         setupUI(view);
 
         setSupportActionBar(g.toolbar);
-        getSupportActionBar().setHomeAsUpIndicator( R.drawable.ic_baseline_close_24 );
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_close_24);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
@@ -72,7 +72,7 @@ public class FormActivity extends AppCompatActivity {
                 g.editName.setFocusable(false);
                 g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
                 g.editName.setHint("");
-                g.editStock.requestFocus();
+//                g.editStock.requestFocus();
             } else {
                 //Expanded
                 //get the default color
@@ -254,11 +254,16 @@ public class FormActivity extends AppCompatActivity {
         if (view instanceof NumberPicker == false && view instanceof EditText == false) {
             view.setOnTouchListener((v, event) -> {
                 //hide keyboard
-                hideSoftKeyboard(FormActivity.this);
+                hideSoftKeyboard();
+                if (g.editStock.hasFocus()) {
+                    g.editStock.clearFocus();
+                }
 
                 //set visibility of the delete button and divider
-                g.deleteButton.setVisibility(VISIBLE);
-                g.HorizontalDivider.setVisibility(VISIBLE);
+//                g.deleteButton.setVisibility(VISIBLE);
+//                g.HorizontalDivider.setVisibility(VISIBLE);
+//                g.editStock.clearFocus();
+//                view.requestFocus();
 
 //                v.performClick(); //ClickableViewAccessibility - Makes everything be pressed 3 times
                 return false;
@@ -274,16 +279,24 @@ public class FormActivity extends AppCompatActivity {
         }
     }
 
-    public static void hideSoftKeyboard(Activity activity) {
-        InputMethodManager inputMethodManager =
-                (InputMethodManager) activity.getSystemService(
-                        Activity.INPUT_METHOD_SERVICE);
-        if (inputMethodManager.isAcceptingText()) {
-            inputMethodManager.hideSoftInputFromWindow(
-                    activity.getCurrentFocus().getWindowToken(),
-                    0
-            );
-        }
+    public void hideSoftKeyboard() {
+//        InputMethodManager inputMethodManager =
+//                (InputMethodManager) getSystemService(
+//                        Activity.INPUT_METHOD_SERVICE);
+//        if (inputMethodManager.isAcceptingText()) {
+//            inputMethodManager.hideSoftInputFromWindow(
+//                    getCurrentFocus().getWindowToken(),
+//                    0
+//            );
+//            g.editStock.clearFocus();
+//        }
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+//        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+
+        inputMethodManager.hideSoftInputFromWindow(
+                getWindow().getDecorView().getRootView().getWindowToken(),
+                0);
+
     }
 
     /**
@@ -299,7 +312,6 @@ public class FormActivity extends AppCompatActivity {
     public void onBackPressed() {
         cancel();
     }
-
 
 
 }
