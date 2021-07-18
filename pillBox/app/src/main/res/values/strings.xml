@@ -12,5 +12,7 @@
     <string name="days">days</string>
     <string name="action_edit">Edit</string>
     <string name="action_ok">OK</string>
+    <string name="current_stock">Current Stock</string>
+    <string name="title">Title</string>
     <string name="refill_amount">Refill Amount</string>
 </resources>

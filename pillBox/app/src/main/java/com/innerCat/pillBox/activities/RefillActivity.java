@@ -271,7 +271,7 @@ public class RefillActivity extends AppCompatActivity {
             });
         });
 
-        builder.setMessage("Refill Amount")
+        builder.setTitle(R.string.refill_amount)
                 .setView(refillG.getRoot())
                 .setPositiveButton("Ok", ( dialog, id ) -> {
                     //get the name of the Item to add
@@ -284,7 +284,8 @@ public class RefillActivity extends AppCompatActivity {
 
                     updateRefillInBackground(refill, initialAmount);
 
-                });
+                })
+                .setNegativeButton("Cancel", ( dialog, id ) -> {});
         AlertDialog dialog = builder.create();
         dialog.getWindow().setDimAmount(0.0f);
         dialog.show();
