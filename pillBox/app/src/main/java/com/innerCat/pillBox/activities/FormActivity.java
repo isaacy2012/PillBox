@@ -137,6 +137,11 @@ public class FormActivity extends AppCompatActivity {
         return false;
     }
 
+    /**
+     * Populate from edit item.
+     *
+     * @param itemToEdit the item to edit
+     */
     private void populateFromEditItem(Item itemToEdit) {
         g.editName.setText(itemToEdit.getName());
         g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
