@@ -18,4 +18,7 @@
     <string name="edit_refill">Edit Refill</string>
     <string name="title_string">Title</string>
     <string name="no_refills_have_been_added">No refills have been added.</string>
+    <string name="update_1_dot_3_dot_5">update_1_dot_3_dot_5</string>
+    <string name="update_1_dot_3_dot_5_html"><![CDATA[<b>Improvements</b><br>- Made action bar buttons easier to press<br><br><b>Tweaks</b><br>- Updated design of text input<br>- UI Tweaks<br><br><b>Bugfixes</b><br>- Fixed a bug on the add/edit item page.<br><br>If you have any bug reports or feature requests, feel free to leave a review or post an issue on our <a href="https://github.com/isaacy2012/Pillbox">GitHub repository</a>.<br><br>Thanks for using Pillbox!]]></string>
+    <string name="google_play_listing">https://play.google.com/store/apps/details?id=com.innerCat.pillBox</string>
 </resources>
