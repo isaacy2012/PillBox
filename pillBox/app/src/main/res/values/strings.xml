@@ -17,4 +17,5 @@
     <string name="refill_amount">Amount</string>
     <string name="edit_refill">Edit Refill</string>
     <string name="title_string">Title</string>
+    <string name="no_refills_have_been_added">No refills have been added.</string>
 </resources>
