@@ -5,17 +5,34 @@
         android:orientation="vertical">
 
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
-            android:id="@+id/editRefill"
-            android:layout_weight="0"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
             android:layout_marginEnd="20dp"
-            android:inputType="number|none"
-            android:layout_marginStart="20dp" />
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:hint="@string/refill_amount">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editRefill"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number|none" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!--    <EditText-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:ems="10"-->
+    <!--            android:id="@+id/editRefill"-->
+    <!--            android:layout_weight="0"-->
+    <!--            android:layout_marginLeft="20dp"-->
+    <!--            android:layout_marginRight="20dp"-->
+    <!--            android:layout_marginEnd="20dp"-->
+    <!--            android:inputType="number|none"-->
+    <!--            android:layout_marginStart="20dp" />-->
 
     <Button
             android:text="Set Expiry"

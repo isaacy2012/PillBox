@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Use the Builder class for convenient dialog construction
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
-        builder.setMessage("Refill Amount")
+        builder.setTitle("Add Refill")
                 .setView(refillG.getRoot())
                 .setPositiveButton("Ok", ( dialog, id ) -> {
                     //get the name of the Item to add

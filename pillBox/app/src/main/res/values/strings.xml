@@ -12,4 +12,5 @@
     <string name="days">days</string>
     <string name="action_edit">Edit</string>
     <string name="action_ok">OK</string>
+    <string name="refill_amount">Refill Amount</string>
 </resources>
