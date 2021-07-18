@@ -61,31 +61,7 @@
                         android:layout_width="match_parent"
                         app:layout_collapseMode="pin"
                         app:popupTheme="@style/Theme.pillBox.PopupOverlay"
-                        app:titleMargin="4dp">
-
-                    <ImageButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_baseline_close_24"
-                            android:id="@+id/cancelButton"
-                            android:layout_marginTop="16dp"
-                            android:layout_marginEnd="2dp"
-                            android:background="?android:selectableItemBackgroundBorderless"
-                            android:layout_gravity="start"
-                            android:onClick="cancelButton" />
-
-                    <ImageButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            app:srcCompat="@drawable/ic_baseline_check_24"
-                            android:id="@+id/okButton"
-                            android:layout_marginTop="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:background="?android:selectableItemBackgroundBorderless"
-                            android:layout_gravity="end"
-                            android:onClick="okButton" />
-
-                </androidx.appcompat.widget.Toolbar>
+                        app:titleMargin="4dp"/>
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 

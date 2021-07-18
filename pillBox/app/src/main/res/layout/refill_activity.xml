@@ -55,31 +55,7 @@
                     android:layout_width="match_parent"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/Theme.pillBox.PopupOverlay"
-                    app:titleMargin="4dp">
-
-                <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_baseline_arrow_back_24"
-                        android:id="@+id/backButton"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginEnd="2dp"
-                        android:background="?android:selectableItemBackgroundBorderless"
-                        android:layout_gravity="start"
-                        android:onClick="backButton" />
-
-                <ImageButton
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:srcCompat="@drawable/ic_baseline_edit_24"
-                        android:id="@+id/editButton"
-                        android:layout_marginTop="16dp"
-                        android:layout_marginEnd="16dp"
-                        android:background="?android:selectableItemBackgroundBorderless"
-                        android:layout_gravity="end"
-                        android:onClick="editButton" />
-
-            </androidx.appcompat.widget.Toolbar>
+                    app:titleMargin="4dp"/>
 
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>

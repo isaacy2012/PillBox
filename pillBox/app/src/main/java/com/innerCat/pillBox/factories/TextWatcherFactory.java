@@ -2,6 +2,7 @@ package com.innerCat.pillBox.factories;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -75,7 +76,7 @@ public class TextWatcherFactory {
      */
     public static TextWatcher getTitleTextAndImageButton( EditText input,
                                                           CollapsingToolbarLayout toolbarLayout,
-                                                          ImageButton okButton) {
+                                                          MenuItem okButton) {
         return new TextWatcher() {
             @Override
             public void beforeTextChanged( CharSequence s, int start, int count, int after ) {}

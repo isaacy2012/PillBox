@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -84,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         g = MainActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
         setContentView(view);
+        setSupportActionBar(g.toolbar);
 
         //constants
         ANIMATION_DURATION = getResources().getInteger(R.integer.animation_duration);
@@ -256,6 +259,26 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.edit_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+        if (item.getItemId() == R.id.action_edit) {
+            editMode = !editMode;
+            ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
+                    g.toolbar.getMenu().getItem(0), g.toolbarLayout);
+            colorAnimator.start();
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Focus on color.
@@ -564,21 +587,7 @@ public class MainActivity extends AppCompatActivity {
         return this.editMode;
     }
 
-    /**
-     * Edit button.
-     *
-     * @param view the view
-     */
-    public void editButton( View view ) {
-        editMode = !editMode;
-        ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
-                g.editButton, g.toolbarLayout);
-        colorAnimator.start();
-    }
 
-    /**
-     * Called when the user taps the FAB button
-     */
     public void fabButton( View view ) {
         Intent intent = new Intent(this, FormActivity.class);
         int requestCode = ADD_ITEM_REQUEST;
@@ -623,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult( int requestCode, int resultCode, Intent data ) {
         switch (resultCode) {
             case RESULT_OK: {
-                Item item = (Item)data.getSerializableExtra("item");
+                Item item = (Item) data.getSerializableExtra("item");
                 int position = data.getIntExtra("position", -1);
                 if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
                     resetColorFocus();
@@ -639,14 +648,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             }
             case RESULT_DELETE: {
-                Item item = (Item)data.getSerializableExtra("item");
+                Item item = (Item) data.getSerializableExtra("item");
                 int pos = item.getViewHolderPosition();
                 removeItem(item, pos);
                 break;
             }
             case RESULT_REFILL_CHANGED:
                 if (requestCode == REFILL_EDIT_REQUEST) {
-                    Item item = (Item)data.getSerializableExtra("item");
+                    Item item = (Item) data.getSerializableExtra("item");
                     int pos = data.getIntExtra("position", -1);
                     //ROOM Threads
                     ExecutorService executor = Executors.newSingleThreadExecutor();

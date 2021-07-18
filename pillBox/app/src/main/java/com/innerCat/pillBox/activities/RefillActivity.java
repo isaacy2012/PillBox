@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -47,19 +49,51 @@ import java.util.concurrent.Executors;
 
 import static java.util.Comparator.reverseOrder;
 
+/**
+ * The type Refill activity.
+ */
 public class RefillActivity extends AppCompatActivity {
 
+    /**
+     * The Activity Binding.
+     */
     private RefillActivityBinding g;
 
+    /**
+     * The Refill item.
+     */
     private Item refillItem = null;
 
+    /**
+     * The Database.
+     */
     Database database;
+    /**
+     * The Dao.
+     */
     DataDao dao;
+    /**
+     * The Adapter.
+     */
     RefillAdapter adapter;
+    /**
+     * The Edit mode.
+     */
     boolean editMode;
+    /**
+     * The Select all mode.
+     */
     boolean selectAllMode = false;
+    /**
+     * The Changed.
+     */
     boolean changed = false;
+    /**
+     * The Delete refills.
+     */
     ArrayList<Refill> deleteRefills = new ArrayList<>();
+
+    private MenuItem editButton = null;
 
 
     @Override
@@ -68,6 +102,8 @@ public class RefillActivity extends AppCompatActivity {
         g = RefillActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
         setContentView(view);
+        setSupportActionBar(g.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
         refillItem = (Item)intent.getSerializableExtra("item");
@@ -117,6 +153,30 @@ public class RefillActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.edit_menu, menu);
+        editButton = g.toolbar.getMenu().getItem(0);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) {
+        if (item.getItemId() == R.id.action_edit) {
+            editMode = !editMode;
+            ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
+                    g.toolbar.getMenu().getItem(0), g.toolbarLayout);
+            colorAnimator.start();
+
+            deleteRefills = new ArrayList<>();
+            checkDelete();
+            checkFAB(false);
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Update scroll.
      *
@@ -155,22 +215,6 @@ public class RefillActivity extends AppCompatActivity {
     }
 
     /**
-     * Edit button.
-     *
-     * @param view the view
-     */
-    public void editButton( View view ) {
-        editMode = !editMode;
-        ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
-                g.editButton, g.toolbarLayout);
-        colorAnimator.start();
-
-        deleteRefills = new ArrayList<>();
-        checkDelete();
-        checkFAB(false);
-    }
-
-    /**
      * Update refill in background.
      *
      * @param updateRefill  the update refill
@@ -190,6 +234,12 @@ public class RefillActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Edit refill item.
+     *
+     * @param refill   the refill
+     * @param position the position
+     */
     public void editRefillItem(Refill refill, int position) {
         int initialAmount = refill.getAmount();
         // Use the Builder class for convenient dialog construction
@@ -247,7 +297,7 @@ public class RefillActivity extends AppCompatActivity {
     /**
      * When the deleteFAB is pressed
      *
-     * @param view
+     * @param view the view
      */
     public void onDeleteFAB( View view ) {
         if (deleteRefills.size() == 0) { //if there are no items in the deleteTasks list then the deleteFAB acts as a 'select all' button
@@ -311,17 +361,19 @@ public class RefillActivity extends AppCompatActivity {
             g.deleteFAB.setVisibility(View.VISIBLE);
             g.deleteFAB.setIcon(ContextCompat.getDrawable(this, R.drawable.ic_baseline_check_24));
             g.deleteFAB.setText("SELECT ALL");
-            g.editButton.setImageResource(R.drawable.ic_baseline_close_24);
+            editButton.setIcon(R.drawable.ic_baseline_close_24);
         } else {
             g.rvRefills.setPadding(defHorizPadding, defTopPadding, defHorizPadding, defHorizPadding);
             g.deleteFAB.setVisibility(View.INVISIBLE);
             selectAllMode = false;
-            g.editButton.setImageResource(R.drawable.ic_baseline_edit_24);
+            editButton.setIcon(R.drawable.ic_baseline_edit_24);
         }
     }
 
     /**
      * Check the status of the extended FAB
+     *
+     * @param back the back
      */
     public void checkFAB( boolean back ) {
         if (deleteRefills.size() != 0) {
@@ -398,14 +450,5 @@ public class RefillActivity extends AppCompatActivity {
         finish();
     }
 
-
-    /**
-     * Software back button.
-     *
-     * @param view the view
-     */
-    public void backButton( View view ) {
-        finish();
-    }
 
 }

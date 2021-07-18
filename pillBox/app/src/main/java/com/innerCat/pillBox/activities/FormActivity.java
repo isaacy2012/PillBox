@@ -5,6 +5,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -41,7 +43,7 @@ public class FormActivity extends AppCompatActivity {
     ColorAdapter colorAdapter;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         g = FormActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
@@ -49,43 +51,36 @@ public class FormActivity extends AppCompatActivity {
         setupUI(view);
 
         setSupportActionBar(g.toolbar);
+        getSupportActionBar().setHomeAsUpIndicator( R.drawable.ic_baseline_close_24 );
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         colorAdapter = new ColorAdapter();
         g.rvColors.setAdapter(colorAdapter);
         g.rvColors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
 
 
-        //Adding textChangedListener for g.editName
-
-        g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
-                g.editName,
-                g.toolbarLayout,
-                g.okButton));
-
         //Add offset listener for when the view is collapsing or expanded
         AppBarLayout appBarLayout = findViewById(R.id.app_bar);
         Context context = this;
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged( AppBarLayout appBarLayout, int verticalOffset ) {
+        appBarLayout.addOnOffsetChangedListener((appBarLayout1, verticalOffset) -> {
 
-                //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
-                if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
-                    //  Collapsing
-                    g.editName.setFocusableInTouchMode(false);
-                    g.editName.setFocusable(false);
-                    g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
-                    g.editName.setHint("");
-                    g.editStock.requestFocus();
-                } else {
-                    //Expanded
-                    //get the default color
-                    int color = ColorFactory.getDefaultTextColor(context);
-                    g.editName.setTextColor(color);
-                    g.editName.setHint("Title");
-                    g.editName.setFocusableInTouchMode(true);
-                    g.editName.setFocusable(true);
-                }
+            //if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
+            if (Math.abs(verticalOffset) > 0) { //appBarLayout.getTotalScrollRange()*0.3) {
+                //  Collapsing
+                g.editName.setFocusableInTouchMode(false);
+                g.editName.setFocusable(false);
+                g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
+                g.editName.setHint("");
+                g.editStock.requestFocus();
+            } else {
+                //Expanded
+                //get the default color
+                int color = ColorFactory.getDefaultTextColor(context);
+                g.editName.setTextColor(color);
+                g.editName.setHint("Title");
+                g.editName.setFocusableInTouchMode(true);
+                g.editName.setFocusable(true);
             }
         });
 
@@ -93,17 +88,7 @@ public class FormActivity extends AppCompatActivity {
         requestCode = intent.getIntExtra("requestCode", -1);
         if (requestCode == MainActivity.EDIT_ITEM_REQUEST) {
             itemToEdit = (Item) intent.getSerializableExtra("item");
-            g.editName.setText(itemToEdit.getName());
-            g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
-            g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
-            if (itemToEdit.isAutoDec()) {
-                g.autoDecLinearLayout.setVisibility(VISIBLE);
-                g.autoDecSwitch.setChecked(true);
-                int nDays = itemToEdit.getAutoDecNDays();
-                g.autoDecNDaysPicker.setValue(nDays);
-                updateDaysTv(nDays);
-                g.autoDecPerDayPicker.setValue(itemToEdit.getAutoDecPerDay());
-            }
+            populateFromEditItem(itemToEdit);
             //gets the color from intent for adding, or from item intent for editing
             colorAdapter.setSelectedColor(itemToEdit.getColor());
 
@@ -114,61 +99,62 @@ public class FormActivity extends AppCompatActivity {
             g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
-        g.autoDecSwitch.setOnCheckedChangeListener(( buttonView, isChecked ) -> {
+        g.autoDecSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             int state = isChecked ? VISIBLE : GONE;
             g.autoDecLinearLayout.setVisibility(state);
         });
         g.autoDecNDaysPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
             @Override
-            public void onValueChange( NumberPicker picker, int oldVal, int newVal ) {
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
                 updateDaysTv(newVal);
             }
         });
 
     }
 
-    /**
-     * Update Days TextView
-     * @param value the value of the numberpicker
-     */
-    private void updateDaysTv(int value) {
-        if (value == 1) {
-            g.daysTV.setText(R.string.day);
-        } else {
-            g.daysTV.setText(R.string.days);
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.form_menu, menu);
+        //Adding textChangedListener for g.editName
+        MenuItem okButton = g.toolbar.getMenu().getItem(0);
+        okButton.setEnabled(false);
+        g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
+                g.editName,
+                g.toolbarLayout,
+                okButton));
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_ok) {
+            okButton();
+            return true;
+        } else if (item.getItemId() == android.R.id.home) {
+            cancel();
+        }
+        return false;
+    }
+
+    private void populateFromEditItem(Item itemToEdit) {
+        g.editName.setText(itemToEdit.getName());
+        g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
+        g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
+        if (itemToEdit.isAutoDec()) {
+            g.autoDecLinearLayout.setVisibility(VISIBLE);
+            g.autoDecSwitch.setChecked(true);
+            int nDays = itemToEdit.getAutoDecNDays();
+            g.autoDecNDaysPicker.setValue(nDays);
+            updateDaysTv(nDays);
+            g.autoDecPerDayPicker.setValue(itemToEdit.getAutoDecPerDay());
         }
     }
 
     /**
-     * Delete button.
-     *
-     * @param view the view
-     */
-    public void deleteButton( View view ) {
-        // Use the Builder class for convenient dialog construction
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
-
-        builder.setMessage("Are you sure you wish to delete " + itemToEdit.getName() + "?")
-                .setPositiveButton("Delete", ( dialog, id ) -> {
-                    Intent intent = new Intent();
-                    intent.putExtra("item", itemToEdit);
-                    setResult(MainActivity.RESULT_DELETE, intent);
-                    finish();
-                })
-                .setNegativeButton("Cancel", ( dialog, id ) -> {
-                    // cancelled
-                });
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().setDimAmount(0.0f);
-        dialog.show();
-    }
-
-    /**
      * Ok button.
-     *
-     * @param view the view
      */
-    public void okButton( View view ) {
+    private void okButton() {
         Intent returnIntent = new Intent();
         String name = ((EditText) findViewById(R.id.editName)).getText().toString();
         int color = colorAdapter.getSelectedColor();
@@ -218,11 +204,50 @@ public class FormActivity extends AppCompatActivity {
      *
      * @param view the view
      */
+
+    /**
+     * Update Days TextView
+     *
+     * @param value the value of the numberpicker
+     */
+    private void updateDaysTv(int value) {
+        if (value == 1) {
+            g.daysTV.setText(R.string.day);
+        } else {
+            g.daysTV.setText(R.string.days);
+        }
+    }
+
+    /**
+     * Delete button.
+     *
+     * @param view the view
+     */
+    public void deleteButton(View view) {
+        // Use the Builder class for convenient dialog construction
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+
+        builder.setMessage("Are you sure you wish to delete " + itemToEdit.getName() + "?")
+                .setPositiveButton("Delete", (dialog, id) -> {
+                    Intent intent = new Intent();
+                    intent.putExtra("item", itemToEdit);
+                    setResult(MainActivity.RESULT_DELETE, intent);
+                    finish();
+                })
+                .setNegativeButton("Cancel", (dialog, id) -> {
+                    // cancelled
+                });
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setDimAmount(0.0f);
+        dialog.show();
+    }
+
+
     @SuppressLint("ClickableViewAccessibility")
-    public void setupUI( View view) {
+    public void setupUI(View view) {
         // Set up touch listener for non-text box views to hide keyboard.
         if (view instanceof NumberPicker == false && view instanceof EditText == false) {
-            view.setOnTouchListener(( v, event ) -> {
+            view.setOnTouchListener((v, event) -> {
                 //hide keyboard
                 hideSoftKeyboard(FormActivity.this);
 
@@ -244,11 +269,11 @@ public class FormActivity extends AppCompatActivity {
         }
     }
 
-    public static void hideSoftKeyboard( Activity activity) {
+    public static void hideSoftKeyboard(Activity activity) {
         InputMethodManager inputMethodManager =
                 (InputMethodManager) activity.getSystemService(
                         Activity.INPUT_METHOD_SERVICE);
-        if(inputMethodManager.isAcceptingText()){
+        if (inputMethodManager.isAcceptingText()) {
             inputMethodManager.hideSoftInputFromWindow(
                     activity.getCurrentFocus().getWindowToken(),
                     0
@@ -265,29 +290,11 @@ public class FormActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * Cancel button.
-     *
-     * @param view the view
-     */
-    public void cancelButton( View view ) {
-        cancel();
-    }
-
-    /**
-     * When the hardware/software back button is pressed
-     */
     @Override
     public void onBackPressed() {
         cancel();
     }
 
-    /**
-     * Sets chosen color.
-     *
-     * @param color the color
-     */
-    public void setSelectedColor( Integer color ) {
-        this.colorAdapter.setSelectedColor(color);
-    }
+
+
 }
