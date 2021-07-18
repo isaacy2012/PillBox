@@ -64,8 +64,8 @@ public class RefillAdapter extends
             dateTV = refillView.findViewById(R.id.dateTV);
             deleteCheckBox = refillView.findViewById(R.id.checkBox);
             cardView = refillView.findViewById(R.id.refillItemCardView);
-            deleteCheckBox.setOnCheckedChangeListener((button, checked) -> {
-                if (checked) {
+            deleteCheckBox.setOnClickListener(button -> {
+                if (deleteCheckBox.isChecked()) {
                     ((RefillActivity) context).addDeleteRefill(refill);
                 } else {
                     ((RefillActivity) context).removeDeleteRefill(refill);
@@ -73,7 +73,7 @@ public class RefillAdapter extends
             });
             cardView.setOnClickListener(v -> {
                 if (((RefillActivity) context).getEditMode()) {
-                    deleteCheckBox.setChecked(!deleteCheckBox.isChecked());
+                    deleteCheckBox.performClick();
                 } else {
                     ((RefillActivity) context).editRefillItem(refill, refillListObjects.indexOf(refill));
                 }
