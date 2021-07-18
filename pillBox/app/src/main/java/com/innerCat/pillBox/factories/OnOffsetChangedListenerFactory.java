@@ -11,19 +11,16 @@ import com.innerCat.pillBox.R;
 public class OnOffsetChangedListenerFactory {
 
     public static AppBarLayout.OnOffsetChangedListener create( Context context ) {
-        return new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        return (appBarLayout, verticalOffset) -> {
 
-                CoordinatorLayout coordinatorLayout = ((Activity) context).findViewById(R.id.coordinatorLayout);
-                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
-                    //  Collapsed
-                    coordinatorLayout.setClipChildren(true);
+            CoordinatorLayout coordinatorLayout = ((Activity) context).findViewById(R.id.coordinatorLayout);
+            if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0) {
+                //  Collapsed
+                coordinatorLayout.setClipChildren(true);
 
-                } else {
-                    //Expanded
-                    coordinatorLayout.setClipChildren(false);
-                }
+            } else {
+                //Expanded
+                coordinatorLayout.setClipChildren(false);
             }
         };
     }

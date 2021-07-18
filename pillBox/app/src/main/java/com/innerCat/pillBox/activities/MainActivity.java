@@ -121,65 +121,8 @@ public class MainActivity extends AppCompatActivity {
         dao = database.getDao();
 
 
-        // Extend the Callback class
-        Context context = this;
-        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            /**
-             * when an item is in the process of being moved
-             * @param recyclerView  the recyclerView
-             * @param viewHolder    the viewholder
-             * @param target        the target viewHolder
-             * @return whether the move was handled
-             */
-            public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                // get the viewHolder's and target's positions in your adapter data, swap them
-                int fromPosition = viewHolder.getAdapterPosition();
-                int toPosition = target.getAdapterPosition();
-                List<Item> items = adapter.getItems();
-                if (fromPosition == toPosition) {
-                    return true;
-                } else {
-                    Item thisItem = items.get(fromPosition);
-                    items.remove(fromPosition);
-                    items.add(toPosition, thisItem);
-                }
-                // and notify the adapter that its dataset has changed
-                adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                updateHomeWidget();
-                return true;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-            }
-
-            //defines the enabled move directions in each state (idle, swiping, dragging).
-            @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
-                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
-            }
-
-            @Override
-            public boolean isLongPressDragEnabled() {
-                return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
-                //return true;
-            }
-
-            @Override
-            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
-                                    @NonNull RecyclerView.ViewHolder viewHolder,
-                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
-                CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
-                float end = Converters.fromDpToPixels(0, getResources());
-                if (isCurrentlyActive) {
-                    end = Converters.fromDpToPixels(8, getResources());
-                }
-                cardView.animate().z(end);
-                //cardView.setCardElevation(end);
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            }
-        };
+        // Add the itemTouchHelper for drag and drop
+        ItemTouchHelper.Callback callback = getItemTouchHelperCallback();
 
         // Create an `ItemTouchHelper` and attach it to the `RecyclerView`
         ItemTouchHelper ith = new ItemTouchHelper(callback);
@@ -224,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Refresh rv items.
      */
-    public void refreshRVItems() {
+    private void refreshRVItems() {
         Handler handler = new Handler(Looper.getMainLooper());
         Executors.newSingleThreadExecutor().execute(() -> {
             //Background work here
@@ -244,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * When the view is resumed
      */
+    @Override
     public void onResume() {
         super.onResume();
         if (adapter != null) {
@@ -646,6 +590,67 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, RefillActivity.class);
         intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         startActivityForResult(intent, REFILL_EDIT_REQUEST);
+    }
+
+    private ItemTouchHelper.Callback getItemTouchHelperCallback() {
+        Context context = this;
+        return new ItemTouchHelper.Callback() {
+            /**
+             * when an item is in the process of being moved
+             * @param recyclerView  the recyclerView
+             * @param viewHolder    the viewholder
+             * @param target        the target viewHolder
+             * @return whether the move was handled
+             */
+            public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                // get the viewHolder's and target's positions in your adapter data, swap them
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                List<Item> items = adapter.getItems();
+                if (fromPosition == toPosition) {
+                    return true;
+                } else {
+                    Item thisItem = items.get(fromPosition);
+                    items.remove(fromPosition);
+                    items.add(toPosition, thisItem);
+                }
+                // and notify the adapter that its dataset has changed
+                adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                updateHomeWidget();
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            }
+
+            //defines the enabled move directions in each state (idle, swiping, dragging).
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
+            }
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
+                //return true;
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
+                float end = Converters.fromDpToPixels(0, getResources());
+                if (isCurrentlyActive) {
+                    end = Converters.fromDpToPixels(8, getResources());
+                }
+                cardView.animate().z(end);
+                //cardView.setCardElevation(end);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
     }
 
     /**
