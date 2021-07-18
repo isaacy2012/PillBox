@@ -14,5 +14,7 @@
     <string name="action_ok">OK</string>
     <string name="current_stock">Current Stock</string>
     <string name="title">Title</string>
-    <string name="refill_amount">Refill Amount</string>
+    <string name="refill_amount">Amount</string>
+    <string name="edit_refill">Edit Refill</string>
+    <string name="title_string">Title</string>
 </resources>

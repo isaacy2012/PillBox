@@ -273,7 +273,7 @@ public class RefillActivity extends AppCompatActivity {
             });
         });
 
-        builder.setTitle(R.string.refill_amount)
+        builder.setTitle(R.string.edit_refill)
                 .setView(refillG.getRoot())
                 .setPositiveButton("Ok", ( dialog, id ) -> {
                     //get the name of the Item to add

@@ -79,7 +79,7 @@ public class FormActivity extends AppCompatActivity {
                 //get the default color
                 int color = ColorFactory.getDefaultTextColor(context);
                 g.editName.setTextColor(color);
-                g.editName.setHint("Title");
+                g.editName.setHint(getString(R.string.title_string));
                 g.editName.setFocusableInTouchMode(true);
                 g.editName.setFocusable(true);
             }
@@ -96,6 +96,7 @@ public class FormActivity extends AppCompatActivity {
             //because EDIT
             g.deleteButton.setVisibility(VISIBLE);
         } else {
+            g.toolbarLayout.setTitle(getString(R.string.title_string));
             g.deleteButton.setVisibility(GONE);
             g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);

@@ -55,6 +55,7 @@
                     android:layout_width="match_parent"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/Theme.pillBox.PopupOverlay"
+                    app:contentInsetStartWithNavigation="0dp"
                     app:titleMargin="4dp"/>
 
 
