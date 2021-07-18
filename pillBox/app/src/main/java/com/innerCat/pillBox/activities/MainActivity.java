@@ -27,7 +27,7 @@ import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.databinding.MainActivityBinding;
 import com.innerCat.pillBox.databinding.RefillInputBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;

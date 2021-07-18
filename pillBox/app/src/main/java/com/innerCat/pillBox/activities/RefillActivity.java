@@ -24,7 +24,7 @@ import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.databinding.RefillActivityBinding;
 import com.innerCat.pillBox.databinding.RefillInputBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
@@ -44,9 +44,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.innerCat.pillBox.util.IfNotNull.ifNotNull;
 import static java.util.Comparator.reverseOrder;
 
 /**
@@ -103,7 +105,7 @@ public class RefillActivity extends AppCompatActivity {
         View view = g.getRoot();
         setContentView(view);
         setSupportActionBar(g.toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ifNotNull(getSupportActionBar(), x -> x.setDisplayHomeAsUpEnabled(true));
 
         Intent intent = getIntent();
         refillItem = (Item)intent.getSerializableExtra("item");
@@ -275,7 +277,7 @@ public class RefillActivity extends AppCompatActivity {
                 .setView(refillG.getRoot())
                 .setPositiveButton("Ok", ( dialog, id ) -> {
                     //get the name of the Item to add
-                    int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
+                    int refillAmount = Integer.parseInt(Objects.requireNonNull(refillG.editRefill.getText()).toString().trim());
                     refill.setAmount(refillAmount);
                     refill.setExpiryDate(date[0]);
 

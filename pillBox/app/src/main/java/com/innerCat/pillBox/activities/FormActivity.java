@@ -32,6 +32,7 @@ import java.time.LocalDate;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static com.innerCat.pillBox.util.IfNotNull.ifNotNull;
 
 public class FormActivity extends AppCompatActivity {
 
@@ -51,8 +52,8 @@ public class FormActivity extends AppCompatActivity {
         setupUI(view);
 
         setSupportActionBar(g.toolbar);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_close_24);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ifNotNull(getSupportActionBar(), x -> x.setHomeAsUpIndicator(R.drawable.ic_baseline_close_24));
+        ifNotNull(getSupportActionBar(), x -> x.setDisplayHomeAsUpEnabled(true));
 
 
         colorAdapter = new ColorAdapter();
@@ -103,12 +104,7 @@ public class FormActivity extends AppCompatActivity {
             int state = isChecked ? VISIBLE : GONE;
             g.autoDecLinearLayout.setVisibility(state);
         });
-        g.autoDecNDaysPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                updateDaysTv(newVal);
-            }
-        });
+        g.autoDecNDaysPicker.setOnValueChangedListener((picker, oldVal, newVal) -> updateDaysTv(newVal));
 
     }
 
@@ -144,6 +140,7 @@ public class FormActivity extends AppCompatActivity {
      */
     private void populateFromEditItem(Item itemToEdit) {
         g.editName.setText(itemToEdit.getName());
+        g.toolbarLayout.setTitle(itemToEdit.getName());
         g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
         g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
         if (itemToEdit.isAutoDec()) {
@@ -204,11 +201,6 @@ public class FormActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * Sets click listener so that the softKeyboard is auto hidden when clicking outside.
-     *
-     * @param view the view
-     */
 
     /**
      * Update Days TextView
@@ -248,6 +240,11 @@ public class FormActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Sets click listener so that the softKeyboard is auto hidden when clicking outside.
+     *
+     * @param view the view
+     */
     @SuppressLint("ClickableViewAccessibility")
     public void setupUI(View view) {
         // Set up touch listener for non-text box views to hide keyboard.
@@ -258,14 +255,6 @@ public class FormActivity extends AppCompatActivity {
                 if (g.editStock.hasFocus()) {
                     g.editStock.clearFocus();
                 }
-
-                //set visibility of the delete button and divider
-//                g.deleteButton.setVisibility(VISIBLE);
-//                g.HorizontalDivider.setVisibility(VISIBLE);
-//                g.editStock.clearFocus();
-//                view.requestFocus();
-
-//                v.performClick(); //ClickableViewAccessibility - Makes everything be pressed 3 times
                 return false;
             });
         }
@@ -280,18 +269,8 @@ public class FormActivity extends AppCompatActivity {
     }
 
     public void hideSoftKeyboard() {
-//        InputMethodManager inputMethodManager =
-//                (InputMethodManager) getSystemService(
-//                        Activity.INPUT_METHOD_SERVICE);
-//        if (inputMethodManager.isAcceptingText()) {
-//            inputMethodManager.hideSoftInputFromWindow(
-//                    getCurrentFocus().getWindowToken(),
-//                    0
-//            );
-//            g.editStock.clearFocus();
-//        }
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-//        inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
 
         inputMethodManager.hideSoftInputFromWindow(
                 getWindow().getDecorView().getRootView().getWindowToken(),

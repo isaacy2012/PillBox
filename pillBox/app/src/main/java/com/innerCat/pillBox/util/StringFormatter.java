@@ -1,4 +1,4 @@
-package com.innerCat.pillBox;
+package com.innerCat.pillBox.util;
 
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.objects.Refill;

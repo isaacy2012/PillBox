@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.activities.RefillActivity;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.objects.Refill;
