@@ -35,4 +35,9 @@ public class Updates {
     public static void setUpdateUnseen(Context context, String updateString) {
         setUpdate(context, updateString, false);
     }
+
+    public static boolean shouldShowUpdateDialog(Context context, String updateString) {
+        return SharedPreferencesFactory.getSP(context).getBoolean(updateString, false) == false;
+
+    }
 }

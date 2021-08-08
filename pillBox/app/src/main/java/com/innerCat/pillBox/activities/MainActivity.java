@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 //        Updates.setUpdateUnseen(this, getString(R.string.update_1_dot_3_dot_5));
 
         //if the user hasn't seen the update dialog yet, then show it
-        if (sharedPreferences.getBoolean(getString(R.string.update_1_dot_3_dot_5), false) == false) {
+        if (Updates.shouldShowUpdateDialog(this, getString(R.string.update_1_dot_3_dot_5))) {
             showUpdateDialog();
         }
 
@@ -195,7 +195,6 @@ public class MainActivity extends AppCompatActivity {
             updateHomeWidget();
 
             //only update rv if widget asked for an update
-            SharedPreferences sharedPrefereces = SharedPreferencesFactory.getSP(this);
             boolean widgetUpdate = sharedPreferences.getBoolean("widgetUpdate", false);
             long todayEpoch = LocalDate.now().toEpochDay();
             boolean dateUpdate = todayEpoch != sharedPreferences.getLong("dateUpdate", todayEpoch);
@@ -277,7 +276,6 @@ public class MainActivity extends AppCompatActivity {
         long diffTimestamp = calendar.getTimeInMillis() - currentTimestamp;
         return (diffTimestamp < 0 ? 0 : diffTimestamp);
     }
-
 
 
     /**
@@ -626,7 +624,8 @@ public class MainActivity extends AppCompatActivity {
 
             //defines the enabled move directions in each state (idle, swiping, dragging).
             @Override
-            public int getMovementFlags(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+            public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                                        @NonNull RecyclerView.ViewHolder viewHolder) {
                 return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
                         ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
             }
@@ -634,7 +633,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean isLongPressDragEnabled() {
                 return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
-                //return true;
             }
 
             @Override
@@ -647,7 +645,6 @@ public class MainActivity extends AppCompatActivity {
                     end = Converters.fromDpToPixels(8, getResources());
                 }
                 cardView.animate().z(end);
-                //cardView.setCardElevation(end);
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             }
         };
