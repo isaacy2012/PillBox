@@ -10,16 +10,19 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.pillBox">
         <activity
+                android:name=".activities.SettingsActivity"
+                android:label="@string/title_activity_settings"></activity>
+        <activity
                 android:name=".activities.RefillActivity"
-                android:parentActivityName=".activities.MainActivity"
                 android:label="@string/title_activity_refill"
+                android:parentActivityName=".activities.MainActivity"
                 android:theme="@style/Theme.pillBox.NoActionBar" />
         <activity
                 android:name=".activities.FormActivity"
-                android:parentActivityName=".activities.MainActivity"
                 android:label="@string/title_activity_form"
-                android:windowSoftInputMode="adjustNothing"
-                android:theme="@style/Theme.pillBox.NoActionBar" />
+                android:parentActivityName=".activities.MainActivity"
+                android:theme="@style/Theme.pillBox.NoActionBar"
+                android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

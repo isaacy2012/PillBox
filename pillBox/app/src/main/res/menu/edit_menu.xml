@@ -7,5 +7,11 @@
         android:id="@+id/action_edit"
         android:title="@string/action_edit"
         android:orderInCategory="100"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
+    <item
+        android:icon="@drawable/ic_baseline_edit_24"
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
 </menu>

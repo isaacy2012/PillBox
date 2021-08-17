@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
     public static final int REFILL_EDIT_REQUEST = 3;
+    public static final int SETTINGS_EDIT_REQUEST = 4;
     public static final int RESULT_DELETE = 123;
     public static final int RESULT_REFILL_CHANGED = 124;
 
@@ -105,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
         //Add offset listener for when the view is collapsing or expanded
         g.appBar.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
-//        Updates.setUpdateUnseen(this, getString(R.string.update_1_dot_3_dot_5));
+//        Updates.setUpdateUnseen(this);
 
         //if the user hasn't seen the update dialog yet, then show it
-        if (Updates.shouldShowUpdateDialog(this, getString(R.string.update_1_dot_3_dot_5))) {
+        if (Updates.shouldShowUpdateDialog(this)) {
             showUpdateDialog();
         }
 
@@ -225,6 +226,9 @@ public class MainActivity extends AppCompatActivity {
             ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
                     g.toolbar.getMenu().getItem(0), g.toolbarLayout);
             colorAnimator.start();
+            return true;
+        } else if (item.getItemId() == R.id.action_settings) {
+            toSettings();
             return true;
         }
         return false;
@@ -530,8 +534,7 @@ public class MainActivity extends AppCompatActivity {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
         TextView updateTextView = updateTextG.updateTV;
 
-        String updateBodyString = getString(R.string.update_1_dot_3_dot_5_html);
-        updateTextView.setText(Html.fromHtml(updateBodyString, Html.FROM_HTML_MODE_COMPACT));
+        updateTextView.setText(Html.fromHtml(Updates.getUpdateBodyString(), Html.FROM_HTML_MODE_COMPACT));
         updateTextView.setMovementMethod(new LinkMovementMethod());
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -543,19 +546,17 @@ public class MainActivity extends AppCompatActivity {
 
         builder.setTitle(updateString)
                 .setView(updateTextG.getRoot())
-                .setPositiveButton("Ok", (dialog, id) -> {
-                    Updates.setUpdateSeen(this, getString(R.string.update_1_dot_3_dot_5));
-                })
+                .setPositiveButton("Ok", (dialog, id) -> Updates.setUpdateSeen(this))
                 .setNeutralButton("Leave a review", null);
+
         AlertDialog dialog = builder.create();
         dialog.show();
-        dialog.setOnCancelListener(dialog1 -> {
-            Updates.setUpdateSeen(this, getString(R.string.update_1_dot_3_dot_5));
-        });
+        dialog.setOnCancelListener(dialog1 -> Updates.setUpdateSeen(this));
+
         Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
         neutralButton.setOnClickListener(v -> {
             // dialog doesn't dismiss
-            Updates.setUpdateSeen(this, getString(R.string.update_1_dot_3_dot_5));
+            Updates.setUpdateSeen(this);
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_VIEW);
             intent.addCategory(Intent.CATEGORY_BROWSABLE);
@@ -651,6 +652,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * To settings.
+     */
+    public void toSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(intent, SETTINGS_EDIT_REQUEST);
+        
+    }
+
+    /**
      * When there is a result from an activity
      *
      * @param requestCode the requestCode
@@ -660,18 +670,22 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (resultCode) {
             case RESULT_OK: {
-                Item item = (Item) data.getSerializableExtra("item");
-                int position = data.getIntExtra("position", -1);
-                if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
-                    resetColorFocus();
-                }
-                switch (requestCode) {
-                    case ADD_ITEM_REQUEST:
-                        addItem(item);
-                        break;
-                    case EDIT_ITEM_REQUEST:
-                        updateItem(item, position);
-                        break;
+                if (requestCode == ADD_ITEM_REQUEST || requestCode == EDIT_ITEM_REQUEST) {
+                    Item item = (Item) data.getSerializableExtra("item");
+                    int position = data.getIntExtra("position", -1);
+                    if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
+                        resetColorFocus();
+                    }
+                    switch (requestCode) {
+                        case ADD_ITEM_REQUEST:
+                            addItem(item);
+                            break;
+                        case EDIT_ITEM_REQUEST:
+                            updateItem(item, position);
+                            break;
+                    }
+                } else if (requestCode == SETTINGS_EDIT_REQUEST) {
+                    refreshRVItems();
                 }
                 break;
             }

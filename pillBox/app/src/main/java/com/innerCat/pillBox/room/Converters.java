@@ -1,5 +1,6 @@
 package com.innerCat.pillBox.room;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -73,6 +74,23 @@ public class Converters {
         bundle.putSerializable("item", item);
         bundle.putInt("position", position);
         return bundle;
+    }
+
+    /**
+     * Gets int from string shared preferences.
+     *
+     * @param context                the context
+     * @param sharedPreferencesValue the shared preferences value
+     * @param defaultValue           the default value
+     * @return the int from string shared preferences
+     */
+    public static int getIntFromStringSharedPreferences(Context context, String sharedPreferencesValue, int defaultValue) {
+        if (sharedPreferencesValue != null) {
+            try {
+                return Integer.parseInt(sharedPreferencesValue);
+            } catch (NumberFormatException ignored) {}
+        }
+        return defaultValue;
     }
 
 }

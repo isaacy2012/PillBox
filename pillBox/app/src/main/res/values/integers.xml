@@ -2,6 +2,7 @@
 <resources>
     <integer name="default_warning_day_threshold">28</integer>
     <integer name="default_red_stock_threshold">10</integer>
+    <integer name="default_red_day_threshold">7</integer>
     <integer name="animation_duration">250</integer>
     <integer name="slide_animation_duration">150</integer>
     <integer name="text_animation_duration">300</integer>
