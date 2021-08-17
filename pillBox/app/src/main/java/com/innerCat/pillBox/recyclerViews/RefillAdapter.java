@@ -15,7 +15,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.activities.RefillActivity;
 import com.innerCat.pillBox.factories.ColorFactory;
 import com.innerCat.pillBox.objects.Refill;
@@ -64,16 +64,14 @@ public class RefillAdapter extends
             dateTV = refillView.findViewById(R.id.dateTV);
             deleteCheckBox = refillView.findViewById(R.id.checkBox);
             cardView = refillView.findViewById(R.id.refillItemCardView);
-            deleteCheckBox.setOnClickListener(button -> {
-                if (deleteCheckBox.isChecked()) {
-                    ((RefillActivity) context).addDeleteRefill(refill);
-                } else {
-                    ((RefillActivity) context).removeDeleteRefill(refill);
-                }
-            });
             cardView.setOnClickListener(v -> {
                 if (((RefillActivity) context).getEditMode()) {
-                    deleteCheckBox.performClick();
+                    deleteCheckBox.toggle();
+                    if (deleteCheckBox.isChecked()) {
+                        ((RefillActivity) context).addDeleteRefill(refill);
+                    } else {
+                        ((RefillActivity) context).removeDeleteRefill(refill);
+                    }
                 } else {
                     ((RefillActivity) context).editRefillItem(refill, refillListObjects.indexOf(refill));
                 }

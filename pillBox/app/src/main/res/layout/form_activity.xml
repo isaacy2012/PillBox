@@ -46,14 +46,16 @@
                         android:ems="10"
                         android:id="@+id/editName"
                         android:layout_weight="0"
-                        android:layout_marginStart="19dp"
-                        android:layout_marginEnd="20dp"
+                        android:layout_marginStart="23dp"
+                        android:layout_marginEnd="23dp"
                         app:layout_collapseMode="parallax"
                         android:layout_gravity="bottom"
                         android:fontFamily="@font/montserrat"
                         android:textSize="24sp"
                         android:textStyle="bold"
-                        android:hint="Title" />
+                        android:hint="@string/title"
+                        android:background="@android:color/transparent"
+                        android:layout_marginBottom="10dp" />
 
                 <androidx.appcompat.widget.Toolbar
                         android:id="@+id/toolbar"
@@ -61,7 +63,10 @@
                         android:layout_width="match_parent"
                         app:layout_collapseMode="pin"
                         app:popupTheme="@style/Theme.pillBox.PopupOverlay"
-                        app:titleMargin="4dp"/>
+                        app:titleMargin="4dp"
+                        app:titleMarginStart="0dp"
+                        app:contentInsetStartWithNavigation="0dp"
+                        />
 
             </com.google.android.material.appbar.CollapsingToolbarLayout>
 
@@ -79,29 +84,48 @@
                     android:orientation="vertical"
                     android:animateLayoutChanges="true">
 
-                <TextView
-                        android:text="Current Stock"
+                <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="23dp"
                         android:layout_marginRight="23dp"
-                        android:layout_weight="0"
                         android:layout_marginTop="10dp"
-                        android:layout_marginBottom="5dp"
-                        android:id="@+id/textView"
-                        android:fontFamily="sans-serif-medium" />
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:hint="@string/current_stock"
+                        android:layout_marginBottom="10dp">
 
-                <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:ems="10"
-                        android:id="@+id/editStock"
-                        android:layout_weight="0"
-                        android:inputType="number|none"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:hint="0"
-                        android:fontFamily="sans-serif" />
+                    <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/editStock"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:inputType="number|none" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+<!--                <TextView-->
+<!--                        android:text="Current Stock"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginLeft="23dp"-->
+<!--                        android:layout_marginRight="23dp"-->
+<!--                        android:layout_weight="0"-->
+<!--                        android:layout_marginTop="10dp"-->
+<!--                        android:layout_marginBottom="5dp"-->
+<!--                        android:id="@+id/textView"-->
+<!--                        android:fontFamily="sans-serif-medium" />-->
+
+<!--                <EditText-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:ems="10"-->
+<!--                        android:id="@+id/editStock"-->
+<!--                        android:layout_weight="0"-->
+<!--                        android:inputType="number|none"-->
+<!--                        android:layout_marginStart="20dp"-->
+<!--                        android:layout_marginEnd="20dp"-->
+<!--                        android:hint="0"-->
+<!--                        android:fontFamily="sans-serif" />-->
 
                 <TextView
                         android:text="Color"
@@ -122,6 +146,7 @@
                         android:layout_marginStart="20dp"
                         android:layout_marginEnd="20dp"
                         android:layout_marginTop="20dp"
+                        android:layout_marginBottom="10dp"
                         android:overScrollMode="never"
                         tools:visibility="gone" />
 

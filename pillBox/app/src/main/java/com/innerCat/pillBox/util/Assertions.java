@@ -1,4 +1,4 @@
-package com.innerCat.pillBox;
+package com.innerCat.pillBox.util;
 
 import java.util.Objects;
 

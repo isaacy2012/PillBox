@@ -46,7 +46,7 @@
                     app:layout_collapseMode="parallax"
                     android:layout_gravity="bottom"
                     android:layout_marginBottom="44dp"
-                    android:layout_marginLeft="16dp"
+                    android:layout_marginStart="16dp"
                     android:id="@+id/subtitleTV" />
 
             <androidx.appcompat.widget.Toolbar
@@ -55,6 +55,7 @@
                     android:layout_width="match_parent"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/Theme.pillBox.PopupOverlay"
+                    app:contentInsetStartWithNavigation="0dp"
                     app:titleMargin="4dp"/>
 
 
@@ -85,7 +86,7 @@
                 android:id="@+id/constraintLayout">
 
             <TextView
-                    android:text="No refills have been added."
+                    android:text="@string/no_refills_have_been_added"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintTop_toTopOf="parent"

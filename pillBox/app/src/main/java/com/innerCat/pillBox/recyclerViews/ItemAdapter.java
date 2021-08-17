@@ -12,7 +12,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
+import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.activities.MainActivity;
 import com.innerCat.pillBox.databinding.MainRvItemBinding;
 import com.innerCat.pillBox.factories.ColorFactory;
@@ -351,16 +351,13 @@ public class ItemAdapter extends
         //Set the text of the stockTV
         g.stockTV.setText(String.valueOf(stock));
         //Set the color if the stock is low
-        int defaultRedThreshold = holder.context.getResources().getInteger(R.integer.default_red_stock_threshold);
-        int stockThreshold = SharedPreferencesFactory.getSP(holder.context)
-                .getInt("redStockThreshold", defaultRedThreshold);
-        if (stock <= stockThreshold) {
+        if (stock <= getStockThreshold(holder.context)) {
             g.stockTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
-            g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.BOLD);
+            g.stockTV.setTypeface(null, Typeface.BOLD);
         } else {
             //get the default color
             g.stockTV.setTextColor(ColorFactory.getDefaultTextColor(holder.context));
-            g.stockTV.setTypeface(g.stockTV.getTypeface(), Typeface.NORMAL);
+            g.stockTV.setTypeface(null, Typeface.NORMAL);
         }
 
         //set the text of the expiryTV
@@ -369,11 +366,8 @@ public class ItemAdapter extends
             At 4 weeks or 28 days, show warning
              */
             LocalDate expiringDate = holder.item.getExpiringRefill().getExpiryDate();
-            int defaultWarningDayThreshold = holder.context.getResources().getInteger(R.integer.default_warning_day_threshold);
-            int warningDayThreshold = SharedPreferencesFactory.getSP(holder.context)
-                    .getInt("warningDayThreshold", defaultRedThreshold);
             long daysTillExpiry = DAYS.between(LocalDate.now(), expiringDate);
-            if (daysTillExpiry <= warningDayThreshold) {
+            if (daysTillExpiry <= getWarningDayThreshold(holder.context)) {
                 g.expiryTV.setVisibility(VISIBLE);
                 //Set the text of the stockTV
                 g.expiryTV.setText(StringFormatter.getExpiryText(holder.item.getExpiringRefill()));
@@ -381,9 +375,7 @@ public class ItemAdapter extends
                 /*
                 At red day threshold, make the text red
                  */
-                int redDayThreshold = SharedPreferencesFactory.getSP(holder.context)
-                        .getInt("redDayThreshold", 7);
-                if (daysTillExpiry <= redDayThreshold) {
+                if (daysTillExpiry <= getRedDayThreshold(holder.context)) {
                     g.expiryTV.setTextColor(ContextCompat.getColor(holder.context, R.color.primaryColor));
                 } else {
                     //get the default color
@@ -402,6 +394,45 @@ public class ItemAdapter extends
         g.lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
 
         mBoundViewHolders.add(holder);
+    }
+
+    /**
+     * Gets stock threshold.
+     *
+     * @param context the context
+     * @return the stock threshold
+     */
+    private int getStockThreshold(Context context) {
+        int defaultRedThreshold = context.getResources().getInteger(R.integer.default_red_stock_threshold);
+        String stockThresholdString = SharedPreferencesFactory.getSP(context)
+                .getString(context.getString(R.string.sp_red_stock_threshold), null);
+        return Converters.getIntFromStringSharedPreferences(context, stockThresholdString, defaultRedThreshold);
+    }
+
+    /**
+     * Gets warning day threshold.
+     *
+     * @param context the context
+     * @return the warning day threshold
+     */
+    private int getWarningDayThreshold(Context context) {
+        int defaultWarningDayThreshold = context.getResources().getInteger(R.integer.default_warning_day_threshold);
+        String warningDayThresholdString = SharedPreferencesFactory.getSP(context)
+                .getString(context.getString(R.string.sp_warning_day_threshold), null);
+        return Converters.getIntFromStringSharedPreferences(context, warningDayThresholdString, defaultWarningDayThreshold);
+    }
+
+    /**
+     * Gets red day threshold.
+     *
+     * @param context the context
+     * @return the red day threshold
+     */
+    private int getRedDayThreshold(Context context) {
+        int defaultRedDayThreshold = context.getResources().getInteger(R.integer.default_red_day_threshold);
+        String redDayThresholdString = SharedPreferencesFactory.getSP(context)
+                .getString(context.getString(R.string.sp_red_day_threshold), null);
+        return Converters.getIntFromStringSharedPreferences(context, redDayThresholdString, defaultRedDayThreshold);
     }
 
 

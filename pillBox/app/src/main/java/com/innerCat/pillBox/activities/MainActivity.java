@@ -5,14 +5,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -26,10 +31,11 @@ import com.google.android.material.datepicker.CalendarConstraints;
 import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.innerCat.pillBox.BuildConfig;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.StringFormatter;
 import com.innerCat.pillBox.databinding.MainActivityBinding;
 import com.innerCat.pillBox.databinding.RefillInputBinding;
+import com.innerCat.pillBox.databinding.UpdateTextBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
@@ -42,6 +48,8 @@ import com.innerCat.pillBox.recyclerViews.ItemAdapter;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.DataDao;
 import com.innerCat.pillBox.room.Database;
+import com.innerCat.pillBox.util.StringFormatter;
+import com.innerCat.pillBox.util.Updates;
 import com.innerCat.pillBox.widgets.HomeWidgetProvider;
 
 import java.time.Instant;
@@ -77,11 +85,12 @@ public class MainActivity extends AppCompatActivity {
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
     public static final int REFILL_EDIT_REQUEST = 3;
+    public static final int SETTINGS_EDIT_REQUEST = 4;
     public static final int RESULT_DELETE = 123;
     public static final int RESULT_REFILL_CHANGED = 124;
 
     @Override
-    protected void onCreate( Bundle savedInstanceState ) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         g = MainActivityBinding.inflate(getLayoutInflater());
         View view = g.getRoot();
@@ -92,17 +101,17 @@ public class MainActivity extends AppCompatActivity {
         ANIMATION_DURATION = getResources().getInteger(R.integer.animation_duration);
 
         //shared preferences
-        sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE);
+        sharedPreferences = SharedPreferencesFactory.getSP(this);
 
         //Add offset listener for when the view is collapsing or expanded
         g.appBar.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
-        //setUpdateUnseen("update_1_dot_1");
+//        Updates.setUpdateUnseen(this);
 
         //if the user hasn't seen the update dialog yet, then show it
-//        if (sharedPreferences.getBoolean("update_1_dot_0", false) == false) {
-//            showUpdateDialog();
-//        }
+        if (Updates.shouldShowUpdateDialog(this)) {
+            showUpdateDialog();
+        }
 
         //empty adapter
         adapter = ItemAdapter.empty();
@@ -113,65 +122,8 @@ public class MainActivity extends AppCompatActivity {
         dao = database.getDao();
 
 
-        // Extend the Callback class
-        Context context = this;
-        ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
-            /**
-             * when an item is in the process of being moved
-             * @param recyclerView  the recyclerView
-             * @param viewHolder    the viewholder
-             * @param target        the target viewHolder
-             * @return whether the move was handled
-             */
-            public boolean onMove( @NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target ) {
-                // get the viewHolder's and target's positions in your adapter data, swap them
-                int fromPosition = viewHolder.getAdapterPosition();
-                int toPosition = target.getAdapterPosition();
-                List<Item> items = adapter.getItems();
-                if (fromPosition == toPosition) {
-                    return true;
-                } else {
-                    Item thisItem = items.get(fromPosition);
-                    items.remove(fromPosition);
-                    items.add(toPosition, thisItem);
-                }
-                // and notify the adapter that its dataset has changed
-                adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
-                updateHomeWidget();
-                return true;
-            }
-
-            @Override
-            public void onSwiped( @NonNull RecyclerView.ViewHolder viewHolder, int direction ) {
-            }
-
-            //defines the enabled move directions in each state (idle, swiping, dragging).
-            @Override
-            public int getMovementFlags( @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder ) {
-                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
-                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
-            }
-
-            @Override
-            public boolean isLongPressDragEnabled() {
-                return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
-                //return true;
-            }
-
-            @Override
-            public void onChildDraw( @NonNull Canvas c, @NonNull RecyclerView recyclerView,
-                                     @NonNull RecyclerView.ViewHolder viewHolder,
-                                     float dX, float dY, int actionState, boolean isCurrentlyActive ) {
-                CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
-                float end = Converters.fromDpToPixels(0, getResources());
-                if (isCurrentlyActive) {
-                    end = Converters.fromDpToPixels(8, getResources());
-                }
-                cardView.animate().z(end);
-                //cardView.setCardElevation(end);
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-            }
-        };
+        // Add the itemTouchHelper for drag and drop
+        ItemTouchHelper.Callback callback = getItemTouchHelperCallback();
 
         // Create an `ItemTouchHelper` and attach it to the `RecyclerView`
         ItemTouchHelper ith = new ItemTouchHelper(callback);
@@ -216,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Refresh rv items.
      */
-    public void refreshRVItems() {
+    private void refreshRVItems() {
         Handler handler = new Handler(Looper.getMainLooper());
         Executors.newSingleThreadExecutor().execute(() -> {
             //Background work here
@@ -236,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * When the view is resumed
      */
+    @Override
     public void onResume() {
         super.onResume();
         if (adapter != null) {
@@ -243,7 +196,6 @@ public class MainActivity extends AppCompatActivity {
             updateHomeWidget();
 
             //only update rv if widget asked for an update
-            SharedPreferences sharedPrefereces = SharedPreferencesFactory.getSP(this);
             boolean widgetUpdate = sharedPreferences.getBoolean("widgetUpdate", false);
             long todayEpoch = LocalDate.now().toEpochDay();
             boolean dateUpdate = todayEpoch != sharedPreferences.getLong("dateUpdate", todayEpoch);
@@ -261,19 +213,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu( Menu menu ) {
+    public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.edit_menu, menu);
         return true;
     }
 
     @Override
-    public boolean onOptionsItemSelected( MenuItem item ) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_edit) {
             editMode = !editMode;
             ValueAnimator colorAnimator = ToolbarAnimatorFactory.create(this, editMode,
                     g.toolbar.getMenu().getItem(0), g.toolbarLayout);
             colorAnimator.start();
+            return true;
+        } else if (item.getItemId() == R.id.action_settings) {
+            toSettings();
             return true;
         }
         return false;
@@ -285,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param color the color
      */
-    public void focusOnColor( int color ) {
+    public void focusOnColor(int color) {
         g.appBar.setExpanded(true, true);
         adapter.setFocusColor(color);
     }
@@ -328,34 +283,12 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     * Set a particular update as seen
-     *
-     * @param updateString the update string
-     */
-    private void setUpdateSeen( String updateString ) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(updateString, true);
-        editor.apply();
-    }
-
-    /**
-     * Set a particular update as unseen
-     *
-     * @param updateString the update string
-     */
-    private void setUpdateUnseen( String updateString ) {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean(updateString, false);
-        editor.apply();
-    }
-
-    /**
      * Update an existing item in the database
      *
      * @param item     the item to change
      * @param position its position in the RecyclerView
      */
-    public void updateItem( Item item, int position ) {
+    public void updateItem(Item item, int position) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -377,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param updated the updated
      */
-    public void updateMultipleInBackground( List<Item> updated ) {
+    public void updateMultipleInBackground(List<Item> updated) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
@@ -395,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item to remove
      * @param position its position in the RecyclerView
      */
-    public void removeItem( Item item, int position ) {
+    public void removeItem(Item item, int position) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -433,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item
      * @param position the position
      */
-    public void refillItem( Item item, int position ) {
+    public void refillItem(Item item, int position) {
         //get the UI elements
         g.fab.setVisibility(View.INVISIBLE);
         RefillInputBinding refillG = RefillInputBinding.inflate(getLayoutInflater());
@@ -460,9 +393,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Use the Builder class for convenient dialog construction
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
-        builder.setMessage("Refill Amount")
+        builder.setTitle("Add Refill")
                 .setView(refillG.getRoot())
-                .setPositiveButton("Ok", ( dialog, id ) -> {
+                .setPositiveButton("Ok", (dialog, id) -> {
                     //get the name of the Item to add
                     int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
                     Refill refill;
@@ -493,7 +426,7 @@ public class MainActivity extends AppCompatActivity {
                     //set the visibility of the fab
                     g.fab.setVisibility(View.VISIBLE);
                 })
-                .setNegativeButton("Cancel", ( dialog, id ) -> {
+                .setNegativeButton("Cancel", (dialog, id) -> {
                     // User cancelled the dialog
                     g.fab.setVisibility(View.VISIBLE);
                 });
@@ -515,7 +448,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param addRefill the addRefill
      */
-    private void addRefillInBackground( Refill addRefill ) {
+    private void addRefillInBackground(Refill addRefill) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
@@ -545,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param updateRefill the update refill
      */
-    private void updateRefillInBackground( Refill updateRefill ) {
+    private void updateRefillInBackground(Refill updateRefill) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
@@ -559,7 +492,7 @@ public class MainActivity extends AppCompatActivity {
      *
      * @param item the item
      */
-    private void addItem( Item item ) {
+    private void addItem(Item item) {
         //ROOM Threads
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Handler handler = new Handler(Looper.getMainLooper());
@@ -588,12 +521,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    public void fabButton( View view ) {
+    public void fabButton(View view) {
         Intent intent = new Intent(this, FormActivity.class);
         int requestCode = ADD_ITEM_REQUEST;
         intent.putExtra("requestCode", requestCode);
         intent.putExtra("color", adapter.getFocusColor());
         startActivityForResult(intent, requestCode);
+    }
+
+    private void showUpdateDialog() {
+        UpdateTextBinding updateTextG = UpdateTextBinding.inflate(getLayoutInflater());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this, R.style.MaterialAlertDialog_Rounded);
+        TextView updateTextView = updateTextG.updateTV;
+
+        updateTextView.setText(Html.fromHtml(Updates.getUpdateBodyString(), Html.FROM_HTML_MODE_COMPACT));
+        updateTextView.setMovementMethod(new LinkMovementMethod());
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        updateTextView.setMaxHeight(height / 2);
+
+        String updateString = ("What's new in version " + BuildConfig.VERSION_NAME + ":");
+
+        builder.setTitle(updateString)
+                .setView(updateTextG.getRoot())
+                .setPositiveButton("Ok", (dialog, id) -> Updates.setUpdateSeen(this))
+                .setNeutralButton("Leave a review", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.setOnCancelListener(dialog1 -> Updates.setUpdateSeen(this));
+
+        Button neutralButton = dialog.getButton(AlertDialog.BUTTON_NEUTRAL);
+        neutralButton.setOnClickListener(v -> {
+            // dialog doesn't dismiss
+            Updates.setUpdateSeen(this);
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_VIEW);
+            intent.addCategory(Intent.CATEGORY_BROWSABLE);
+            intent.setData(Uri.parse(getString(R.string.google_play_listing)));
+            startActivity(intent);
+        });
     }
 
     /**
@@ -602,7 +571,7 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item
      * @param position the position
      */
-    public void toFormUpdate( Item item, int position ) {
+    public void toFormUpdate(Item item, int position) {
         Intent intent = new Intent(this, FormActivity.class);
         intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         int requestCode = EDIT_ITEM_REQUEST;
@@ -616,10 +585,79 @@ public class MainActivity extends AppCompatActivity {
      * @param item     the item
      * @param position the position
      */
-    public void toRefill( Item item, int position ) {
+    public void toRefill(Item item, int position) {
         Intent intent = new Intent(this, RefillActivity.class);
         intent.putExtras(Converters.getExtrasFromItemAndPosition(item, position));
         startActivityForResult(intent, REFILL_EDIT_REQUEST);
+    }
+
+    private ItemTouchHelper.Callback getItemTouchHelperCallback() {
+        Context context = this;
+        return new ItemTouchHelper.Callback() {
+            /**
+             * when an item is in the process of being moved
+             * @param recyclerView  the recyclerView
+             * @param viewHolder    the viewholder
+             * @param target        the target viewHolder
+             * @return whether the move was handled
+             */
+            public boolean onMove(@NonNull RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                // get the viewHolder's and target's positions in your adapter data, swap them
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                List<Item> items = adapter.getItems();
+                if (fromPosition == toPosition) {
+                    return true;
+                } else {
+                    Item thisItem = items.get(fromPosition);
+                    items.remove(fromPosition);
+                    items.add(toPosition, thisItem);
+                }
+                // and notify the adapter that its dataset has changed
+                adapter.notifyMoved(context, viewHolder.getAdapterPosition(), target.getAdapterPosition());
+                updateHomeWidget();
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+            }
+
+            //defines the enabled move directions in each state (idle, swiping, dragging).
+            @Override
+            public int getMovementFlags(@NonNull RecyclerView recyclerView,
+                                        @NonNull RecyclerView.ViewHolder viewHolder) {
+                return makeFlag(ItemTouchHelper.ACTION_STATE_DRAG,
+                        ItemTouchHelper.DOWN | ItemTouchHelper.UP | ItemTouchHelper.START | ItemTouchHelper.END);
+            }
+
+            @Override
+            public boolean isLongPressDragEnabled() {
+                return getEditMode() && (adapter.getFocusColor() == ColorItem.NO_COLOR);
+            }
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView,
+                                    @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                CardView cardView = viewHolder.itemView.findViewById(R.id.cardView);
+                float end = Converters.fromDpToPixels(0, getResources());
+                if (isCurrentlyActive) {
+                    end = Converters.fromDpToPixels(8, getResources());
+                }
+                cardView.animate().z(end);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+        };
+    }
+
+    /**
+     * To settings.
+     */
+    public void toSettings() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivityForResult(intent, SETTINGS_EDIT_REQUEST);
+        
     }
 
     /**
@@ -629,21 +667,25 @@ public class MainActivity extends AppCompatActivity {
      * @param resultCode  the resultCode
      * @param data        the data from the activity
      */
-    public void onActivityResult( int requestCode, int resultCode, Intent data ) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (resultCode) {
             case RESULT_OK: {
-                Item item = (Item) data.getSerializableExtra("item");
-                int position = data.getIntExtra("position", -1);
-                if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
-                    resetColorFocus();
-                }
-                switch (requestCode) {
-                    case ADD_ITEM_REQUEST:
-                        addItem(item);
-                        break;
-                    case EDIT_ITEM_REQUEST:
-                        updateItem(item, position);
-                        break;
+                if (requestCode == ADD_ITEM_REQUEST || requestCode == EDIT_ITEM_REQUEST) {
+                    Item item = (Item) data.getSerializableExtra("item");
+                    int position = data.getIntExtra("position", -1);
+                    if (item.getColor() != adapter.getFocusColor() && adapter.getFocusColor() != ColorItem.NO_COLOR) {
+                        resetColorFocus();
+                    }
+                    switch (requestCode) {
+                        case ADD_ITEM_REQUEST:
+                            addItem(item);
+                            break;
+                        case EDIT_ITEM_REQUEST:
+                            updateItem(item, position);
+                            break;
+                    }
+                } else if (requestCode == SETTINGS_EDIT_REQUEST) {
+                    refreshRVItems();
                 }
                 break;
             }

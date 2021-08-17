@@ -3,7 +3,7 @@ package com.innerCat.pillBox.objects;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-import com.innerCat.pillBox.Assertions;
+import com.innerCat.pillBox.util.Assertions;
 
 import java.io.Serializable;
 import java.time.LocalDate;

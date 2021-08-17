@@ -46,6 +46,9 @@
                 android:layout_weight="0"
                 android:layout_gravity="clip_vertical"
                 android:visibility="gone"
+                android:clickable="false"
+                android:focusable="false"
+                android:longClickable="false"
                 android:buttonTint="?attr/colorOnSecondary" />
     </LinearLayout>
 

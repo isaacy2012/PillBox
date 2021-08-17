@@ -32,6 +32,7 @@ import java.time.LocalDate;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static com.innerCat.pillBox.util.IfNotNull.ifNotNull;
 
 public class FormActivity extends AppCompatActivity {
 
@@ -51,8 +52,8 @@ public class FormActivity extends AppCompatActivity {
         setupUI(view);
 
         setSupportActionBar(g.toolbar);
-        getSupportActionBar().setHomeAsUpIndicator( R.drawable.ic_baseline_close_24 );
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ifNotNull(getSupportActionBar(), x -> x.setHomeAsUpIndicator(R.drawable.ic_baseline_close_24));
+        ifNotNull(getSupportActionBar(), x -> x.setDisplayHomeAsUpEnabled(true));
 
 
         colorAdapter = new ColorAdapter();
@@ -72,13 +73,13 @@ public class FormActivity extends AppCompatActivity {
                 g.editName.setFocusable(false);
                 g.editName.setTextColor(ContextCompat.getColor(context, R.color.transparent));
                 g.editName.setHint("");
-                g.editStock.requestFocus();
+//                g.editStock.requestFocus();
             } else {
                 //Expanded
                 //get the default color
                 int color = ColorFactory.getDefaultTextColor(context);
                 g.editName.setTextColor(color);
-                g.editName.setHint("Title");
+                g.editName.setHint(getString(R.string.title_string));
                 g.editName.setFocusableInTouchMode(true);
                 g.editName.setFocusable(true);
             }
@@ -95,6 +96,7 @@ public class FormActivity extends AppCompatActivity {
             //because EDIT
             g.deleteButton.setVisibility(VISIBLE);
         } else {
+            g.toolbarLayout.setTitle(getString(R.string.title_string));
             g.deleteButton.setVisibility(GONE);
             g.editName.requestFocus();
             getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
@@ -103,12 +105,7 @@ public class FormActivity extends AppCompatActivity {
             int state = isChecked ? VISIBLE : GONE;
             g.autoDecLinearLayout.setVisibility(state);
         });
-        g.autoDecNDaysPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
-            @Override
-            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
-                updateDaysTv(newVal);
-            }
-        });
+        g.autoDecNDaysPicker.setOnValueChangedListener((picker, oldVal, newVal) -> updateDaysTv(newVal));
 
     }
 
@@ -144,6 +141,7 @@ public class FormActivity extends AppCompatActivity {
      */
     private void populateFromEditItem(Item itemToEdit) {
         g.editName.setText(itemToEdit.getName());
+        g.toolbarLayout.setTitle(itemToEdit.getName());
         g.editStock.setText(String.valueOf(itemToEdit.getRawStock()));
         g.widgetSwitch.setChecked(itemToEdit.getShowInWidget());
         if (itemToEdit.isAutoDec()) {
@@ -204,11 +202,6 @@ public class FormActivity extends AppCompatActivity {
         finish();
     }
 
-    /**
-     * Sets click listener so that the softKeyboard is auto hidden when clicking outside.
-     *
-     * @param view the view
-     */
 
     /**
      * Update Days TextView
@@ -248,19 +241,21 @@ public class FormActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Sets click listener so that the softKeyboard is auto hidden when clicking outside.
+     *
+     * @param view the view
+     */
     @SuppressLint("ClickableViewAccessibility")
     public void setupUI(View view) {
         // Set up touch listener for non-text box views to hide keyboard.
         if (view instanceof NumberPicker == false && view instanceof EditText == false) {
             view.setOnTouchListener((v, event) -> {
                 //hide keyboard
-                hideSoftKeyboard(FormActivity.this);
-
-                //set visibility of the delete button and divider
-                g.deleteButton.setVisibility(VISIBLE);
-                g.HorizontalDivider.setVisibility(VISIBLE);
-
-//                v.performClick(); //ClickableViewAccessibility - Makes everything be pressed 3 times
+                hideSoftKeyboard();
+                if (g.editStock.hasFocus()) {
+                    g.editStock.clearFocus();
+                }
                 return false;
             });
         }
@@ -274,16 +269,14 @@ public class FormActivity extends AppCompatActivity {
         }
     }
 
-    public static void hideSoftKeyboard(Activity activity) {
+    public void hideSoftKeyboard() {
         InputMethodManager inputMethodManager =
-                (InputMethodManager) activity.getSystemService(
-                        Activity.INPUT_METHOD_SERVICE);
-        if (inputMethodManager.isAcceptingText()) {
-            inputMethodManager.hideSoftInputFromWindow(
-                    activity.getCurrentFocus().getWindowToken(),
-                    0
-            );
-        }
+                (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+
+        inputMethodManager.hideSoftInputFromWindow(
+                getWindow().getDecorView().getRootView().getWindowToken(),
+                0);
+
     }
 
     /**
@@ -299,7 +292,6 @@ public class FormActivity extends AppCompatActivity {
     public void onBackPressed() {
         cancel();
     }
-
 
 
 }
