@@ -115,7 +115,8 @@ public class FormActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.form_menu, menu);
         //Adding textChangedListener for g.editName
         MenuItem okButton = g.toolbar.getMenu().getItem(0);
-        okButton.setEnabled(false);
+        //enable button immediately if editing
+        okButton.setEnabled(requestCode == MainActivity.EDIT_ITEM_REQUEST);
         g.editName.addTextChangedListener(TextWatcherFactory.getTitleTextAndImageButton(
                 g.editName,
                 g.toolbarLayout,

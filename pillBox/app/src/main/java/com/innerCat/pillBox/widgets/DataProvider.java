@@ -11,11 +11,11 @@ import android.widget.RemoteViewsService;
 import androidx.core.content.ContextCompat;
 
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.factories.DatabaseFactory;
-import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 import com.innerCat.pillBox.objects.Item;
 import com.innerCat.pillBox.room.Database;
+import com.innerCat.pillBox.util.StringFormatter;
+import com.innerCat.pillBox.util.Thresholds;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,10 +64,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         //set the stock
         int stock = thisItem.getCalculatedStock();
 
-        int defaultRedStockThreshold = context.getResources().getInteger(R.integer.default_red_stock_threshold);
-        int redStockThreshold = SharedPreferencesFactory.getSP(context)
-                .getInt("redStockThreshold", defaultRedStockThreshold);
-        if (stock < redStockThreshold) {
+        if (stock < Thresholds.getRedDayThreshold(context)) {
             SpannableString redStockText = new SpannableString(String.valueOf(stock));
             redStockText.setSpan(new ForegroundColorSpan(ContextCompat.getColor(context, R.color.primaryColor)), 0, redStockText.length(), 0);
             widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, redStockText);

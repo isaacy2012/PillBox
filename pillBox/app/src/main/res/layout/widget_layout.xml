@@ -50,7 +50,7 @@
             android:columnWidth="140dp"
             android:scrollbarSize="0dp"
             android:background="@drawable/outside_rounded_corners"
-            android:backgroundTint="#44FFFFFF"
+            android:backgroundTint="#44888888"
             android:paddingHorizontal="8dp"
             android:paddingVertical="8dp"
             android:overScrollMode="never"
