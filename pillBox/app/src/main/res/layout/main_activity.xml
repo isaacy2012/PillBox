@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:toolbarId="@+id/toolbar"
-                app:layout_scrollFlags="scroll|exitUntilCollapsed"
+                app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
                 app:title="My Pills"
                 app:statusBarScrim="@color/transparent"
                 app:expandedTitleTextAppearance="@style/TextAppearance.App.CollapsingToolbar.Expanded.WithSize"
@@ -36,7 +36,7 @@
                 android:background="@color/transparent"
                 app:expandedTitleMarginStart="16dp"
                 app:expandedTitleMargin="0dp"
-                app:expandedTitleMarginTop="40dp"
+                app:expandedTitleMarginTop="100dp"
                 app:contentScrim="?attr/colorOnToolbar">
 
 
