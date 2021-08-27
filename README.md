@@ -1,7 +1,7 @@
-# Pillbox 
+# pillBox 
 ## By Isaac Young
 
-### Pillbox is an android app which helps you to manage your pills and medication
+### pillBox is an android app which helps you to manage your pills and medication
 
 <p float="left">
   <img src="readMeImages/home_screen_light.png"  width="216" height="432">
@@ -29,7 +29,7 @@ A handy homescreen widget allows you to check off an item with one click, right 
 
 <b>Track your refills</b>
 
-Track when you refill your pills, along with the expiry date, so Pillbox can warn you when they're about to expire.
+Track when you refill your pills, along with the expiry date, so pillBox can warn you when they're about to expire.
 
 <b>Personalizable</b>
 
