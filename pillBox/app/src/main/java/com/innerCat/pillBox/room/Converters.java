@@ -3,6 +3,7 @@ package com.innerCat.pillBox.room;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
 import androidx.room.TypeConverter;
@@ -60,6 +61,10 @@ public class Converters {
                 r.getDisplayMetrics()
         );
         return (int) px;
+    }
+
+    public static int fromPixelsToDp(int pixels, Resources r) {
+        return (int) (pixels / ((float) r.getDisplayMetrics().densityDpi / DisplayMetrics.DENSITY_DEFAULT));
     }
 
     /**

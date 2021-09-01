@@ -52,4 +52,5 @@
     <string name="settings_stock_warning_summary">Stock level when the stock turns red</string>
     <string name="settings_expiry_warning_summary">Days until expiry, when date is shown on an item</string>
     <string name="settings_expiry_red_summary">Days until expiry, when the expiry turns red</string>
+    <string name="sp_should_show_onboarding">sp_should_show_onboarding</string>
 </resources>

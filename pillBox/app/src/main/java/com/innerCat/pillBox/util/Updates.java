@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.innerCat.pillBox.BuildConfig;
+import com.innerCat.pillBox.R;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
 
 public class Updates {
@@ -38,7 +39,13 @@ public class Updates {
     }
 
     public static boolean shouldShowUpdateDialog(Context context) {
-        return !SharedPreferencesFactory.getSP(context).getBoolean(BuildConfig.VERSION_NAME, false);
+        SharedPreferences sharedPreferences = SharedPreferencesFactory.getSP(context);
+        boolean ret;
+        // only if not first time
+        ret = !sharedPreferences.getBoolean(context.getString(R.string.sp_should_show_onboarding), true);
+        // and there has been an update
+        ret &= sharedPreferences.getBoolean(BuildConfig.VERSION_NAME, false);
+        return ret;
     }
 
     public static String getUpdateBodyString() {

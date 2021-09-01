@@ -1,6 +1,10 @@
 package com.innerCat.pillBox.activities;
 
+import static androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL;
+import static com.innerCat.pillBox.factories.TapTargetFactoryKt.showTapTarget;
+
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,8 +65,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL;
-
 
 /**
  * The type Main activity.
@@ -72,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     int ANIMATION_DURATION = 0;
 
     private MainActivityBinding g;
+    private View editButtonView;
 
     //private fields for the Dao and the Database
     public Database database;
@@ -107,8 +110,11 @@ public class MainActivity extends AppCompatActivity {
         g.appBar.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
 //        Updates.setUpdateUnseen(this);
+        if (sharedPreferences.getBoolean(getString(R.string.sp_should_show_onboarding), true) || true) {
+            showFABTapTarget();
+        }
 
-        //if the user hasn't seen the update dialog yet, then show it
+        //if the user hasn't seen the update dialog yet and it isn't the first time opening, then show it
         if (Updates.shouldShowUpdateDialog(this)) {
             showUpdateDialog();
         }
@@ -216,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.edit_menu, menu);
+        new Handler().post(() -> editButtonView = findViewById(R.id.action_edit));
         return true;
     }
 
@@ -657,7 +664,118 @@ public class MainActivity extends AppCompatActivity {
     public void toSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivityForResult(intent, SETTINGS_EDIT_REQUEST);
-        
+
+    }
+
+    /**
+     * Show fab tap target.
+     */
+    private void showFABTapTarget() {
+        showTapTarget(this, g.fab, 80, "Add your first item", "Click outside at any point to cancel this tutorial.", () -> {
+                    g.fab.callOnClick();
+                    return null;
+                },
+                null,
+                () -> {
+                    SharedPreferences.Editor edit = sharedPreferences.edit();
+                    edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
+                    edit.apply();
+                    return null;
+                });
+    }
+
+    private void showRVItemTapTarget() {
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final Activity activity = this;
+        handler.postDelayed(
+                () -> {
+                    View view = g.rvItems.getChildAt(0);
+                    if (view != null) {
+                        showTapTarget(activity, view, 100, "Click on an item to decrement it", "Long press to view refills.", () -> {
+                                    showRVItemTapTargetRefill();
+                                    return null;
+                                }, null,
+                                () -> {
+                                    SharedPreferences.Editor edit = sharedPreferences.edit();
+                                    edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
+                                    edit.apply();
+                                    return null;
+                                }
+                        );
+                    }
+                }, getResources().getInteger(R.integer.rv_animation_duration)
+        );
+    }
+
+    private void showRVItemTapTargetRefill() {
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final Activity activity = this;
+        handler.postDelayed(
+                () -> {
+                    View view = g.rvItems.getChildAt(0);
+                    if (view == null) {return;}
+                    View refillView = view.findViewById(R.id.refillButton);
+                    if (refillView == null) {return;}
+                    showTapTarget(activity, refillView, 15, "Refill your item", "Add a date to remember expiry.", () -> {
+                                showEditTapTarget();
+                                return null;
+                            }, null,
+                            () -> {
+                                SharedPreferences.Editor edit = sharedPreferences.edit();
+                                edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
+                                edit.apply();
+                                return null;
+                            }
+                    );
+                }, getResources().getInteger(R.integer.rv_animation_duration)
+        );
+    }
+
+
+    private void showEditTapTarget() {
+        showTapTarget(this,
+                editButtonView,
+                10,
+                "Edit items",
+                "You can edit or rearrange your items",
+                () -> {
+                    editButtonView.callOnClick();
+                    showRVItemTapTargetEdit();
+                    return null;
+                },
+                null,
+                null);
+    }
+
+    private void showRVItemTapTargetEdit() {
+        View view = g.rvItems.getChildAt(0);
+        if (view != null) {
+            showTapTarget(this, view, 100, "Click to edit your item", "Drag to rearrange items.", () -> {
+                        showEditTapTargetBack();
+                        return null;
+                    }, null,
+                    () -> {
+                        SharedPreferences.Editor edit = sharedPreferences.edit();
+                        edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
+                        edit.apply();
+                        return null;
+                    }
+            );
+        }
+    }
+
+    private void showEditTapTargetBack() {
+        showTapTarget(this,
+                editButtonView,
+                10,
+                "That's all! Welcome to pillBox",
+                "Click here to go back.",
+                () -> {
+                    editButtonView.callOnClick();
+                    return null;
+                },
+                null,
+                null);
     }
 
     /**
@@ -678,6 +796,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     switch (requestCode) {
                         case ADD_ITEM_REQUEST:
+                            showRVItemTapTarget();
                             addItem(item);
                             break;
                         case EDIT_ITEM_REQUEST:
