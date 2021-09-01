@@ -50,13 +50,10 @@ public class Updates {
 
     public static String getUpdateBodyString() {
         return "" +
-                "<b>Tweaks</b>" +
+                "<b>New Features</b>" +
                 "<br>" +
-                "- Tweaked the size of the toolbar, moving the title down" +
+                "- An onboarding screen now shows new users around the app" +
                 "<br>" +
-                "<br>" +
-                "<b>Bugfixes</b>" +
-                "<br>- Fixed a bug where the OK button was disabled by default when editing an item" +
                 "<br>" +
                 "<br>If you have any bug reports or feature requests, feel free to leave a review or post an issue on our <a href=\"https://github.com/isaacy2012/Pillbox\">GitHub repository</a>." +
                 "<br>" +

@@ -1,10 +1,8 @@
 package com.innerCat.pillBox.activities;
 
 import static androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL;
-import static com.innerCat.pillBox.factories.TapTargetFactoryKt.showTapTarget;
 
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -43,6 +41,7 @@ import com.innerCat.pillBox.databinding.UpdateTextBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
 import com.innerCat.pillBox.factories.OnOffsetChangedListenerFactory;
 import com.innerCat.pillBox.factories.SharedPreferencesFactory;
+import com.innerCat.pillBox.factories.TapTargetFactory;
 import com.innerCat.pillBox.factories.TextWatcherFactory;
 import com.innerCat.pillBox.factories.ToolbarAnimatorFactory;
 import com.innerCat.pillBox.objects.ColorItem;
@@ -73,17 +72,18 @@ public class MainActivity extends AppCompatActivity {
 
     int ANIMATION_DURATION = 0;
 
-    private MainActivityBinding g;
-    private View editButtonView;
+    public MainActivityBinding g;
+    public View editButtonView;
 
     //private fields for the Dao and the Database
     public Database database;
     DataDao dao;
     ItemAdapter adapter;
-    SharedPreferences sharedPreferences;
+    public SharedPreferences sharedPreferences;
 
     //modes
     boolean editMode = false;
+    private TapTargetFactory tapTargetSequence;
 
     public static final int ADD_ITEM_REQUEST = 1;
     public static final int EDIT_ITEM_REQUEST = 2;
@@ -110,8 +110,9 @@ public class MainActivity extends AppCompatActivity {
         g.appBar.addOnOffsetChangedListener(OnOffsetChangedListenerFactory.create(this));
 
 //        Updates.setUpdateUnseen(this);
-        if (sharedPreferences.getBoolean(getString(R.string.sp_should_show_onboarding), true) || true) {
-            showFABTapTarget();
+        if (sharedPreferences.getBoolean(getString(R.string.sp_should_show_onboarding), true)) {
+            tapTargetSequence = new TapTargetFactory(this);
+            tapTargetSequence.start();
         }
 
         //if the user hasn't seen the update dialog yet and it isn't the first time opening, then show it
@@ -668,117 +669,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Show fab tap target.
-     */
-    private void showFABTapTarget() {
-        showTapTarget(this, g.fab, 80, "Add your first item", "Click outside at any point to cancel this tutorial.", () -> {
-                    g.fab.callOnClick();
-                    return null;
-                },
-                null,
-                () -> {
-                    SharedPreferences.Editor edit = sharedPreferences.edit();
-                    edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
-                    edit.apply();
-                    return null;
-                });
-    }
-
-    private void showRVItemTapTarget() {
-        final Handler handler = new Handler(Looper.getMainLooper());
-        final Activity activity = this;
-        handler.postDelayed(
-                () -> {
-                    View view = g.rvItems.getChildAt(0);
-                    if (view != null) {
-                        showTapTarget(activity, view, 100, "Click on an item to decrement it", "Long press to view refills.", () -> {
-                                    showRVItemTapTargetRefill();
-                                    return null;
-                                }, null,
-                                () -> {
-                                    SharedPreferences.Editor edit = sharedPreferences.edit();
-                                    edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
-                                    edit.apply();
-                                    return null;
-                                }
-                        );
-                    }
-                }, getResources().getInteger(R.integer.rv_animation_duration)
-        );
-    }
-
-    private void showRVItemTapTargetRefill() {
-        final Handler handler = new Handler(Looper.getMainLooper());
-        final Activity activity = this;
-        handler.postDelayed(
-                () -> {
-                    View view = g.rvItems.getChildAt(0);
-                    if (view == null) {return;}
-                    View refillView = view.findViewById(R.id.refillButton);
-                    if (refillView == null) {return;}
-                    showTapTarget(activity, refillView, 15, "Refill your item", "Add a date to remember expiry.", () -> {
-                                showEditTapTarget();
-                                return null;
-                            }, null,
-                            () -> {
-                                SharedPreferences.Editor edit = sharedPreferences.edit();
-                                edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
-                                edit.apply();
-                                return null;
-                            }
-                    );
-                }, getResources().getInteger(R.integer.rv_animation_duration)
-        );
-    }
-
-
-    private void showEditTapTarget() {
-        showTapTarget(this,
-                editButtonView,
-                10,
-                "Edit items",
-                "You can edit or rearrange your items",
-                () -> {
-                    editButtonView.callOnClick();
-                    showRVItemTapTargetEdit();
-                    return null;
-                },
-                null,
-                null);
-    }
-
-    private void showRVItemTapTargetEdit() {
-        View view = g.rvItems.getChildAt(0);
-        if (view != null) {
-            showTapTarget(this, view, 100, "Click to edit your item", "Drag to rearrange items.", () -> {
-                        showEditTapTargetBack();
-                        return null;
-                    }, null,
-                    () -> {
-                        SharedPreferences.Editor edit = sharedPreferences.edit();
-                        edit.putBoolean(getString(R.string.sp_should_show_onboarding), false);
-                        edit.apply();
-                        return null;
-                    }
-            );
-        }
-    }
-
-    private void showEditTapTargetBack() {
-        showTapTarget(this,
-                editButtonView,
-                10,
-                "That's all! Welcome to pillBox",
-                "Click here to go back.",
-                () -> {
-                    editButtonView.callOnClick();
-                    return null;
-                },
-                null,
-                null);
-    }
-
-    /**
      * When there is a result from an activity
      *
      * @param requestCode the requestCode
@@ -796,7 +686,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     switch (requestCode) {
                         case ADD_ITEM_REQUEST:
-                            showRVItemTapTarget();
+                            if (sharedPreferences.getBoolean(getString(R.string.sp_should_show_onboarding), true) && tapTargetSequence != null) {
+                                tapTargetSequence.showRVItemTapTargetDecrement();
+                            }
                             addItem(item);
                             break;
                         case EDIT_ITEM_REQUEST:
