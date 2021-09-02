@@ -52,7 +52,7 @@ public class Updates {
         return "" +
                 "<b>New Features</b>" +
                 "<br>" +
-                "- You can now show the time that a pill was last taken. " +
+                "- You can now show the time that a pill was last taken" +
                 "<br>" +
                 "<br>" +
                 "To enable it, go to settings -> \"Show the time a pill was taken\"" +
