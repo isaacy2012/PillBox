@@ -1,5 +1,7 @@
 package com.innerCat.pillBox.objects;
 
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
@@ -9,9 +11,8 @@ import com.innerCat.pillBox.util.Assertions;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Objects;
-
-import static java.time.temporal.ChronoUnit.DAYS;
 
 /**
  * The type Item.
@@ -35,6 +36,11 @@ public class Item implements Serializable {
      * The Last used.
      */
     private LocalDate lastUsed;
+
+    /**
+     * The Last used time.
+     */
+    private LocalTime lastUsedTime;
     /**
      * The Stock.
      */
@@ -82,13 +88,13 @@ public class Item implements Serializable {
     /**
      * Instantiates a new Item.
      *
-     * @param name               the name
-     * @param rawStock           the stock
-     * @param showInWidget       the show in widget
-     * @param color              the color
-     * @param autoDecStartDate   the auto dec start date
-     * @param autoDecPerDay      the auto dec per day
-     * @param autoDecNDays       the auto dec n days
+     * @param name             the name
+     * @param rawStock         the stock
+     * @param color            the color
+     * @param showInWidget     the show in widget
+     * @param autoDecStartDate the auto dec start date
+     * @param autoDecPerDay    the auto dec per day
+     * @param autoDecNDays     the auto dec n days
      */
     @Ignore
     public Item( String name,
@@ -178,6 +184,25 @@ public class Item implements Serializable {
         this.lastUsed = lastUsed;
     }
 
+
+    /**
+     * Gets last used time.
+     *
+     * @return the last used time
+     */
+    public LocalTime getLastUsedTime() {
+        return lastUsedTime;
+    }
+
+    /**
+     * Sets last used time.
+     *
+     * @param lastUsedTime the last used time
+     */
+    public void setLastUsedTime(LocalTime lastUsedTime) {
+        this.lastUsedTime = lastUsedTime;
+    }
+
     /**
      * Gets stock.
      *
@@ -189,7 +214,8 @@ public class Item implements Serializable {
 
     /**
      * Flatten auto dec if.
-     *  @param newAutoDec the new auto dec
+     *
+     * @param newAutoDec the new auto dec
      * @param perDay     the per day
      * @param nDays      the n days
      */
@@ -245,6 +271,7 @@ public class Item implements Serializable {
     public void decrementStock() {
         if (this.rawStock > 0) {
             setLastUsed(LocalDate.now());
+            setLastUsedTime(LocalTime.now());
             this.rawStock = this.rawStock - 1;
         }
     }

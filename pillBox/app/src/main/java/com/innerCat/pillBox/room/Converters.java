@@ -11,16 +11,41 @@ import androidx.room.TypeConverter;
 import com.innerCat.pillBox.objects.Item;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class Converters {
+
+    @TypeConverter
+    public static LocalTime localTimeFromTimestamp(String value) {
+        if (value == null) {
+            return null;
+        }
+        return LocalTime.parse(value);
+    }
+
+    /**
+     * Converts the date to a String timestamp
+     *
+     * @param date the date (LocalDate with date ONLY)
+     * @return the timestamp as a String
+     */
+    @TypeConverter
+    public static String localTimeToTimestamp(LocalTime date) {
+        if (date == null) {
+            return null;
+        }
+        return date.format(DateTimeFormatter.ISO_LOCAL_TIME);
+    }
+
     /**
      * Convert from a timestamp String to a LocalDate (with date ONLY)
+     *
      * @param value the String to convert
      * @return the LocalDate
      */
     @TypeConverter
-    public static LocalDate fromTimestamp( String value ) {
+    public static LocalDate fromTimestamp(String value) {
         if (value == null) {
             return null;
         }
@@ -29,11 +54,12 @@ public class Converters {
 
     /**
      * Converts the date to a String timestamp
+     *
      * @param date the date (LocalDate with date ONLY)
      * @return the timestamp as a String
      */
     @TypeConverter
-    public static String dateToTimestamp( LocalDate date ) {
+    public static String dateToTimestamp(LocalDate date) {
         if (date == null) {
             return null;
         }
@@ -54,7 +80,7 @@ public class Converters {
      * @param r  resources
      * @return the number of pixels
      */
-    public static int fromDpToPixels( int dp, Resources r ) {
+    public static int fromDpToPixels(int dp, Resources r) {
         float px = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
                 (float) dp,
@@ -74,7 +100,7 @@ public class Converters {
      * @param position the position
      * @return the edit bundle from item and position
      */
-    public static Bundle getExtrasFromItemAndPosition( Item item, int position ) {
+    public static Bundle getExtrasFromItemAndPosition(Item item, int position) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("item", item);
         bundle.putInt("position", position);
@@ -93,7 +119,8 @@ public class Converters {
         if (sharedPreferencesValue != null) {
             try {
                 return Integer.parseInt(sharedPreferencesValue);
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         return defaultValue;
     }

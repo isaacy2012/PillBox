@@ -21,36 +21,28 @@
     <string name="google_play_listing">https://play.google.com/store/apps/details?id=com.innerCat.pillBox</string>
     <string name="title_activity_settings">SettingsActivity</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
-
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
     <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- sp -->
     <string name="sp_red_stock_threshold">redStockThreshold</string>
     <string name="sp_warning_day_threshold">warningDayThreshold</string>
     <string name="sp_red_day_threshold">redDayThreshold</string>
+    <string name="sp_show_time">sp_show_time</string>
+    <string name="sp_should_show_onboarding">sp_should_show_onboarding</string>
 
     <!-- Settings Headers -->
+    <string name="settings_display_header">Display</string>
     <string name="settings_stock_header">Stock</string>
     <string name="settings_expiry_header">Expiry</string>
-    <string name="settings_expiry_red_title">Expiry display limit</string>
 
     <!-- Settings Titles -->
+    <string name="settings_show_time_title">Show the time a pill was taken</string>
     <string name="settings_expiry_warning_title">Expiry display limit</string>
     <string name="settings_stock_warning_title">Stock warning limit</string>
+    <string name="settings_expiry_red_title">Expiry display limit</string>
 
     <!-- Settings Summaries -->
     <string name="settings_stock_warning_summary">Stock level when the stock turns red</string>
+    <string name="settings_show_time_summary">e.g \"Last taken today at 9:41am\"</string>
     <string name="settings_expiry_warning_summary">Days until expiry, when date is shown on an item</string>
     <string name="settings_expiry_red_summary">Days until expiry, when the expiry turns red</string>
-    <string name="sp_should_show_onboarding">sp_should_show_onboarding</string>
 </resources>

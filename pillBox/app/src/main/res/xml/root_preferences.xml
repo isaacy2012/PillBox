@@ -1,5 +1,13 @@
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory app:title="@string/settings_display_header">
+
+        <SwitchPreferenceCompat
+                android:defaultValue="false"
+                app:key="@string/sp_show_time"
+                app:title="@string/settings_show_time_title"
+                app:summary="@string/settings_show_time_summary"/>
+    </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/settings_stock_header">
 

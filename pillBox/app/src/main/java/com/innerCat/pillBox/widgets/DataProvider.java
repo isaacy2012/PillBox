@@ -71,7 +71,7 @@ public class DataProvider implements RemoteViewsService.RemoteViewsFactory {
         } else {
             widgetGridViewHolder.setTextViewText(R.id.widgetStockTV, String.valueOf(stock));
         }
-        widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(thisItem));
+        widgetGridViewHolder.setTextViewText(R.id.widgetLastTakenTV, StringFormatter.getLastTakenText(context, thisItem));
 
         //if autodec
         if (thisItem.isAutoDec()) {
