@@ -1,5 +1,9 @@
 package com.innerCat.pillBox.recyclerViews;
 
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+import static java.time.temporal.ChronoUnit.DAYS;
+
 import android.content.Context;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
@@ -26,10 +30,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import static android.view.View.GONE;
-import static android.view.View.VISIBLE;
-import static java.time.temporal.ChronoUnit.DAYS;
 
 // Create the basic adapter extending from RecyclerView.Adapter
 // Note that we specify the custom ViewHolder which gives us access to our views
@@ -391,7 +391,7 @@ public class ItemAdapter extends
         }
 
         //set the text of the last taken text view
-        g.lastTakenTV.setText(StringFormatter.getLastTakenText(holder.item));
+        g.lastTakenTV.setText(StringFormatter.getLastTakenText(holder.context, holder.item));
 
         mBoundViewHolders.add(holder);
     }
@@ -403,7 +403,7 @@ public class ItemAdapter extends
      */
     public void checkLastTaken() {
         for (ViewHolder viewHolder : mBoundViewHolders) {
-            viewHolder.g.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.item));
+            viewHolder.g.lastTakenTV.setText(StringFormatter.getLastTakenText(viewHolder.context, viewHolder.item));
         }
     }
 

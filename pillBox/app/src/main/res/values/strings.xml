@@ -38,15 +38,18 @@
     <string name="sp_red_stock_threshold">redStockThreshold</string>
     <string name="sp_warning_day_threshold">warningDayThreshold</string>
     <string name="sp_red_day_threshold">redDayThreshold</string>
+    <string name="sp_show_time">sp_show_time</string>
 
     <!-- Settings Headers -->
+    <string name="settings_display_header">Display</string>
     <string name="settings_stock_header">Stock</string>
     <string name="settings_expiry_header">Expiry</string>
-    <string name="settings_expiry_red_title">Expiry display limit</string>
 
     <!-- Settings Titles -->
+    <string name="settings_show_time_title">Show the time a pill was taken</string>
     <string name="settings_expiry_warning_title">Expiry display limit</string>
     <string name="settings_stock_warning_title">Stock warning limit</string>
+    <string name="settings_expiry_red_title">Expiry display limit</string>
 
     <!-- Settings Summaries -->
     <string name="settings_stock_warning_summary">Stock level when the stock turns red</string>
