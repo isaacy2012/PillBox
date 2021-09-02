@@ -5,7 +5,8 @@
         <SwitchPreferenceCompat
                 android:defaultValue="false"
                 app:key="@string/sp_show_time"
-                app:title="@string/settings_show_time_title" />
+                app:title="@string/settings_show_time_title"
+                app:summary="@string/settings_show_time_summary"/>
     </PreferenceCategory>
 
     <PreferenceCategory app:title="@string/settings_stock_header">

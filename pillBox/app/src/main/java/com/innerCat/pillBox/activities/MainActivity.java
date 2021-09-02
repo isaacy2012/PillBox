@@ -550,7 +550,7 @@ public class MainActivity extends AppCompatActivity {
         int height = displayMetrics.heightPixels;
         updateTextView.setMaxHeight(height / 2);
 
-        String updateString = ("What's new in version " + BuildConfig.VERSION_NAME + ":");
+        String updateString = ("What's New in Version " + BuildConfig.VERSION_NAME + ":");
 
         builder.setTitle(updateString)
                 .setView(updateTextG.getRoot())

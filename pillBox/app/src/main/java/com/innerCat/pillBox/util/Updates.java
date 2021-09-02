@@ -44,7 +44,7 @@ public class Updates {
         // only if not first time
         ret = !sharedPreferences.getBoolean(context.getString(R.string.sp_should_show_onboarding), true);
         // and there has been an update
-        ret &= sharedPreferences.getBoolean(BuildConfig.VERSION_NAME, false);
+        ret &= !sharedPreferences.getBoolean(BuildConfig.VERSION_NAME, false);
         return ret;
     }
 
@@ -52,12 +52,15 @@ public class Updates {
         return "" +
                 "<b>New Features</b>" +
                 "<br>" +
-                "- An onboarding screen now shows new users around the app" +
+                "- You can now show the time that a pill was last taken. " +
                 "<br>" +
                 "<br>" +
-                "<br>If you have any bug reports or feature requests, feel free to leave a review or post an issue on our <a href=\"https://github.com/isaacy2012/Pillbox\">GitHub repository</a>." +
+                "To enable it, go to settings -> \"Show the time a pill was taken\"" +
                 "<br>" +
                 "<br>" +
-                "Thanks for using Pillbox!";
+                "If you have any bug reports or feature requests, feel free to leave a review or post an issue on our <a href=\"https://github.com/isaacy2012/Pillbox\">GitHub repository</a>." +
+                "<br>" +
+                "<br>" +
+                "Thanks for using pillBox!";
     }
 }
