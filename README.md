@@ -4,10 +4,10 @@
 ### pillBox is an android app which helps you to manage your pills and medication
 
 <p float="left">
-  <img src="readMeImages/home_screen_gif_compressed.gif"  width="360" height="720">
-  <img src="readMeImages/onboarding.gif"  width="360" height="720">
-  <img src="readMeImages/edit_item.png"  width="360" height="720">
-  <img src="readMeImages/refills.png"  width="360" height="720">
+  <img src="readMeImages/home_screen_gif_compressed.gif"  width="270" height="540">
+  <img src="readMeImages/onboarding.gif"  width="270" height="540">
+  <img src="readMeImages/edit_item.png"  width="270" height="540">
+  <img src="readMeImages/refills.png"  width="270" height="540">
  </p>
 
 
