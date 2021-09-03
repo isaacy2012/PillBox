@@ -1,5 +1,8 @@
 package com.innerCat.pillBox.activities;
 
+import static com.innerCat.pillBox.util.IfNotNull.ifNotNull;
+import static java.util.Comparator.reverseOrder;
+
 import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -24,7 +27,6 @@ import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.innerCat.pillBox.R;
-import com.innerCat.pillBox.util.StringFormatter;
 import com.innerCat.pillBox.databinding.RefillActivityBinding;
 import com.innerCat.pillBox.databinding.RefillInputBinding;
 import com.innerCat.pillBox.factories.DatabaseFactory;
@@ -36,6 +38,7 @@ import com.innerCat.pillBox.recyclerViews.RefillAdapter;
 import com.innerCat.pillBox.room.Converters;
 import com.innerCat.pillBox.room.DataDao;
 import com.innerCat.pillBox.room.Database;
+import com.innerCat.pillBox.util.StringFormatter;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -47,9 +50,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import static com.innerCat.pillBox.util.IfNotNull.ifNotNull;
-import static java.util.Comparator.reverseOrder;
 
 /**
  * The type Refill activity.
@@ -158,7 +158,7 @@ public class RefillActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.edit_menu, menu);
+        getMenuInflater().inflate(R.menu.refill_menu, menu);
         editButton = g.toolbar.getMenu().getItem(0);
         return true;
     }

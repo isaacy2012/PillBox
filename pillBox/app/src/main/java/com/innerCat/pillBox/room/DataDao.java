@@ -43,6 +43,14 @@ public interface DataDao {
     void removeItemById( int id );
 
     /**
+     * Removes an Item by id
+     *
+     * @param id the id of the Item to remove
+     */
+    @Query("DELETE FROM refills WHERE itemId = :id")
+    void removeRefillsOfItemId( int id );
+
+    /**
      * Get a single Item from the id
      *
      * @param id the id (primary key) of the task

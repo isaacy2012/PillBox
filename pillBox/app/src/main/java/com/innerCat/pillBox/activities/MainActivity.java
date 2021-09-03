@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        Updates.setUpdateUnseen(this);
         if (sharedPreferences.getBoolean(getString(R.string.sp_should_show_onboarding), true)) {
+            Updates.setUpdateSeen(this);
             tapTargetSequence = new TapTargetFactory(this);
             tapTargetSequence.start();
         }
@@ -222,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.edit_menu, menu);
+        getMenuInflater().inflate(R.menu.home_menu, menu);
         new Handler().post(() -> editButtonView = findViewById(R.id.action_edit));
         return true;
     }
@@ -343,6 +344,7 @@ public class MainActivity extends AppCompatActivity {
         executor.execute(() -> {
             //Background work here
             dao.removeItemById(item.getId());
+            dao.removeRefillsOfItemId(item.getId());
             handler.post(() -> {
                 //UI Thread work here
                 // Notify the adapter that an item was removed at position
@@ -406,8 +408,7 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Ok", (dialog, id) -> {
                     //get the name of the Item to add
                     int refillAmount = Integer.parseInt(refillG.editRefill.getText().toString().trim());
-                    Refill refill;
-                    refill = new Refill(item.getId(), refillAmount, date[0]);
+                    Refill refill = new Refill(item.getId(), refillAmount, date[0]);
 
                     //if there is an expiry date
                     if (date[0] != null) {
@@ -476,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
                 refillToUpdate.mergeWith(addRefill);
                 dao.update(refillToUpdate);
             } else {
-                dao.insert(addRefill);
+                addRefill.setId((int) dao.insert(addRefill));
             }
         });
     }
