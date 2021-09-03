@@ -7,7 +7,6 @@
   <img src="readMeImages/home_screen_gif_compressed.gif"  width="270" height="540">
   <img src="readMeImages/onboarding.gif"  width="270" height="540">
   <img src="readMeImages/edit_item.png"  width="270" height="540">
-  <img src="readMeImages/refills.png"  width="270" height="540">
  </p>
 
 
