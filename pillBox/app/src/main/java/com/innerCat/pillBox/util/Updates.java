@@ -50,12 +50,15 @@ public class Updates {
 
     public static String getUpdateBodyString() {
         return "" +
-                "<b>New Features</b>" +
+                "<b>Bug Fixes</b>" +
                 "<br>" +
-                "- You can now show the time that a pill was last taken" +
+                "- Fixed a bug where merging refills wouldn't update properly" +
                 "<br>" +
+                "- Fixed a bug where refills of items weren't deleted with the items." +
                 "<br>" +
-                "To enable it, go to settings -> \"Show the time a pill was taken\"" +
+                "- Fixed a bug where the edit icon was shown on the refill page" +
+                "<br>" +
+                "- Fixed a bug where this update dialog was shown when it was the users' first time ever using the app" +
                 "<br>" +
                 "<br>" +
                 "If you have any bug reports or feature requests, feel free to leave a review or post an issue on our <a href=\"https://github.com/isaacy2012/Pillbox\">GitHub repository</a>." +
